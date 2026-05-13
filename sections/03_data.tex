@@ -1,0 +1,36 @@
+\section{Data}
+\label{sec:data}
+
+\subsection{Sources}
+% TODO: Bullet list of sources (LibriSpeech, GigaSpeech, CommonVoice, WenetSpeech, in-house, etc.)
+
+\subsection{Cleaning Pipeline}
+% TODO: VAD, language ID, ASR-based filtering, dedup, PII scrubbing.
+Our cleaning pipeline consists of voice activity detection, language
+identification, an ASR-based confidence filter, and near-duplicate
+removal at both the utterance and document level.
+
+\subsection{Statistics}
+% TODO: Total hours, hours per language, hours per domain, segment length histogram.
+
+\begin{table}[t]
+  \caption{Composition of the LLM-ASR training corpus.}
+  \label{tab:data}
+  \centering
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Source & Hours & \% & Languages \\
+    \midrule
+    LibriSpeech & 960 & x.x & en \\
+    GigaSpeech & 10{,}000 & x.x & en \\
+    CommonVoice & ? & x.x & multi \\
+    In-house & ? & x.x & multi \\
+    \midrule
+    Total & ? & 100.0 & ? \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Mixing Strategy}
+% TODO: Temperature sampling per language; per-task balancing if multi-task.

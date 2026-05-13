@@ -1,0 +1,40 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*.bcf
+*-blx.bib
+*.dvi
+*.xdv
+*.idx
+*.ilg
+*.ind
+*.lol
+
+# Editor / OS junk
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python (in case you generate tables/plots from scripts)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Generated PDF (uncomment if you DO NOT want to track the built PDF)
+# main.pdf

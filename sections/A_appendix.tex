@@ -1,0 +1,23 @@
+\section{Prompt Templates}
+\label{app:prompts}
+
+\begin{lstlisting}[caption={Contextual ASR prompt with a hot-word list.}]
+<|system|>
+You are a careful speech transcriber. Use the following list of likely
+proper nouns when they fit the audio: {hotwords}.
+<|audio|>
+<|user|>
+Transcribe the audio verbatim.
+<|assistant|>
+\end{lstlisting}
+
+\section{Additional Results}
+\label{app:more_results}
+
+% TODO: Per-language WER, per-domain WER, more ablations that did not fit
+% in the main text.
+
+\section{Data Examples}
+\label{app:data_examples}
+
+% TODO: A handful of sanitized (audio_id, transcript) examples per source.

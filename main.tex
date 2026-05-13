@@ -1,0 +1,111 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{cleveref}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{doi}
+\usepackage{listings}
+
+% --------- Listings style for prompts / code ---------
+\definecolor{codebg}{HTML}{F7F7F7}
+\definecolor{codekw}{HTML}{0B6FA4}
+\definecolor{codestr}{HTML}{B8860B}
+\definecolor{codecomm}{HTML}{6A737D}
+\lstdefinestyle{prompt}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{black!20},
+  framesep=4pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape
+}
+\lstset{style=prompt}
+
+% --------- Title / metadata ---------
+\title{LLM-ASR: A Technical Report on \\ Large Language Model based Automatic Speech Recognition}
+
+% \date{}  % uncomment to remove date
+
+\newif\ifuniqueAffiliation
+\uniqueAffiliationtrue
+
+\ifuniqueAffiliation
+\author{
+    Your Name\thanks{Corresponding author: \texttt{you@example.com}} \\
+    Your Team / Lab \\
+    Your Organization \\
+    \texttt{you@example.com} \\
+    \And
+    Co-author Name \\
+    Your Team / Lab \\
+    Your Organization \\
+    \texttt{coauthor@example.com} \\
+}
+\else
+\usepackage{authblk}
+\renewcommand\Authfont{\bfseries}
+\setlength{\affilsep}{0em}
+\author[1]{Your Name\thanks{\texttt{you@example.com}}}
+\author[1]{Co-author Name}
+\author[1,2]{Senior Author}
+\affil[1]{Your Lab, Your Organization}
+\affil[2]{Partner Lab, Partner Organization}
+\fi
+
+\renewcommand{\headeright}{Technical Report}
+\renewcommand{\undertitle}{Technical Report}
+\renewcommand{\shorttitle}{LLM-ASR Technical Report}
+
+\hypersetup{
+  pdftitle={LLM-ASR: A Technical Report on Large Language Model based Automatic Speech Recognition},
+  pdfsubject={cs.CL, cs.SD, eess.AS},
+  pdfauthor={Your Name},
+  pdfkeywords={Speech Recognition, Large Language Models, Audio LLM, Multimodal},
+}
+
+\begin{document}
+\maketitle
+
+\input{sections/00_abstract}
+
+\keywords{Automatic Speech Recognition \and Large Language Models \and Audio LLM \and Multimodal Learning \and Speech Foundation Models}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_data}
+\input{sections/04_model}
+\input{sections/05_training}
+\input{sections/06_experiments}
+\input{sections/07_analysis}
+\input{sections/08_limitations_ethics}
+\input{sections/09_conclusion}
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\appendix
+\input{sections/A_appendix}
+
+\end{document}

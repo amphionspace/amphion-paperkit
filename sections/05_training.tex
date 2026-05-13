@@ -1,0 +1,43 @@
+\section{Training}
+\label{sec:training}
+
+\subsection{Stages}
+We adopt a three-stage training recipe:
+
+\begin{enumerate}
+  \item \textbf{Stage 1 -- Alignment.} The audio encoder and LLM are frozen;
+        only the adapter is trained on (audio, transcript) pairs to align
+        speech representations with the LLM token space.
+  \item \textbf{Stage 2 -- Supervised fine-tuning (SFT).} The adapter and the
+        LLM are jointly fine-tuned on a balanced multi-task mixture
+        (transcription, contextual ASR, instruction-style ASR).
+  \item \textbf{Stage 3 -- Preference optimization.} We further refine the
+        model with DPO/RLAIF using preference pairs sampled from Stage 2.
+\end{enumerate}
+
+\subsection{Objective}
+% TODO: Token-level cross-entropy on the transcript; loss masking on prompt tokens.
+
+\subsection{Optimization}
+% TODO: AdamW, lr schedule (warmup + cosine), batch size in tokens, sequence length.
+
+\begin{table}[t]
+  \caption{Training hyperparameters per stage.}
+  \label{tab:hparams}
+  \centering
+  \small
+  \begin{tabular}{lccc}
+    \toprule
+    & Stage 1 & Stage 2 & Stage 3 \\
+    \midrule
+    Trainable params & adapter & adapter+LLM & adapter+LLM \\
+    Learning rate    & 1e-3    & 2e-5        & 5e-7 \\
+    Batch (audio hr) & ?       & ?           & ? \\
+    Steps            & ?       & ?           & ? \\
+    Precision        & bf16    & bf16        & bf16 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Infrastructure}
+% TODO: GPUs/TPUs, parallelism strategy (FSDP / DeepSpeed-Zero), throughput.

@@ -1,0 +1,48 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+% TODO: Eval datasets (LibriSpeech test-clean/other, TED-LIUM, AMI, GigaSpeech,
+% CommonVoice, FLEURS, in-house), metrics (WER, CER, MER, U-WER vs B-WER),
+% decoding settings.
+
+\subsection{Baselines}
+% TODO: Whisper-large-v3, OWSM-v3.1, Canary-1B, your prior internal model.
+
+\subsection{Main Results}
+
+\begin{table}[t]
+  \caption{Word error rate (\%) on English benchmarks. Lower is better.}
+  \label{tab:main_en}
+  \centering
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Model & LS test-clean & LS test-other & TED-LIUM3 & GigaSpeech & AMI \\
+    \midrule
+    Whisper-large-v3      & ? & ? & ? & ? & ? \\
+    Canary-1B             & ? & ? & ? & ? & ? \\
+    OWSM-v3.1             & ? & ? & ? & ? & ? \\
+    \midrule
+    \textbf{LLM-ASR (ours)} & ? & ? & ? & ? & ? \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[t]
+  \caption{Multilingual WER (\%) on FLEURS, averaged across language groups.}
+  \label{tab:main_multi}
+  \centering
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Model & High-resource & Mid-resource & Low-resource & Average \\
+    \midrule
+    Whisper-large-v3       & ? & ? & ? & ? \\
+    \textbf{LLM-ASR (ours)} & ? & ? & ? & ? \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Contextual ASR}
+% TODO: Demonstrate biasing via prompt with hot-word lists; report B-WER / U-WER.

@@ -1,0 +1,52 @@
+\section{Introduction}
+\label{sec:intro}
+
+% --- Background: ASR landscape ---
+Automatic Speech Recognition (ASR) has progressed from hybrid HMM-DNN systems
+\citep{hinton2012deep} to end-to-end sequence-to-sequence models such as
+CTC \citep{graves2006ctc}, RNN-T \citep{graves2012rnnt}, and attention-based
+encoder--decoders \citep{chan2016las}. Large-scale weakly-supervised models
+such as Whisper \citep{radford2023whisper} further demonstrated that scaling
+data and model size yields highly robust speech recognition across languages
+and acoustic conditions.
+
+% --- Motivation: why LLM-based ASR ---
+In parallel, large language models (LLMs) have become the dominant paradigm for
+text understanding and generation. A natural question is whether the strong
+linguistic priors and in-context capabilities of LLMs can be leveraged to
+improve ASR --- not only in raw word error rate (WER), but also in
+\emph{contextual biasing}, \emph{multilingual transfer}, \emph{spoken language
+understanding}, and \emph{instruction following}.
+
+% --- This work ---
+In this report we describe the design and training of \textbf{LLM-ASR}, a system
+that connects a high-quality audio encoder to a pre-trained LLM via a
+lightweight adapter, trained in three stages on a mixture of public and
+in-house speech corpora. Our contributions are:
+
+\begin{itemize}
+  \item \textbf{Architecture.} A modular encoder--adapter--LLM design that
+        keeps the LLM backbone frozen during early training and unlocks it
+        progressively. (Section~\ref{sec:model})
+  \item \textbf{Data.} A curated multilingual speech corpus covering
+        \textit{N} hours across \textit{K} languages, with a transparent
+        cleaning and deduplication pipeline. (Section~\ref{sec:data})
+  \item \textbf{Training recipe.} A three-stage recipe (alignment,
+        supervised fine-tuning, preference optimization) that scales
+        stably from 1B to \textit{X}B parameters. (Section~\ref{sec:training})
+  \item \textbf{Empirical results.} Strong results on standard ASR
+        benchmarks and on contextual / instruction-driven variants, with
+        ablations isolating the contribution of each component.
+        (Sections~\ref{sec:experiments}--\ref{sec:analysis})
+\end{itemize}
+
+% --- Roadmap ---
+The remainder of the report is organized as follows.
+Section~\ref{sec:related} surveys related work.
+Section~\ref{sec:data} describes the data pipeline.
+Section~\ref{sec:model} introduces the architecture, and
+Section~\ref{sec:training} details the training recipe.
+Sections~\ref{sec:experiments} and \ref{sec:analysis} report results and
+ablations. We discuss limitations and broader impact in
+Section~\ref{sec:limitations} before concluding in
+Section~\ref{sec:conclusion}.
