@@ -3,14 +3,14 @@
 
 % --- Background: ASR landscape ---
 End-to-end speech recognition has matured from hybrid HMM-DNN systems
-\citep{hinton2012deep} to large-scale weakly-supervised models such as
-Whisper \citep{radford2023whisper}, which demonstrate that scaling data
+\cite{hinton2012deep} to large-scale weakly-supervised models such as
+Whisper \cite{radford2023whisper}, which demonstrate that scaling data
 and model size delivers strong recognition across languages and acoustic
 conditions. In parallel, large language models (LLMs) have become the
 dominant backbone for text understanding and generation, and several
-recent systems -- Qwen-Audio \citep{chu2023qwenaudio},
-SALMONN \citep{tang2024salmonn}, Step-Audio~2 \citep{stepaudio22025},
-Kimi-Audio \citep{kimiaudio2025} and Qwen3-ASR \citep{qwen2025qwen3asr}
+recent systems -- Qwen-Audio \cite{chu2023qwenaudio},
+SALMONN \cite{tang2024salmonn}, Step-Audio~2 \cite{stepaudio22025},
+Kimi-Audio \cite{kimiaudio2025} and Qwen3-ASR \cite{qwen2025qwen3asr}
 -- show that connecting a strong audio encoder to a pre-trained LLM
 yields a single model that transcribes, understands and follows
 instructions in one pass.
@@ -46,13 +46,13 @@ Our contributions are:
   \item \textbf{A 4.7\,B Mandarin--English SpeechLLM recipe.} We pair
         the Qwen3-AuT audio tower (Whisper-style 24-layer Transformer
         at $d{=}1024$, 314\,M parameters) with the
-        Qwen3-4B-Instruct-2507 \citep{qwen2025qwen3} LLM through a
+        Qwen3-4B-Instruct-2507 \cite{qwen2025qwen3} LLM through a
         9.2\,M-parameter Linear--SwooshR--Linear projector
-        \citep{yao2024zipformer} and four learnable modality-boundary
+        \cite{yao2024zipformer} and four learnable modality-boundary
         prompt vectors. On a curated public-plus-internal corpus the
         model reaches $1.8$\% CER on AISHELL-1, $7.17$\% WER on
         LibriSpeech \texttt{test-clean} and $14.99$\% MER on the TALCS
-        Mandarin--English code-switching test set \citep{li2022talcs}
+        Mandarin--English code-switching test set \cite{li2022talcs}
         (Section~\ref{sec:experiments}).
   \item \textbf{Strong hotword conditioning out of the prompt.} With
         five in-prompt hotwords the CommonVoice CER drops from $6.57$\%

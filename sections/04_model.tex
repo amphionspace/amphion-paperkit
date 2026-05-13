@@ -4,31 +4,16 @@
 \subsection{Overview}
 
 AmphionASR follows the now-standard SpeechLLM template
-\citep{ma2024slamasr, chu2023qwenaudio, tang2024salmonn} -- a speech
+\cite{ma2024slamasr, chu2023qwenaudio, tang2024salmonn} -- a speech
 encoder, a small projector, and a frozen-then-fine-tuned LLM -- but is
 specialised in three respects that we describe in this section:
 (i)~the Qwen3-AuT audio tower and its Whisper-style preprocessing;
 (ii)~a lightweight Linear--SwooshR--Linear projector inherited from the
-Zipformer activation family \citep{yao2024zipformer}; and
+Zipformer activation family \cite{yao2024zipformer}; and
 (iii)~four learnable \emph{boundary prompt} vectors that mark the
 audio--text boundary inside the LLM's input embedding stream.
-The full computational graph is shown in Figure~\ref{fig:arch}.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/architecture.pdf}
-  \caption{AmphionASR architecture. The audio branch (left) maps a
-    16\,kHz waveform through a Whisper-style log-mel front-end, a
-    convolutional sub-sampler, the Qwen3-AuT 24-layer Transformer
-    encoder, and a Linear--SwooshR--Linear projector to the LLM's
-    2560-dimensional hidden space. The text branch (right) tokenizes
-    the chat template and replaces four special boundary tokens with
-    learnable prompt vectors. The two streams meet at a merge step that
-    substitutes the \texttt{<speech>} placeholder with the audio
-    embedding sequence, after which Qwen3-4B-Instruct-2507 performs
-    next-token prediction on the assistant span only.}
-  \label{fig:arch}
-\end{figure}
+The full computational graph is reproduced as the teaser
+\Cref{fig:teaser} on the title page.
 
 Component-level parameter counts are summarised in
 Table~\ref{tab:params}. The total of $\approx 4.74$\,B includes the
@@ -147,7 +132,7 @@ $2560$-dimensional hidden space. Architecturally it is a two-layer MLP:
 \end{equation}
 
 with input dropout $0.1$ and the SwooshR activation function from the
-Zipformer/Icefall family \citep{yao2024zipformer}:
+Zipformer/Icefall family \cite{yao2024zipformer}:
 
 \begin{equation}
   \mathrm{SwooshR}(x) = \log(1 + e^{x-1}) - 0.08\,x - 0.313261687.
@@ -164,7 +149,7 @@ alignment, Section~\ref{sec:training}).
 \label{subsec:llm}
 
 The decoder is the Qwen3-4B-Instruct-2507 release of the Qwen3 family
-\citep{qwen2025qwen3}. Its full configuration is summarised in
+\cite{qwen2025qwen3}. Its full configuration is summarised in
 Table~\ref{tab:llm}. Two points are worth highlighting:
 
 \begin{itemize}
@@ -359,7 +344,7 @@ A few engineering decisions are worth recording for reproducibility:
   \item \textbf{Pure-PyTorch SwooshR.} The activation in
         Equation~\ref{eq:swooshr} is reimplemented in PyTorch so the
         inference graph does not depend on the
-        \texttt{k2}~\citep{yao2024zipformer} C++ runtime.
+        \texttt{k2}~\cite{yao2024zipformer} C++ runtime.
   \item \textbf{Long-form audio.} \texttt{n\_window\_infer} of 800
         lets the encoder process audio well beyond Whisper's 30\,s
         budget; \texttt{Qwen3AudioEncoderWrapper.forward} runs encoder
@@ -372,7 +357,7 @@ A few engineering decisions are worth recording for reproducibility:
         factory registers \texttt{qwen3asr}, \texttt{qwen3omni},
         \texttt{qwen3omni\_captioner}, and \texttt{zipformer}; the v3
         checkpoint uses \texttt{qwen3asr}, but the same code path
-        loads a Zipformer \citep{yao2024zipformer} encoder for
+        loads a Zipformer \cite{yao2024zipformer} encoder for
         ablation purposes.
   \item \textbf{Backward-compatible state-dict migration.}
         \texttt{\_migrate\_old\_state\_dict} silently remaps legacy
@@ -381,7 +366,7 @@ A few engineering decisions are worth recording for reproducibility:
         checkpoints can be loaded without conversion.
   \item \textbf{Serving.} The released
         \texttt{src/integrations/scripts/deploy/serve\_vllm.sh} brings
-        up vLLM \citep{kwon2023vllm} as a batched HTTP endpoint;
+        up vLLM \cite{kwon2023vllm} as a batched HTTP endpoint;
         greedy decoding is the default for production traffic.
         % TODO: confirm the exact decoding settings (beam, temperature,
         % repetition penalty, max-new-tokens) used to produce the

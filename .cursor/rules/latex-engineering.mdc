@@ -1,36 +1,48 @@
 ---
-description: LaTeX project engineering conventions for the LLM-ASR report. Applies whenever editing TeX, BibTeX, class, or style files.
+description: LaTeX project engineering conventions for the AmphionASR report. Applies whenever editing TeX, BibTeX, class, or style files.
 globs: **/*.tex,**/*.bib,**/*.cls,**/*.sty
 alwaysApply: false
 ---
 
 # LaTeX Engineering
 
-Distilled from: Overleaf "Management in a large project", thetapad.com large LaTeX projects, dmsussman.org LaTeX collaboration guide, NeurIPS / ICLR style files.
+Distilled from: X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429), Overleaf "Management in a large project", thetapad.com large LaTeX projects, dmsussman.org LaTeX collaboration guide.
 
-## File layout (already established)
+## Document class (current: xlance.cls)
 
-- `main.tex` is orchestration only: preamble, title, `\input{sections/...}`, bibliography, appendix. No prose body.
-- One section per file under `sections/`, prefixed by 2-digit order (`01_introduction.tex`, ...).
-- Figures: TikZ source under `figures/<name>.tex`, output `figures/<name>.pdf`. See `AGENTS.md` rule 1 for style preset.
-- Tables that are large or generated from scripts: separate file under `tables/`, `\input` from the relevant section.
-- All packages and custom macros live in `main.tex` preamble (or, if it grows past ~30 packages, factor into `preamble.tex`). Do not `\usepackage` inside section files.
-- Bibliography in `references.bib` only. No inline `thebibliography` and no second .bib file.
+- Document class is `\documentclass[opendfm]{xlance/xlance}`. The class lives under `xlance/` together with `IEEEtran2.bst`, `venues.bib` (X-LANCE-managed venue strings) and `assets/logos/`. Do not edit files under `xlance/` -- treat the directory as a vendored library; if you need a tweak, override it in `main.tex` preamble.
+- Theme is OpenDFM (blue-purple). To switch back to X-LANCE red, drop the `[opendfm]` option.
+- The class already loads, in this order: `geometry, microtype, placeins, hyphenat, setspace, parskip, babel, etoolbox, fontenc, tgpagella, mathpazo, inconsolata, amsmath, amssymb, mathtools, fancyhdr, graphicx, subcaption, float, booktabs, nicematrix, multirow, bm, longtable, tabularx, array, adjustbox, xspace, enumitem, tcolorbox, xcolor[table,svgnames], listings, hyperref, cleveref, natbib`. Do **not** re-`\usepackage` any of these in `main.tex` -- it triggers Option clash.
+- The class redefines `\title`, `\author[N]{...}`, `\affiliation[N]{...}`, `\contribution{...}`, `\abstract{...}`, `\metadatainfo{...}`, `\publishdate`, `\revisedate`, `\maketitle`. `\equalcontribution{Name}` and `\correspondence{email}{Name}` are protected commands meant to be wrapped around an `\author{}` argument.
+- `\abstract{...}` is a **command, not an environment**. The body lives in `sections/00_abstract.tex` as plain prose; `main.tex` consumes it via `\abstract{\input{sections/00_abstract}}` in the preamble.
+- The first page header logos are suppressed in `main.tex` by overriding `\fancypagestyle{firstpage}` (after the class is loaded). Do not undo this unless the team formally adopts X-LANCE / OpenDFM branding.
+- The first page after `\maketitle` is reserved for a teaser figure (currently `figures/architecture.pdf` rendered as `\Cref{fig:teaser}`) followed by `\tableofcontents`. Keep section-level architecture references via `\Cref{fig:teaser}` rather than re-embedding the figure inside `sections/04_model.tex`.
+
+## File layout
+
+- `main.tex` is orchestration only: documentclass, preamble overrides, title/author/abstract, `\input{sections/...}`, bibliography, appendix. No prose body in `main.tex`.
+- `sections/XX_name.tex` -- one section per file, prefixed by 2-digit order.
+- `figures/<name>.tex` -- TikZ source. Build with `latexmk -pdf` from project root; the resulting `figures/<name>.pdf` is checked in.
+- `references.bib` -- our own bibliography. Combined with `xlance/venues.bib` at compile time via `\bibliography{xlance/venues,references}`.
+- `xlance/` -- vendored template, treat as read-only.
+- Tables that exceed ~30 rows or are script-generated: separate file under `tables/`, `\input` from the relevant section.
 
 ## When editing sections
 
-- Prefer `\input{sections/XX_name}` over `\include{}` for sections (we want them on the same page flow).
+- Prefer `\input{sections/XX_name}` over `\include{}`.
 - Use `\includeonly{sections/05_training}` in `main.tex` only as a temporary local edit when iterating fast on one section. Remove before commit.
-- Cross-reference: always use `\label{type:name}` with one of these prefixes — `sec:`, `subsec:`, `fig:`, `tab:`, `eq:`, `app:`, `alg:`. Reference with `\cref` (cleveref) so the reference type word ("Section", "Figure") stays consistent.
-- Math: define recurring symbols once in the preamble with `\newcommand`, do not redefine in sections. Examples: `\newcommand{\wer}{\mathrm{WER}}`, `\newcommand{\R}{\mathbb{R}}`.
+- Cross-reference: always use `\label{type:name}` with one of these prefixes -- `sec:`, `subsec:`, `fig:`, `tab:`, `eq:`, `app:`, `alg:`. Reference with `\Cref` (cleveref capitalised; produces "Section 4" / "Figure 1" automatically).
+- Math: define recurring symbols once in `main.tex` preamble with `\newcommand`. Examples already defined: `\wer`, `\cer`, `\mer`, `\hotwerN`. Do not redefine in sections.
+- Code listings: use one of the four styles shipped by xlance.cls -- `python`, `json`, `bash`, `plain`. The `plain` style is the project's default for prompt examples. For colored prompt boxes use the `promptbox` tcolorbox environment from xlance.cls; for note callouts use `notebox`.
 
-## Bibliography rules
+## Bibliography rules (IEEE numeric)
 
-- BibTeX key format: `<lastname><year><firstcontentword>`, e.g. `gulati2020conformer`, `radford2023whisper`. Lowercase, no punctuation. Existing keys must not be renamed (cross-section refs would break silently).
-- Every new cite must include: author (full names with `and`), year, title, booktitle / journal, volume / number / pages where applicable. Prefer the published-venue entry over the arXiv preprint when both exist; if both, keep one (published) and omit the other.
-- Use `\citep{}` inside parentheses-friendly prose ("recent work \citep{radford2023whisper}"). Use `\citet{}` when the author is the grammatical subject ("\citet{gulati2020conformer} introduced …").
-- Multiple cites: `\citep{a, b, c}` not `\citep{a}\citep{b}`.
-- If a cite is added, run a build right away to make sure `bibtex` resolves it.
+- Citation format is IEEE numeric `[1]` via `natbib + xlance/IEEEtran2.bst` with `\setcitestyle{numbers}`.
+- Use `\cite{key}` for all citations (parenthetical and inline). The numeric back-end ignores the `\citep / \citet` distinction. Multi-cites: `\cite{a, b, c}` not `\cite{a}\cite{b}`.
+- BibTeX key format: `<lastname><year><firstcontentword>`, lowercase, no punctuation. Example: `gulati2020conformer`, `radford2023whisper`. Existing keys must not be renamed (cross-section refs would break silently).
+- Every new cite must include: author (full names with `and`), year, title, booktitle / journal, volume / number / pages where applicable. Prefer the published-venue entry over arXiv when both exist; if both are needed, keep the published one and omit the other.
+- The `xlance/venues.bib` file is X-LANCE-managed conference / journal name strings. We do not add custom keys there; put new entries in `references.bib` and rely on `xlance/venues.bib` only when its `@string` macros help canonicalise venue names.
+- After adding a cite, run a build right away to make sure `bibtex` resolves it.
 
 ## Numbers, units, and typography
 
@@ -38,18 +50,21 @@ Distilled from: Overleaf "Management in a large project", thetapad.com large LaT
 - Numbers and units always glued with a thin space: `960\,h`, `16\,kHz`, `7\,B`, `5e-7` is fine in tables.
 - Percent sign: `5\%` (escape the `%`).
 - Em-dash for parenthetical breaks: `---` (LaTeX renders as one character). Do not use a hyphen.
-- Quotes: use `` ` `` and `'` for single, ``\`\` `` and `''` for double. Never `"..."`.
-- Algorithm-style code or prompts: use the `lstlisting` environment with the `prompt` style already defined in `main.tex` preamble. Do not `\verb|...|` for multi-line code.
+- Quotes: ``  `single' `` and `` ``double'' ``. Never `"..."`.
+- Algorithm-style code or prompts: use `lstlisting` with `style=plain` (or `python` / `json` / `bash` for typed code). Do not `\verb|...|` for multi-line content.
+- Convenience commands shipped by xlance.cls: `\eg`, `\ie`. Use them for "e.g." and "i.e." where appropriate (renders italic with the trailing comma + thin space already attached).
 
 ## Compile workflow
 
 - Default: `PATH=/Library/TeX/texbin:$PATH latexmk -pdf -interaction=nonstopmode main.tex`
-- After every substantive content edit, run latexmk and confirm exit code 0 before reporting completion. (Vibe Paper rule.)
-- If a fresh package is needed: `sudo tlmgr install <pkg>`. Add a one-line note in `README.md` "Required tlmgr packages" so a fresh checkout can reproduce.
+- After every substantive content edit, run `latexmk` and confirm exit code 0 before reporting completion.
+- If a fresh package is needed: `sudo tlmgr install <pkg>`. Update the "Required tlmgr packages" note in `README.md` so a fresh checkout reproduces.
 - Do not commit `main.pdf` (`.gitignore` already enforces). Do commit `figures/*.pdf` for reproducibility.
 
 ## What never to do
 
-- Do not silently change the document class, geometry, or font size; these affect reviewer page count.
-- Do not introduce a package whose macros conflict with `arxiv.sty`'s redefinitions of `\section`, `\maketitle`, `\abstract`. If unsure, build first and inspect the log.
-- Do not use Unicode characters in source where a LaTeX command exists (use `\alpha` not `α`, `\textendash` not `–`).
+- Do not silently change the document class, theme option (`opendfm` / default), or geometry; these affect reviewer page count and headers.
+- Do not re-`\usepackage` anything that xlance.cls already loads (see the list above) -- it produces an `Option clash` error.
+- Do not introduce a package whose macros conflict with xlance.cls's redefinitions of `\section`, `\maketitle`, `\abstract`, `\title`, `\author`, `\affiliation`. If unsure, build first and inspect the log.
+- Do not use Unicode characters in source where a LaTeX command exists (use `\alpha` not `α`, `\textendash` not `--` if you specifically want an en-dash).
+- Do not edit files inside `xlance/`. Override behaviour in `main.tex` preamble (e.g. our `\fancypagestyle{firstpage}` redefinition for logo suppression).

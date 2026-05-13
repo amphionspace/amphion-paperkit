@@ -1,66 +1,28 @@
-\documentclass{article}
+% =============================================================================
+% AmphionASR Technical Report
+% Built on the X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429).
+% Theme: OpenDFM (blue-purple). Logos disabled (see below).
+% =============================================================================
 
-\usepackage{arxiv}
+\documentclass[opendfm]{xlance/xlance}
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{hyperref}
-\usepackage{url}
-\usepackage{booktabs}
-\usepackage{multirow}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsfonts}
-\usepackage{nicefrac}
-\usepackage{microtype}
-\usepackage{cleveref}
-\usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{xcolor}
-\usepackage{natbib}
-\usepackage{doi}
-\usepackage{listings}
-
-% --------- Listings style for prompts / code ---------
-\definecolor{codebg}{HTML}{F7F7F7}
-\definecolor{codekw}{HTML}{0B6FA4}
-\definecolor{codestr}{HTML}{B8860B}
-\definecolor{codecomm}{HTML}{6A737D}
-\lstdefinestyle{prompt}{
-  basicstyle=\ttfamily\footnotesize,
-  backgroundcolor=\color{codebg},
-  frame=single,
-  rulecolor=\color{black!20},
-  framesep=4pt,
-  breaklines=true,
-  breakatwhitespace=true,
-  showstringspaces=false,
-  columns=fullflexible,
-  keepspaces=true,
-  keywordstyle=\color{codekw}\bfseries,
-  stringstyle=\color{codestr},
-  commentstyle=\color{codecomm}\itshape
+% --- Logos disabled: redefine firstpage style to suppress the default
+%     X-LANCE / SII / SZLab / OpenDFM header logos. Foot still shows page no.
+\usepackage{fancyhdr}
+\fancypagestyle{firstpage}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
 }
-\lstset{style=prompt}
 
-% --------- Recurring macros ---------
+% --- Recurring math macros (per .cursor/rules/latex-engineering.mdc) ---
 \newcommand{\wer}{\mathrm{WER}}
 \newcommand{\cer}{\mathrm{CER}}
 \newcommand{\mer}{\mathrm{MER}}
 \newcommand{\hotwerN}[1]{\wer^{\text{hot}}_{#1}}
 
-% --------- Title / metadata ---------
-\title{AmphionASR: A 4.7\,B SpeechLLM with Hotword Conditioning \\
-       and Target-Speaker Capability}
-
-% \date{} % uncomment to remove date
-
-\author{Amphion ASR Team\thanks{Correspondence: \texttt{TODO@example.com}}}
-
-\renewcommand{\headeright}{Technical Report}
-\renewcommand{\undertitle}{Technical Report}
-\renewcommand{\shorttitle}{AmphionASR Technical Report}
-
+% --- PDF metadata. Most hypersetup colors are owned by xlance.cls;
+%     we only override the metadata fields here. ---
 \hypersetup{
   pdftitle={AmphionASR: A 4.7B SpeechLLM with Hotword Conditioning and Target-Speaker Capability},
   pdfsubject={cs.CL, cs.SD, eess.AS},
@@ -70,15 +32,51 @@
                Mandarin-English ASR, Multimodal Boundary Prompt},
 }
 
+% --- Title, author, affiliation, abstract -----------------------------------
+\title{AmphionASR: A 4.7\,B SpeechLLM with Hotword Conditioning and Target-Speaker Capability}
+
+\author{Amphion ASR Team}
+
+% Abstract is supplied by sections/00_abstract.tex as plain prose
+% (no \begin{abstract} ... \end{abstract} environment under xlance.cls).
+\abstract{\input{sections/00_abstract}}
+
+% Optional: project metadata line under the abstract.
+\metadatainfo{
+  \small\makebox[\linewidth][c]{
+    \href{https://github.com/amphionspace/AmphionASR}{\texttt{GitHub: amphionspace/AmphionASR}}
+    % TODO: verify the public URL (currently 404 on github.com).
+  }
+}
+
+% =============================================================================
 \begin{document}
+\publishdate{2026.05.13}
 \maketitle
 
-\input{sections/00_abstract}
+% --- Teaser: model architecture diagram + ToC -------------------------------
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/architecture.pdf}
+  \caption{AmphionASR architecture. The audio branch (left) maps a
+    16\,kHz waveform through a Whisper-style log-mel front-end, a
+    convolutional sub-sampler, the Qwen3-AuT 24-layer Transformer
+    encoder, and a Linear--SwooshR--Linear projector to the LLM's
+    2560-dimensional hidden space. The text branch (right) tokenizes
+    the chat template and replaces four special boundary tokens with
+    learnable prompt vectors. The two streams meet at a merge step that
+    substitutes the \texttt{<speech>} placeholder with the audio
+    embedding sequence, after which Qwen3-4B-Instruct-2507 performs
+    next-token prediction on the assistant span only. See
+    Section~\ref{sec:model} for component-level details.}
+  \label{fig:teaser}
+\end{figure}
 
-\keywords{Speech Recognition \and Large Language Models \and Audio LLM
-          \and Hotword Biasing \and Target Speaker ASR \and Code-switching
-          \and Mandarin--English}
+\clearpage
+\tableofcontents
+\clearpage
 
+% --- Body sections ----------------------------------------------------------
 \input{sections/01_introduction}
 \input{sections/02_related_work}
 \input{sections/03_data}
@@ -92,8 +90,10 @@
 \input{sections/11_limitations_ethics}
 \input{sections/12_conclusion}
 
-\bibliographystyle{unsrtnat}
-\bibliography{references}
+% --- Bibliography (xlance/IEEEtran2 + venues.bib + our references.bib) ------
+\bibliographystyle{xlance/IEEEtran2}
+\setcitestyle{numbers}
+\bibliography{xlance/venues,references}
 
 \appendix
 \input{sections/A_appendix}

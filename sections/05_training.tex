@@ -22,7 +22,7 @@ of the model and adds more demanding tasks:
         Projector, boundary prompts and the LLM are jointly fine-tuned
         on a balanced mixture of Mandarin and English transcription.
         The audio encoder remains frozen. We use ms-swift
-        \citep{msswift} for distributed SFT.
+        \cite{msswift} for distributed SFT.
   \item \textbf{Stage~3 -- Capability SFT
         (\texttt{ts\_hw\_v3}).} On top of the Stage~2 checkpoint, we
         continue SFT with hotword and target-speaker examples mixed into
@@ -94,5 +94,5 @@ Training was performed on the internal HPC cluster.
 % TODO: report GPU type and count, parallelism strategy
 % (FSDP / DeepSpeed-Zero), and total wall-clock training time for the
 % v3 checkpoint.
-We use ms-swift \citep{msswift} as the training framework and vLLM
-\citep{kwon2023vllm} for inference and evaluation throughput.
+We use ms-swift \cite{msswift} as the training framework and vLLM
+\cite{kwon2023vllm} for inference and evaluation throughput.

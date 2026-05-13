@@ -12,7 +12,7 @@ through the released vLLM server (\texttt{serve\_vllm.sh}).
 
 \paragraph{Normalization.}
 For English benchmarks we apply the Whisper English text normalizer
-\citep{radford2023whisper} to both reference and hypothesis before
+\cite{radford2023whisper} to both reference and hypothesis before
 computing WER. For Mandarin we apply a stripped-down normalizer that
 removes punctuation, normalises full-width / half-width characters and
 maps Arabic numerals to their Mandarin equivalents before CER.
@@ -20,8 +20,8 @@ For TALCS we apply the union of the two normalizers and report MER.
 % TODO: link to the exact normalizer scripts in the released repo.
 
 \paragraph{Baselines.}
-We compare against Whisper-large-v3 \citep{radford2023whisper}, the
-open-source Qwen3-ASR-1.7B \citep{qwen2025qwen3asr}, and any prior
+We compare against Whisper-large-v3 \cite{radford2023whisper}, the
+open-source Qwen3-ASR-1.7B \cite{qwen2025qwen3asr}, and any prior
 in-house checkpoint where available.
 % TODO: confirm baseline numbers come from "we re-ran" or
 % "as reported in [cite]"; populate the Whisper / Qwen3-ASR-1.7B columns
@@ -83,7 +83,7 @@ Section~\ref{sec:training}.
 
 \begin{table}[t]
   \caption{Mandarin--English code-switching ASR. MER (\%) on the
-    TALCS test set \citep{li2022talcs}.}
+    TALCS test set \cite{li2022talcs}.}
   \label{tab:asr_cs}
   \centering
   \small
