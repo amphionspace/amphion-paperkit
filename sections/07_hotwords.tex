@@ -3,17 +3,32 @@
 
 \subsection{Setup}
 
-We construct CommonVoice 17 hotword test sets by sampling, for each
-utterance in the standard CV17 test split, $k$ ``hotword'' terms drawn
-from the union of (i)~rare named entities present in the reference
-transcript and (ii)~distractor terms drawn from the global rare-word
-distribution that are \emph{not} present in the transcript. We sweep
-$k \in \{0, 5, 10, 15, 20\}$ and report CER for Mandarin and WER for
-English. The $k=0$ row is identical to the corresponding row of
-Tables~\ref{tab:asr_zh} and \ref{tab:asr_en} and serves as the
-no-hotword reference.
-% TODO: confirm the exact distractor-to-positive ratio used to build the
-% test sets, and whether the same ratio is used during Stage~3 training.
+The CommonVoice 17 hotword test splits
+(\texttt{commonvoice\_zh\_hotwords}, \texttt{commonvoice\_en\_hotwords})
+ship with a per-utterance ground-truth list
+\texttt{custom.hotwords} (offline-mined rare entities), filtered by
+the QA flag \texttt{custom.clean.pass}. For a target prompt size $k$,
+the eval client (\verb|eval_vllm.sh -w |$k$) pads each utterance's
+list to $k$ entries by mixing the ground-truth hotwords with random
+distractors drawn from the same dataset's hotword pool -- no online
+hard negatives are added at evaluation time, in contrast to training
+(Section~\ref{subsec:hotword-pool}). The $k=0$ row drops the
+\verb|Hotwords:| line entirely (the Train-style prompt instead
+renders \verb|Hotwords:N/A|, mirroring the training-time fallback)
+and is identical to the corresponding row of
+Tables~\ref{tab:asr_zh}--\ref{tab:asr_en}. We report CER for Mandarin
+and WER for English.
+
+Training-time hotword exposure for the v3 checkpoint follows
+Section~\ref{subsec:hotword-pool}: each sample's prompt is built from
+\textbf{real terms} (each ground-truth term independently dropped at
+$\texttt{miss\_prob}=0.05$), \textbf{up to 10 hard negatives} from a
+char-overlap + bigram-Jaccard + pinyin-syllable retriever, and the
+\textbf{remainder of $n_\text{distractor}\!\in\![1, 20]$ slots} from
+the global pool, with the entire \verb|Hotwords:| line itself kept at
+$\texttt{prompt\_hotword\_prob}=0.8$. Training and evaluation sweeps
+therefore cover the same prompt-length regime, but evaluation is
+strictly easier (no hard-negative pressure).
 
 \subsection{Results}
 
@@ -49,13 +64,15 @@ otherwise-well-trained ASR model, and that an LLM is well placed to
 \paragraph{Diminishing -- and slightly inverted -- returns past five.}
 Going from five to twenty hotwords has a small but consistent negative
 effect (roughly $+0.08$ CER on Mandarin, $+0.20$ WER on English).
-% TODO: verify that this monotone pattern persists when we control for
-% the number of true-positive terms in the list -- the current sweep
-% mixes positives and distractors and the distractor count grows with
-% k.
-We attribute this in part to false-positive triggering on distractors;
-Section~\ref{sec:analysis} returns to this with a per-utterance
+Because the eval client pads with \emph{random} distractors rather
+than the hard negatives used during Stage~3 training, the residual
+distractor pressure is mild but not absent; we attribute the slow
+upturn to false-positive triggering on plausible-looking padding
+terms. Section~\ref{sec:analysis} returns to this with a per-utterance
 breakdown of insertion versus substitution errors.
+% TODO: re-run the sweep with hard-negative padding to bound the
+% adversarial worst case; current numbers reflect only random
+% distractors.
 
 \paragraph{Implication for deployment.}
 For latency- and quality-sensitive deployments, supplying around five

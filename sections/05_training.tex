@@ -5,8 +5,8 @@
 
 The released checkpoint
 \texttt{qwen3asr\_aut\_qwen3\_4b\_continue\_sft\_ts\_hw\_v3} is the v3
-output of a three-stage recipe. Each stage progressively unlocks more
-of the model and adds more demanding tasks:
+output of a three-stage SFT recipe. Each stage progressively unlocks
+more of the model and adds more demanding tasks:
 
 \begin{enumerate}
   \item \textbf{Stage~1 -- Audio--Text Alignment (\texttt{aut}).}
@@ -21,78 +21,163 @@ of the model and adds more demanding tasks:
   \item \textbf{Stage~2 -- Continue SFT (\texttt{continue\_sft}).}
         Projector, boundary prompts and the LLM are jointly fine-tuned
         on a balanced mixture of Mandarin and English transcription.
-        The audio encoder remains frozen. We use ms-swift
+        The audio encoder remains frozen
+        (\texttt{--freeze\_vit true}).
+        The LLM is updated through a LoRA adapter
+        (\texttt{--tuner\_type lora}, rank $64$, $\alpha=128$, target
+        modules \texttt{all-linear}); the released checkpoint merges
+        the adapter back into the base weights via
+        \texttt{convert\_amphion\_to\_hf.py} (default
+        \texttt{merge-lora}), which is why the safetensors dump
+        contains no LoRA tensors. We use ms-swift
         \cite{msswift} for distributed SFT.
   \item \textbf{Stage~3 -- Capability SFT
         (\texttt{ts\_hw\_v3}).} On top of the Stage~2 checkpoint, we
-        continue SFT with hotword and target-speaker examples mixed into
-        the transcription stream. The mixing ratio is the main knob in
-        this stage. Hotword examples use the \texttt{asr\_hotwords}
-        prompt template (Table~\ref{tab:tasks}); target-speaker
-        examples follow the \texttt{feat/target\_speaker} branch's
-        extended prompt format.
-        % TODO: report the exact mixture (\% hotword, \% TS, \% plain)
-        % used in v3, plus the data sources for each, and confirm the
-        % target-speaker prompt template.
+        continue SFT on the full multi-task mixture
+        (Section~\ref{sec:data}): Mandarin / English / multilingual
+        ASR, hotword-conditioned ASR (with the online distractor +
+        hard-negative pool of Section~\ref{subsec:hotword-pool}),
+        target-speaker ASR (Section~\ref{subsec:tsasr-synth}),
+        anti-hallucination negatives, SER, SEC and ESC. Hyper-parameters
+        are inherited from Stage~2 unless noted.
 \end{enumerate}
 
 The version suffix \texttt{v3} indicates the third released iteration
-of Stage~3; v1 and v2 are described in Section~\ref{sec:analysis} where
-relevant for ablation discussions.
-% TODO: keep this only if v1/v2 numbers appear in the analysis section,
-% otherwise drop the sentence.
+of Stage~3; v1 and v2 are referred to in
+Section~\ref{sec:analysis} only when relevant for ablation discussions.
+% TODO: drop the v1/v2 sentence if no v1/v2 numbers are eventually reported.
 
 \subsection{Objective}
 
-For all three stages we use token-level cross-entropy on the transcript
+For all three stages we use token-level cross-entropy on the assistant
 tokens, with loss masked over the prompt tokens (system instructions,
-hotword list, target-speaker reference, audio token positions). For an
-input prompt $\mathbf{p}$ and reference transcript
-$\mathbf{y} = (y_1, \ldots, y_T)$, the per-example loss is
+task header, language line, hotword line, audio embedding positions
+and the enrollment audio block). Audio positions carry the special
+\texttt{IGNORE\_TOKEN\_ID = -100}. Anti-hallucination negatives use an
+empty assistant string, so the model learns to terminate immediately
+after the assistant header. For an input prompt $\mathbf{p}$ and
+reference transcript $\mathbf{y} = (y_1, \ldots, y_T)$,
 
-\[
+\begin{equation}
   \mathcal{L}(\theta) = -\sum_{t=1}^{T} \log p_\theta(y_t \mid y_{<t}, \mathbf{p}).
-\]
+  \label{eq:sft-loss}
+\end{equation}
 
-% TODO: if any auxiliary objective is used in Stage~1 (e.g. CTC head on
-% the adapter output), document it here.
+No auxiliary objective (CTC head, contrastive loss) is used; the
+projector is trained purely through the LLM gradient.
 
-\subsection{Optimization}
+\subsection{Optimisation}
 
-Table~\ref{tab:hparams} summarises the per-stage hyperparameters; values
-marked \texttt{?} are pending verification against the released training
-configs.
-% TODO: fill in the ? entries from the
-% AmphionASR/exp/qwen3asr_aut_qwen3_4b_continue_sft_ts_hw_v3 config.
+Table~\ref{tab:hparams} summarises the per-stage hyperparameters
+extracted from \path{src/integrations/scripts/train/sft_swift.sh};
+entries marked \texttt{?} are still pending the published training
+log.
 
 \begin{table}[t]
-  \caption{Training hyperparameters per stage.}
+  \caption{Per-stage SFT hyperparameters
+    (\texttt{src/integrations/scripts/train/sft\_swift.sh}). Effective
+    global batch size at Stage~2/3 is
+    $16 \times 4 \times 4 = 256$ samples per step.}
   \label{tab:hparams}
   \centering
   \small
   \begin{tabular}{lccc}
     \toprule
-    & Stage 1 (aut) & Stage 2 (continue SFT) & Stage 3 (TS+HW) \\
+    & Stage 1 (aut) & Stage 2 (continue SFT) & Stage 3 (TS+HW v3) \\
     \midrule
-    Trainable params    & projector + boundary & projector + boundary + LLM & projector + boundary + LLM \\
-    Audio encoder       & frozen       & frozen             & frozen \\
-    Peak learning rate  & ?            & ?                  & ? \\
-    LR schedule         & cosine       & cosine             & cosine \\
-    Warmup              & ?            & ?                  & ? \\
-    Batch (audio hr)    & ?            & ?                  & ? \\
-    Sequence length     & ?            & ?                  & ? \\
-    Total update steps  & ?            & ?                  & ? \\
-    Optimizer           & AdamW        & AdamW              & AdamW \\
-    Precision           & bf16         & bf16               & bf16 \\
+    Trainable params       & projector + boundary & + LoRA(LLM)        & + LoRA(LLM) \\
+    Audio encoder          & frozen               & frozen             & frozen \\
+    LoRA rank / $\alpha$   & --                   & $64$ / $128$       & $64$ / $128$ \\
+    LoRA target            & --                   & all-linear         & all-linear \\
+    Peak learning rate     & ?                    & $1\!\times\!10^{-5}$ & $1\!\times\!10^{-5}$ \\
+    LR schedule            & cosine               & cosine             & cosine \\
+    Warmup ratio           & ?                    & $0.05$             & $0.05$ \\
+    Per-device batch       & ?                    & $16$               & $16$ \\
+    Grad-accum             & ?                    & $4$                & $4$ \\
+    Max text length        & --                   & $2048$             & $2048$ \\
+    Epochs                 & ?                    & $4$--$6$           & $4$--$6$ \\
+    Optimiser              & AdamW                & AdamW              & AdamW \\
+    Precision              & bf16                 & bf16               & bf16 \\
+    Grad-checkpointing     & true                 & true               & true \\
+    Parallelism            & DeepSpeed ZeRO-2     & DeepSpeed ZeRO-2   & DeepSpeed ZeRO-2 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
+\paragraph{Why ZeRO-2 only.}
+DeepSpeed ZeRO-3 hangs in our setup when sharding the audio encoder
+together with the LLM (the encoder participates in the forward graph
+but never produces gradients on its own parameters), so we keep the
+encoder unsharded under ZeRO-2 throughout. The projector and the
+$4\!\times\!2560$ boundary prompt embedding are tiny enough that
+ZeRO-2 sharding of them is not a bottleneck.
+
 \subsection{Infrastructure}
 
-Training was performed on the internal HPC cluster.
-% TODO: report GPU type and count, parallelism strategy
-% (FSDP / DeepSpeed-Zero), and total wall-clock training time for the
-% v3 checkpoint.
-We use ms-swift \cite{msswift} as the training framework and vLLM
-\cite{kwon2023vllm} for inference and evaluation throughput.
+Training is run on the internal H800 cluster.
+% TODO: confirm GPU count (default config implies $\geq 4$ GPUs from the
+% effective batch size 16 \times 4 \times N_\text{gpu}; record the actual
+% N_\text{gpu} and total wall-clock time for the v3 checkpoint).
+The training framework is ms-swift~\cite{msswift}; inference and
+evaluation throughput rely on vLLM~\cite{kwon2023vllm} as a batched
+HTTP service (Section~\ref{subsec:inference}).
+
+\subsection{Reinforcement Learning Stage (Optional)}
+\label{subsec:grpo}
+
+The integration code ships with a Group Relative Policy Optimisation
+(GRPO) recipe in
+\texttt{src/integrations/scripts/train/grpo\_swift.sh} that can be
+applied as a fourth stage on top of any SFT checkpoint. We sketch the
+recipe here for completeness, even though the v3 checkpoint reported
+in this paper is SFT-only
+% TODO: confirm whether v3 already includes a GRPO pass, or whether
+% GRPO will only appear in v4. Move this subsection accordingly.
+.
+
+GRPO uses three rule-based, verifiable rewards directly on the bare
+assistant text -- no LLM judge is required:
+
+\begin{equation}
+  R = w_\text{acc}\cdot R_\text{acc}
+    + w_\text{hw} \cdot R_\text{hw}
+    + w_\text{fmt}\cdot R_\text{fmt},
+  \qquad (w_\text{acc}, w_\text{hw}, w_\text{fmt}) = (1.0, 0.3, 0.1),
+  \label{eq:grpo-reward}
+\end{equation}
+
+with the three components defined as follows:
+
+\begin{itemize}
+  \item \textbf{Accuracy.}
+        $R_\text{acc}(\hat y, y) = \max(0, 1 - \cer(\hat y, y))$ when
+        the reference $y$ is non-empty, otherwise
+        $R_\text{acc} = \mathbf{1}[\hat y \!=\! \varnothing]$. The
+        empty-reference branch handles anti-hallucination negatives:
+        the model is rewarded only if it stays silent.
+  \item \textbf{Hotword.}
+        For a candidate set $C$ extracted from the prompt's
+        \verb|Hotwords:| line, $R_\text{hw} = |C|^{-1}\sum_{c\in C}
+        \mathbf{1}[\mathbf{1}[c\in\hat y]\!=\!\mathbf{1}[c\in y]]$.
+        When the prompt has no \verb|Hotwords:| line we return a
+        neutral $R_\text{hw}=1$ so that ordinary ASR samples are not
+        penalised for ``missing'' hotword signal.
+  \item \textbf{Format.} A silence-aware structural check that returns
+        $0$ when (i) $y$ is non-empty but $\hat y$ is blank,
+        (ii) $y$ is empty but $\hat y$ is non-blank, or (iii) $\hat y$
+        re-emits one of the prompt scaffolding tokens
+        \verb|Language:| / \verb|Hotwords:| / \verb|Transcription:|
+        (preventing prompt copy-back loops). Any other output returns
+        $1$.
+\end{itemize}
+
+A representative configuration draws $16$ generations per prompt at
+temperature $0.6$ (\texttt{top\_k}\,=\,$50$), with peak learning rate
+$1\!\times\!10^{-6}$ for one epoch, per-device prompt batch of $8$
+and grad-accumulation $2$. An optional rollout server
+(\texttt{run\_rollout\_server.sh}, vLLM in \texttt{enforce\_eager}
+mode on port 8006) decouples sampling from gradient updates. The same
+unified prompt template (Section~\ref{subsec:tokens}) makes both
+$R_\text{acc}$ and $R_\text{hw}$ recoverable from the prompt and
+ground-truth alone, so \emph{no LLM judge} is needed -- a deliberate
+design choice that keeps RL inexpensive and audit-friendly.

@@ -254,45 +254,70 @@ embedding sequence.
   \end{tabular}
 \end{table}
 
-The processor (\texttt{processing\_amphion\_asr.py}) ships with the
-task-prompt dictionary in Table~\ref{tab:tasks}; the released
-checkpoint thus supports plain ASR (with explicit Mandarin and English
-variants), hotword-conditioned ASR, and two emotion tasks. The
-hotword variant simply prepends a \verb|Hotwords:{...}| line before the
-standard ASR instruction; no special token marks the hotword list.
+AmphionASR exposes the same model under two prompt conventions
+(Table~\ref{tab:tasks}): the \emph{Swift} convention used by the
+ms-swift training pipeline (and shared by every released SFT and
+GRPO recipe in this report) and the \emph{Train} convention bundled
+with the icefall-style \texttt{src/train.py}. The two differ only in
+line ordering, the colon-vs-period at the end of the main instruction,
+the spacing around the \verb|Hotwords:| value, and whether the
+\verb|Language:| line is rendered. The vLLM client must be invoked
+with the matching style (\verb|-s swift| or \verb|-s train|) -- a
+mismatch causes the model to either repeat hotwords verbatim or skip
+the language hint, with measurable WER damage. The released
+preprocessor (\texttt{processing\_amphion\_asr.py}) implements a
+sixth Train-style task family for environmental sound captioning
+(\texttt{esc}) on top of the five published in
+\texttt{refs/docs/model\_arch.md}.
 
 \begin{table}[t]
-  \caption{Task prompt templates (\texttt{TASK\_PROMPTS}). \texttt{\{speech\}}
-    expands to \texttt{<start\_speech><speech><end\_speech>}.}
+  \caption{Task prompt templates. \texttt{\{speech\}} expands to
+    \texttt{<start\_speech><speech><end\_speech>} via the chat
+    template; \texttt{\{enroll\}} similarly to a one-segment
+    enrollment utterance. The Swift column is the convention adopted
+    in this report.}
   \label{tab:tasks}
   \centering
-  \small
-  \begin{tabular}{ll}
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lp{6.0cm}p{5.4cm}}
     \toprule
-    Task key            & Template \\
+    Task & Swift convention & Train convention (icefall ckpt) \\
     \midrule
-    \texttt{asr}            & \texttt{Transcribe the following audio:\{speech\}} \\
-    \texttt{asr\_en}        & \texttt{Transcribe the following English audio:\{speech\}} \\
-    \texttt{asr\_zh}        & \texttt{Transcribe the following Chinese audio:\{speech\}} \\
-    \texttt{asr\_hotwords}  & \texttt{Hotwords:\{hotwords\}\textbackslash nTranscribe the following audio:\{speech\}} \\
-    \texttt{ser}            & \texttt{Classify the emotion of the following audio:\{speech\}} \\
-    \texttt{sec}            & \texttt{Describe the emotion of the following audio:\{speech\}} \\
+    \texttt{asr}            & \texttt{Transcribe the following audio.\{speech\}}                  & \texttt{Transcribe the following audio:\{speech\}} \\
+    \texttt{asr\_en}        & \texttt{Transcribe ... .\textbackslash nLanguage: English\{speech\}} & \texttt{Transcribe the following English audio:\{speech\}} \\
+    \texttt{asr\_zh}        & \texttt{Transcribe ... .\textbackslash nLanguage: Chinese\{speech\}} & \texttt{Transcribe the following Chinese audio:\{speech\}} \\
+    \texttt{asr\_hotwords}  & \texttt{Transcribe ... .\textbackslash n[Language: ...]\textbackslash nHotwords:\,hw1,hw2\{speech\}} & \texttt{Hotwords:hw1,hw2\textbackslash nTranscribe the following audio:\{speech\}} \\
+    \texttt{ts\_asr}        & \texttt{Given the speaker's voice:\{enroll\}\textbackslash nTranscribe what this speaker says in the following audio.[\textbackslash nLanguage: ...][\textbackslash nHotwords: ...]\{speech\}} & \texttt{Given the speaker's voice:\{enroll\}\textbackslash nTranscribe what this speaker says in the following audio:\{speech\}} \\
+    \texttt{ser}            & \texttt{Classify the emotion of the following audio.\{speech\}}     & \texttt{Classify the emotion of the following audio:\{speech\}} \\
+    \texttt{sec}            & \texttt{Describe the emotion of the following audio.\{speech\}}     & \texttt{Describe the emotion of the following audio:\{speech\}} \\
+    \texttt{esc}            & \texttt{Describe the background acoustic scene only and ignore spoken content.\{speech\}} & \texttt{Describe the background acoustic scene only and ignore spoken content:\{speech\}} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \paragraph{Target-speaker conditioning.}
-The task-prompt dictionary above is the configuration of the
-\texttt{main} branch reflected in
-\texttt{refs/docs/model\_arch.md}; the v3 checkpoint described in this
-report is trained on the \texttt{feat/target\_speaker} branch and
-supports the target-speaker capability evaluated in
-Section~\ref{sec:tsasr}.
-% TODO: confirm the exact prompt template used for target-speaker
-% inference (likely an additional <start_speech><speech><end_speech>
-% reference utterance prepended to the main audio segment, perhaps with
-% a dedicated task key such as ``asr_target_speaker''). Update
-% Table~\ref{tab:tasks} once verified.
+TS-ASR is implemented entirely in the prompt and the chat template:
+the enrollment utterance is supplied as a separate
+\verb|{"type": "audio"}| OpenAI multi-modal content item, which the
+chat template renders as a \verb|<start_speech><speech><end_speech>|
+triplet, and the main instruction switches from ``Transcribe the
+following audio.'' to ``Transcribe what this speaker says in the
+following audio.''. The model itself is unchanged -- both audio
+segments share the audio encoder + projector path and reach the LLM as
+two ordered audio embedding spans (enrollment first, mixed audio
+second). Anti-hallucination negative samples
+(Section~\ref{subsec:tsasr-synth}) inherit the same template and use an
+empty assistant response.
+
+\paragraph{Hotword conditioning.}
+Hotwords are inserted into the prompt as a single comma-separated line.
+At training time the line is included with probability $0.8$; at
+evaluation time the eval client pads each utterance to a target $K$
+hotwords by mixing the ground-truth list with random distractors drawn
+from the dataset's own hotword pool (Section~\ref{subsec:hotword-pool}).
+No special token marks the hotword list, so the LLM must learn the
+\verb|Hotwords:| literal as part of the prompt grammar.
 
 \subsection{Forward Pass and Merge}
 \label{subsec:merge}

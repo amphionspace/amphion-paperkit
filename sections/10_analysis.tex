@@ -55,9 +55,12 @@ effect catches up.
 
 The gap between $14.29$\% MER on the internal target-speaker test and
 $65.83$\% WER on Libri2Mix is the most important open issue in this
-release; the four candidate hypotheses listed in
-Section~\ref{sec:tsasr} will be tested in turn before the next training
-iteration.
+release. Section~\ref{sec:tsasr} narrows the suspect list down to a
+distributional mismatch in overlap fraction, SNR distribution and the
+training-time RIR application rate; the planned ablation -- one
+training epoch with overlap drawn uniformly from $[0.5, 1.0]$, plus
+inference with RIR disabled -- will be the cheapest way to attribute
+the gap before the next training iteration.
 
 \subsection{Inherited Failure Modes}
 
@@ -66,9 +69,13 @@ LLM-based ASR is known to inherit characteristic LLM failure modes
 next release will measure):
 
 \begin{itemize}
-  \item Repetition loops on long silences or stationary noise
-        (especially without explicit noise training, see
-        Section~\ref{sec:noise});
+  \item Repetition loops on long silences or stationary noise. The
+        \texttt{noise\_only} negative branch of the TS-ASR pipeline
+        (Section~\ref{subsec:tsasr-synth}) explicitly trains the model
+        to terminate on silence under the TS prompt; we have not yet
+        confirmed whether the same protection transfers to the
+        plain-ASR prompt without further work
+        (Section~\ref{sec:noise}).
   \item Language drift on Mandarin--English code-switching, where short
         English phrases inside a Mandarin utterance can be ``corrected''
         into Mandarin transcriptions of similar-sounding words;

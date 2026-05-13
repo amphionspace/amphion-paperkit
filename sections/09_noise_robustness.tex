@@ -1,39 +1,74 @@
 \section{Noise Robustness}
 \label{sec:noise}
 
-This section is intentionally short: explicit noise-robustness training
-is not part of the v3 checkpoint described in this report. We document
-the planned evaluation protocol so that the next release can be
-measured against this baseline.
+\subsection{What v3 Already Sees During Training}
 
-\subsection{Planned target benchmark}
+Although the v3 recipe does not include a dedicated ``noise-robustness''
+fine-tuning stage, every TS-ASR training mixture (about $3$\,M cuts;
+roughly half of the multi-task training stream) already passes through
+the augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
 
-The chosen reference benchmark for the next iteration is
-\textbf{Whisper-RIR-Mega test}, a far-field / reverberant test split
-that mixes synthetic room impulse responses (RIRs) with real-world
-noise. The dataset is already archived internally
-% TODO: confirm the canonical citation / source URL for
-% Whisper-RIR-Mega test and add the corresponding bib entry.
-under
-\texttt{/ai\_sds\_wuzz/MULTILINGUAL\_DATA/noise/rirmega/data/manifests}.
+\begin{itemize}
+  \item \textbf{Reverberation.} Each TS-ASR sample is convolved with
+        an SLR26 / SLR28 RIR with probability $0.5$
+        \cite{ko2017studyrir}, truncated to the first $1.5$\,s
+        (early-reflection regime).
+  \item \textbf{Additive noise.} An independently sampled background
+        segment (MUSAN \cite{snyder2015musan} noise / music or AudioSet
+        road-traffic noise, weighted $0.30$ / $0.20$ / $0.50$) is
+        mixed at $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB
+        and the result is peak-normalised.
+  \item \textbf{Speaker interference.} Each target waveform is mixed
+        with $K\!\in\!\{1, 2\}$ same-language interferers at
+        $\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to
+        $[-5, 20]$, with overlap fraction
+        $\rho\!\sim\!\mathcal{N}(0.35, 0.2^2)$ in $[0.1, 1.0]$.
+  \item \textbf{Background-only / silence inputs.} The
+        \texttt{noise\_only} negative sub-type
+        (Section~\ref{subsec:tsasr-synth}, $\sim$$2$--$5$\,\% of cuts)
+        consists of a real enrollment paired with a $3$--$15$\,s
+        noise-only mixed channel and an empty target transcript,
+        explicitly teaching the decoder to stay silent when no speech
+        is present.
+\end{itemize}
 
-\subsection{Reference baseline}
+This means that v3's apparent ``noise robustness'' on the standard
+ASR benchmarks of Section~\ref{sec:experiments} is in fact an
+incidental side-effect of the TS-ASR data pipeline, rather than the
+result of an explicitly designed noise curriculum.
 
-The reference baseline is Qwen3-ASR-1.7B \cite{qwen2025qwen3asr},
-chosen because (i)~it is a strong open-source small model with
-documented robustness on noisy / far-field audio
-\cite{qwen2025qwen3asr}, and (ii)~it occupies the same family of
-LLM-ASR designs as AmphionASR. The bar for the next release is to
-match-or-beat Qwen3-ASR-1.7B's WER on Whisper-RIR-Mega test, in
-particular at low SNRs.
+\subsection{What is Missing}
 
-\subsection{Planned recipe}
+The v3 checkpoint is \emph{not} evaluated on a controlled
+noise-robustness benchmark in the present report. Two limitations are
+worth flagging:
 
-The plan is to add a noise-augmented mixture (clean speech convolved
-with internal-and-public RIR sets, with stationary and non-stationary
-noise mixed at SNRs covering a range of low-to-medium values) to
-Stage~2 / Stage~3 training, while keeping the rest of the recipe
-unchanged. Results will appear in a follow-up revision of this
-technical report.
-% TODO: replace this section with concrete numbers as soon as the
-% noise-augmented checkpoint exists.
+\begin{enumerate}
+  \item Training-side augmentation only ever attaches to the TS-ASR
+        branch. Plain-ASR cuts (Mandarin / English / multilingual) are
+        never reverberated and never overlaid with MUSAN or AudioSet
+        traffic, so the noise-augmentation distribution is partially
+        confounded with the TS-ASR conditioning prompt.
+  \item The internal far-field benchmark at
+        \path{/ai_sds_wuzz/MULTILINGUAL_DATA/noise/rirmega/data/manifests}
+        % TODO: confirm the canonical citation / source URL for
+        % the Whisper-RIR-Mega test set and add the corresponding bib
+        % entry.
+        is staged but not yet decoded against v3. Reporting it in a
+        follow-up revision will let us isolate the marginal gain from
+        the incidental TS-ASR augmentation against an explicit noise
+        curriculum.
+\end{enumerate}
+
+\subsection{Reference Baseline and Next Step}
+
+The reference baseline for the next iteration is
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, chosen because (i)~it is a
+strong open-source small model with documented robustness on noisy /
+far-field audio and (ii)~it sits in the same SpeechLLM family as
+AmphionASR. The plan for v4 is to reuse the SLR26 / SLR28 / MUSAN /
+AudioSet pools already wired into the TS-ASR pipeline, but apply them
+\emph{also} to the plain-ASR branch with a controlled SNR sweep, then
+re-evaluate on the internal far-field benchmark together with
+Qwen3-ASR-1.7B as a head-to-head baseline. Numbers will appear in a
+follow-up revision of this technical report.

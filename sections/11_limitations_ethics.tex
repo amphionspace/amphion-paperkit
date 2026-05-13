@@ -13,18 +13,21 @@ those reported in Section~\ref{sec:experiments}.
 The v3 target-speaker path is substantially weaker on the public
 LibriMix test sets ($65.83$\% WER on Libri2Mix, $87.06$\% on Libri3Mix)
 than on our internal multi-talker set ($14.29$\% MER). The likely
-causes -- training/test mismatch in reference-utterance distribution,
-limited LibriMix-style data in Stage~3 -- are documented in
+causes -- mismatch in overlap-fraction and SNR distribution between
+the synthesiser and the LibriMix mixtures, and a training-time RIR
+application rate that LibriMix does not see -- are documented in
 Section~\ref{sec:tsasr}, but until the next training iteration the
 public multi-talker numbers should be read as a known weakness, not a
 final result.
 
-\paragraph{No explicit noise-robustness training (yet).}
-Section~\ref{sec:noise} is deliberately short: this release does not
-include dedicated noise-augmented training. The released model inherits
-Whisper's encoder-level robustness, but is not benchmarked against
-Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on noisy / far-field audio in
-this report.
+\paragraph{No explicit plain-ASR noise curriculum (yet).}
+The v3 recipe sees substantial noise / RIR / overlap augmentation
+through the TS-ASR branch (Section~\ref{sec:noise}) but never applies
+the same augmentation to the plain-ASR cuts. As a result, our
+``noise robustness'' on the plain-ASR benchmarks of
+Section~\ref{sec:experiments} is incidental, and we do not yet
+benchmark the model against Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on
+a controlled noisy / far-field test set.
 
 \paragraph{Inherited LLM failure modes.}
 As discussed in Section~\ref{sec:analysis}, the model can repeat on
@@ -60,9 +63,9 @@ broken out in a follow-up.
 \paragraph{Data provenance.}
 % TODO: confirm provenance and licensing for every internal data source
 % before public release of weights or checkpoints.
-Public sources are used under their stated licenses
-(see Table~\ref{tab:data}). Internal sources are subject to internal
-data-governance review prior to any model-weight release.
+Public sources are used under their stated licenses (Tables~\ref{tab:data_asr}--\ref{tab:data_aux}).
+Internal sources are subject to internal data-governance review prior
+to any model-weight release.
 
 \paragraph{LLM-assisted writing.}
 Portions of this report were drafted with the assistance of large
