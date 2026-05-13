@@ -25,7 +25,9 @@
 
 # Editor / OS junk
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *~
@@ -36,5 +38,6 @@ __pycache__/
 .venv/
 venv/
 
-# Generated PDF (uncomment if you DO NOT want to track the built PDF)
-# main.pdf
+# Generated PDF (default: not tracked; use git tag + zip for releases)
+main.pdf
+main.synctex.gz
