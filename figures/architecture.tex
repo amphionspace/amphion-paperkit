@@ -2,9 +2,13 @@
 \usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{xcolor}
-\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc, decorations.pathmorphing}
+\usepackage{pifont}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc, decorations.pathmorphing, decorations.pathreplacing, patterns}
 
-% Color palette (consistent with arxiv-style serif body) -- see AGENTS.md rule 1
+% ----------------------------------------------------------------
+% Colour palette -- see AGENTS.md rule 1. Do not introduce new
+% colours outside this list; new figures must reuse the same names.
+% ----------------------------------------------------------------
 \definecolor{cAudio}{HTML}{F2F4F7}
 \definecolor{cEnc}{HTML}{D9E5F4}
 \definecolor{cEncB}{HTML}{4A7BB7}
@@ -19,118 +23,254 @@
 \definecolor{cTokB}{HTML}{6A4DA8}
 \definecolor{cBound}{HTML}{F2DEDE}
 \definecolor{cBoundB}{HTML}{B8585F}
-\definecolor{cMerge}{HTML}{FFF7D6}
-\definecolor{cMergeB}{HTML}{C5A53E}
 \definecolor{cFrozen}{HTML}{8A8A8A}
 \definecolor{cTrain}{HTML}{2F6FB1}
 \definecolor{cTune}{HTML}{2F8E40}
 
+% Simple LaTeX-native icons (no FontAwesome / emoji dependency)
+\newcommand{\frozenIcon}{\textcolor{cEncB}{\ding{100}}}
+\newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\ding{72}}}
+
 \tikzset{
-  module/.style    ={draw, rounded corners=3pt, minimum width=3.4cm, minimum height=1.05cm,
-                     align=center, font=\sffamily\small, line width=0.7pt},
-  audio/.style     ={module, fill=cAudio, draw=black!40},
-  encoder/.style   ={module, fill=cEnc, draw=cEncB},
-  adapter/.style   ={module, fill=cAdp, draw=cAdpB},
-  llm/.style       ={module, fill=cLLM, draw=cLLMB, minimum width=8.4cm, minimum height=1.5cm},
-  textout/.style   ={module, fill=cText, draw=black!40, minimum width=2.6cm},
-  tokbox/.style    ={module, fill=cTok, draw=cTokB},
-  boundbox/.style  ={module, fill=cBound, draw=cBoundB},
-  mergebox/.style  ={module, fill=cMerge, draw=cMergeB, minimum width=8.4cm, minimum height=0.95cm,
-                     font=\sffamily\small\itshape},
-  flow/.style      ={-Stealth, line width=0.8pt, draw=black!70},
-  rateflow/.style  ={-Stealth, line width=0.6pt, draw=black!55, dashed},
-  ratelabel/.style ={font=\sffamily\scriptsize, text=black!55},
-  tag/.style       ={font=\sffamily\tiny, inner sep=1pt}
+  % --- module shapes ---
+  module/.style    ={draw, rounded corners=2.5pt, align=center,
+                     font=\sffamily\small, line width=0.6pt,
+                     minimum height=0.85cm},
+  audio/.style     ={module, fill=cAudio, draw=black!35,
+                     minimum width=3.8cm},
+  encoder/.style   ={module, fill=cEnc, draw=cEncB,
+                     minimum width=3.8cm},
+  adapter/.style   ={module, fill=cAdp, draw=cAdpB,
+                     minimum width=3.8cm},
+  promptbox/.style ={module, fill=cPrompt, draw=cPromptB,
+                     minimum width=3.8cm},
+  tokenizer/.style ={module, fill=cTok, draw=cTokB,
+                     minimum width=3.8cm},
+  boundbox/.style  ={module, fill=cBound, draw=cBoundB,
+                     minimum width=3.8cm},
+  llmbox/.style    ={module, fill=cLLM, draw=cLLMB, line width=0.85pt,
+                     minimum width=11.6cm, minimum height=1.55cm,
+                     font=\sffamily\small},
+  outbox/.style    ={module, fill=white, draw=black!50,
+                     minimum width=3.6cm, font=\sffamily\small},
+  % --- token cells ---
+  tokcell/.style   ={draw, line width=0.35pt, minimum width=0.36cm,
+                     minimum height=0.36cm, inner sep=0pt,
+                     font=\sffamily\tiny},
+  cellText/.style  ={tokcell, fill=cTok!55, draw=cTokB!75},
+  cellBound/.style ={tokcell, fill=cBound, draw=cBoundB},
+  cellAudio/.style ={tokcell, fill=cAdp!90, draw=cAdpB},
+  cellSpkr/.style  ={tokcell, fill=cPrompt, draw=cPromptB},
+  % --- arrows ---
+  flow/.style      ={-Stealth, line width=0.7pt, draw=black!70},
+  thinflow/.style  ={-Stealth, line width=0.55pt, draw=black!50},
+  dashedflow/.style={-Stealth, line width=0.55pt, draw=black!50, dashed},
+  % --- labels ---
+  hint/.style      ={font=\sffamily\scriptsize, text=black!60},
+  ratelabel/.style ={font=\sffamily\scriptsize, text=black!55,
+                     fill=white, inner sep=1pt},
+  notelabel/.style ={font=\sffamily\scriptsize\itshape, text=black!50},
+  legendtxt/.style ={font=\sffamily\scriptsize, text=black!75},
+  stagetag/.style  ={font=\sffamily\tiny\bfseries, draw, rounded corners=1.5pt,
+                     inner sep=1.5pt, line width=0.4pt}
 }
 
 \begin{document}
-\begin{tikzpicture}[node distance=0.55cm and 0.6cm]
+\begin{tikzpicture}[node distance=0.7cm and 0.95cm]
 
-  % ====================== Audio branch (left column) ======================
-  \node[audio]    (waveform) {Waveform 16\,kHz};
-  \node[audio,    below=of waveform] (mel) {%
-    Whisper Feature Extractor\\
-    \scriptsize 128-bin log-mel, 100\,Hz
+  % ====================== LLM (top horizontal) ======================
+  \node[llmbox] (llm) {%
+    \fireIcon~~\textbf{Qwen3-4B-Instruct-2507} {\small (Causal LM)}\\[1pt]
+    \scriptsize $36{\times}$ Transformer block \,\,\textbar\,\, $d{=}2560$
+        \,\,\textbar\,\, FFN${=}9728$
+        \,\,\textbar\,\, GQA $32/8$ heads\\[-1pt]
+    \scriptsize RoPE $\theta{=}5\mathrm{e}6$
+        \,\,\textbar\,\, RMSNorm
+        \,\,\textbar\,\, $256$\,K native context
+        \,\,\textbar\,\, $\sim4.41$\,B params (tied lm\_head)
   };
-  \node[encoder,  below=of mel] (conv) {%
-    Conv Sub-sampler\\
-    \scriptsize $3\times$ Conv2d, 480\,ch
+  % stage tag floats just above the LLM box on the right
+  \node[stagetag, fill=cTune!15, text=cTune, draw=cTune,
+        anchor=south east]
+        at ([xshift=-3pt,yshift=2pt]llm.north east) {full FT, Stage 2--3};
+
+  % --- output above LLM ---
+  \node[outbox, above=0.65cm of llm] (text) {%
+    \textbf{Transcript}\\[1pt]
+    \scriptsize \textit{``\ldots open-source the model.''}
   };
-  \node[encoder,  below=of conv] (qwenaut) {%
-    Qwen3-AuT Audio Encoder\\
-    \scriptsize Whisper-style, $24\!\times$ Transformer\\[-1pt]
+  \draw[flow] (llm.north) -- (text.south);
+
+  % ====================== Input embedding sequence ======================
+  % a single dashed rectangle that holds a sequence of small coloured cells
+  % representing the merged input to the LLM:
+  %   [text]*3 [bound] [audio]*9 [bound] [text]*5
+  \coordinate (seqL) at ($(llm.south west) + (0.6cm,-1.55cm)$);
+  \coordinate (seqR) at ($(llm.south east) + (-0.6cm,-1.55cm)$);
+
+  \node[draw=black!45, dashed, rounded corners=2pt, line width=0.5pt,
+        fit={(seqL) (seqR)}, inner sep=4pt, minimum height=0.7cm] (seqbox) {};
+  \node[hint, anchor=south east] at ([xshift=-3pt,yshift=1pt]seqbox.north east)
+        {\itshape merged input embedding (length $L$)};
+
+  % place 22 cells inside the seqbox
+  % indices: 0..2 text-prefix, 3 bound, 4..12 audio (~9 cells), 13 bound, 14..21 text-suffix
+  \foreach \i/\style in {%
+      0/cellText, 1/cellText, 2/cellText,
+      3/cellBound,
+      4/cellAudio, 5/cellAudio, 6/cellAudio, 7/cellAudio, 8/cellAudio,
+      9/cellAudio, 10/cellAudio, 11/cellAudio, 12/cellAudio,
+      13/cellBound,
+      14/cellText, 15/cellText, 16/cellText, 17/cellText, 18/cellText,
+      19/cellText, 20/cellText, 21/cellText%
+  }{
+    \pgfmathsetmacro{\xpos}{-5.05 + \i*0.48}
+    \node[\style] at ([xshift=\xpos cm,yshift=0]seqbox.center) (cell\i) {};
+  }
+  % small bracket labels under the sequence
+  \draw[decorate, decoration={brace, amplitude=3pt}, line width=0.4pt, draw=black!55]
+       (cell0.south west) -- (cell2.south east);
+  \node[hint, below=2pt of cell1.south, yshift=-1pt] {\texttt{\scriptsize <\textbar im\_start\textbar>user\textbackslash n}};
+
+  \draw[decorate, decoration={brace, amplitude=3pt}, line width=0.4pt, draw=cBoundB!90]
+       (cell4.south west) -- (cell12.south east);
+  \node[hint, below=2pt of cell8.south, yshift=-1pt, text=cAdpB!85!black]
+       {\textit{audio embeddings ($\sim 13$\,Hz)}};
+
+  \draw[decorate, decoration={brace, amplitude=3pt}, line width=0.4pt, draw=black!55]
+       (cell14.south west) -- (cell21.south east);
+  \node[hint, below=2pt of cell17.south, yshift=-1pt]
+       {\texttt{\scriptsize transcribe\,\textbackslash n<\textbar im\_end\textbar>}};
+
+  % boundary markers above the sequence
+  \node[hint, above=1pt of cell3.north, text=cBoundB]
+       {\texttt{\tiny<start\_speech>}};
+  \node[hint, above=1pt of cell13.north, text=cBoundB]
+       {\texttt{\tiny<end\_speech>}};
+
+  \draw[flow] (seqbox.north) -- (llm.south);
+
+  % ====================== Left (audio) column ======================
+  \node[adapter] at ($(seqbox.south west) + (-0.4cm,-1.9cm)$) (proj) {%
+    \fireIcon~~\textbf{Multi-Modal Projector}\\
+    \scriptsize Linear--SwooshR--Linear,\\[-1pt]
+    \scriptsize $1024 \to 2560$,\,\,$\sim9.18$\,M
+  };
+  \node[stagetag, fill=cTune!15, text=cTune, draw=cTune,
+        anchor=west, xshift=4pt]
+       at (proj.east) {trainable all stages};
+
+  \node[encoder, below=0.6cm of proj] (aut) {%
+    \frozenIcon~~\textbf{Qwen3-AuT Audio Encoder}\\
+    \scriptsize Whisper-style, $24{\times}$ Transformer\\[-1pt]
     \scriptsize $d{=}1024$, $h{=}16$, FFN${=}4096$\\[-1pt]
     \scriptsize $\sim314$\,M params
   };
-  \node[adapter,  below=of qwenaut] (proj) {%
-    Multi-Modal Projector\\
-    \scriptsize Linear--SwooshR--Linear\\[-1pt]
-    \scriptsize $1024 \!\to\! 2560$, $\sim9.18$\,M params
+  \node[stagetag, fill=cFrozen!15, text=cFrozen!90!black, draw=cFrozen,
+        anchor=west, xshift=4pt]
+       at (aut.east) {frozen S1, trainable S2--3};
+
+  \node[encoder, below=0.4cm of aut] (conv) {%
+    \textbf{Conv Sub-sampler}\\
+    \scriptsize $3{\times}$Conv2d, $480$ ch
   };
 
-  \draw[flow] (waveform) -- (mel);
-  \draw[flow] (mel)      -- (conv);
-  \draw[flow] (conv)     -- (qwenaut);
-  \draw[flow] (qwenaut)  -- (proj)
-        node[midway, right=2pt, ratelabel] {$\sim13$\,Hz};
+  \node[audio, below=0.4cm of conv] (mel) {%
+    \textbf{Whisper Feature Extractor}\\
+    \scriptsize $128$-bin log-mel, $100$\,Hz
+  };
 
-  % ====================== Text branch (right column) ======================
-  \node[tokbox, right=4.4cm of waveform] (prompt) {%
-    Text Prompt + special tokens\\
-    \scriptsize \texttt{<{}|{}im\_start{}|{}>user \dots\textbackslash n}\\
-    \scriptsize \texttt{<start\_speech><speech><end\_speech>}
+  % Waveform as a tikz-drawn pseudo-waveform pictogram
+  \node[audio, below=0.45cm of mel, minimum height=0.6cm] (wave) {%
+    \textbf{Audio waveform} \,\,
+    \scriptsize $16$\,kHz mono
   };
-  \node[tokbox, below=of prompt] (tok) {%
-    Qwen3 Tokenizer\\
-    \scriptsize vocab 151{,}936
+  % small wavy line above the waveform box
+  \begin{scope}[line width=0.55pt, draw=cEncB!85]
+    \draw[decoration={snake, amplitude=2pt, segment length=3pt}, decorate]
+      ([xshift=-1.3cm,yshift=11pt]wave.center) -- ([xshift=1.3cm,yshift=11pt]wave.center);
+  \end{scope}
+
+  \draw[flow] (wave) -- (mel);
+  \draw[flow] (mel) -- (conv);
+  \draw[flow] (conv) -- (aut);
+  \draw[flow] (aut) -- (proj)
+        node[midway, ratelabel, xshift=0pt] {$\sim 13$\,Hz};
+
+  % arrow from projector to the audio-embedding region of the sequence
+  \draw[flow]
+       (proj.north) to[out=90,in=-90]
+       ([yshift=-1pt]cell8.south);
+
+  % ====================== Right (text) column ======================
+  \node[boundbox] at ($(seqbox.south east) + (0.4cm,-1.9cm)$) (bound) {%
+    \fireIcon~~\textbf{Learnable boundary prompt}\\
+    \scriptsize $4 \times 2560$ embeddings replace\\[-1pt]
+    \scriptsize \texttt{<start/end\_speech>, <start/end\_text>}
   };
-  \node[tokbox, below=of tok] (embed) {%
-    Embedding Lookup\\
-    \scriptsize $\to (B,L,2560)$
+  \node[stagetag, fill=cTune!15, text=cTune, draw=cTune,
+        anchor=east, xshift=-4pt]
+       at (bound.west) {trainable all stages};
+
+  \node[tokenizer, below=0.6cm of bound] (embed) {%
+    \textbf{Embedding Lookup}\\
+    \scriptsize Qwen3 token embedding $\to 2560$-d
   };
-  \node[boundbox, below=of embed] (bound) {%
-    Replace 4 boundary tokens\\
-    \scriptsize by learnable prompt embedding\\[-1pt]
-    \scriptsize $4 \times 2560$ vectors
+
+  \node[tokenizer, below=0.4cm of embed] (tok) {%
+    \textbf{Qwen3 Tokenizer}\\
+    \scriptsize vocab $151{,}936$
+  };
+
+  \node[promptbox, below=0.4cm of tok] (prompt) {%
+    \textbf{System / user prompt}\\
+    \scriptsize \texttt{<\textbar im\_start\textbar>user\textbackslash n\ldots}\\[-1pt]
+    \scriptsize \texttt{<start\_speech><speech><end\_speech>\ldots}
   };
 
   \draw[flow] (prompt) -- (tok);
   \draw[flow] (tok)    -- (embed);
   \draw[flow] (embed)  -- (bound);
 
-  % ====================== Merge & LLM ======================
-  \node[mergebox] at ($(proj.south) ! 0.5 ! (bound.south) + (0,-1.2)$) (merge)
-        {Replace \texttt{<speech>} placeholder by audio embedding sequence};
+  % arrows from boundary prompt to the two boundary cells
+  \draw[flow] (bound.north) to[out=90,in=-90] ([yshift=-1pt]cell13.south);
+  \draw[dashedflow] ($(bound.north)+(0,0.05cm)$) to[out=110,in=-90,looseness=1.2]
+        ([yshift=-1pt]cell3.south);
+  % arrow from embedding lookup also feeds the text cells (prefix and suffix)
+  \draw[thinflow] (embed.north west) to[out=120,in=-90,looseness=1.1]
+        ([yshift=-1pt]cell1.south);
+  \draw[thinflow] (embed.north) to[out=70,in=-90,looseness=1.1]
+        ([yshift=-1pt]cell17.south);
 
-  \draw[flow] (proj.south)  |- (merge.west);
-  \draw[flow] (bound.south) |- (merge.east);
-
-  \node[llm, below=0.6cm of merge] (llm) {%
-    Qwen3-4B-Instruct-2507 (Causal LM)\\
-    \scriptsize $36\!\times$ Transformer, $d{=}2560$, FFN${=}9728$\\[-1pt]
-    \scriptsize GQA $32/8$ heads, RoPE $\theta{=}5\mathrm{e}6$, RMSNorm\\[-1pt]
-    \scriptsize 256\,K context, $\sim4.41$\,B params (tied lm\_head)
+  % ====================== Legend ======================
+  \node[draw=black!40, rounded corners=2.5pt, inner sep=4pt,
+        below=0.55cm of wave, anchor=north west,
+        xshift=0cm, line width=0.4pt,
+        fill=white] (legend) {%
+    \begin{minipage}{6.0cm}\sffamily\scriptsize
+    \begin{tabular}{@{}ll@{}}
+      \multicolumn{2}{l}{\textbf{Trainability \& token legend}}\\[2pt]
+      \frozenIcon~~frozen & \fireIcon~~trainable\\[2pt]
+      \tikz\node[cellText, minimum width=0.32cm, minimum height=0.32cm]{};~text emb &
+      \tikz\node[cellBound, minimum width=0.32cm, minimum height=0.32cm]{};~boundary (learnable)\\[2pt]
+      \tikz\node[cellAudio, minimum width=0.32cm, minimum height=0.32cm]{};~audio emb (from projector) & \\
+    \end{tabular}
+    \end{minipage}
   };
 
-  \draw[flow] (merge) -- (llm);
-
-  \node[textout, below=of llm] (text) {Transcript};
-  \draw[flow] (llm) -- (text);
-
-  % ====================== Trainability tags ======================
-  \node[tag, right=4pt of qwenaut.east, text=cFrozen]
-        {{\color{cFrozen}\rule{6pt}{6pt}}\ \emph{frozen Stage 1--2}};
-  \node[tag, right=4pt of proj.east, text=cTrain]
-        {{\color{cTrain}\rule{6pt}{6pt}}\ \emph{trainable all stages}};
-  \node[tag, right=4pt of llm.east, text=cTune]
-        {{\color{cTune}\rule{6pt}{6pt}}\ \emph{full FT Stage 2--3}};
-  \node[tag, left=4pt of bound.west, text=cBoundB]
-        {{\color{cBoundB}\rule{6pt}{6pt}}\ \emph{learnable, all stages}};
-
-  % ====================== Title banner ======================
-  \node[font=\sffamily\scriptsize\bfseries, above=0.25cm of waveform.north,
-        text=black!70, anchor=south west, xshift=-0.4cm]
-        {AmphionASR: $\sim$4.74\,B total (4.3\,B distinct under tied lm\_head)};
+  % ====================== Pipeline annotation ======================
+  \node[font=\sffamily\scriptsize, text=black!65,
+        anchor=west]
+        at ([xshift=0.4cm]legend.east)
+        {%
+          \begin{minipage}{6.4cm}
+          \textbf{Merge step.}\,\,The four boundary token embeddings are
+          overridden by the learnable prompt; the single
+          \texttt{<speech>} placeholder is expanded into the audio
+          embedding sequence; the merged stream of length $L$ is fed
+          to the LLM as \texttt{inputs\_embeds}.
+          \end{minipage}
+        };
 
 \end{tikzpicture}
 \end{document}
