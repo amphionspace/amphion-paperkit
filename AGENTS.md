@@ -129,10 +129,52 @@
 
 ---
 
-## 规则 4：通用约定
+## 规则 4：抽象层次 — 报告里不写实现细节
+
+技术报告面向研究读者，不是该 repo 的工程文档。所有 code 层细节必须留在 codebase / model card / 附录脚注，正文只描述"概念 / 算法 / 数据 / 数字"。
+
+### 严禁出现在 sections/*.tex 里
+
+- 文件路径：`src/...py`、`local/...py`、`configs/.../*.yaml`、`configs/.../*.json`、`*.sh`、`*.jsonl.gz`、`*.tar.gz`、绝对路径 `/ai_sds_wuzz/...`、`/data/...`
+- 类名 / 函数名形式：`EscForegroundMix`、`build_hotwords_for_sample`、`compute_silence_metrics`、`SpeakerPool.load_dataset`
+- repo 内部脚本名：`eval_vllm.sh`、`serve_vllm.sh`、`run_rollout_server.sh`、`convert_amphion_to_hf.py`
+- 配置字段名当变量用：`train_dataset_samples=1,000,000`、`prompt_hotword_prob=0.8` ← 改成英文概念加括号给数字（"the per-source utterance cap (1\,M)"、"the prompt-hotword keep probability (0.8)"）
+
+### 允许 / 鼓励出现
+
+- 概念性组件名：encoder / projector / boundary prompts / data registry / evaluation harness / rollout server
+- 学术变量名：$\rho$, $K$, $\mathrm{SNR}$, $w_\text{acc}$
+- 论文级技术词：LoRA, ZeRO-2, GRPO, vLLM, ms-swift（这些是已发表工作 / 库名，不是本 repo 文件）
+- 公开数据集 key：LibriSpeech, AISHELL-2, FLEURS, MUSAN, SLR26（学术读者直接认）
+- 数字参数本体：seed=124, $K=10$, max\_hotwords=20 ← 但用 `\texttt` 而不是 `\path`，且不带路径前缀
+
+### 改写策略（口径模板）
+
+| 不要写 | 改写成 |
+| --- | --- |
+| 由 \path{local/prepare\_tsasr\_data.py} 离线合成 | 由 an offline TS-ASR synthesiser 离线合成 |
+| \texttt{configs/target\_speaker/train.yaml} 中的 \texttt{train\_dataset\_samples} | the multi-task training mixture's per-source utterance cap |
+| \texttt{EscForegroundMix} 在线混音 | an on-the-fly ESC foreground mixer |
+| \texttt{src/dataset\_registry.py} 注册表 | a unified dataset registry |
+| \texttt{src/compute\_wer.py} | the evaluation harness |
+| \texttt{eval\_vllm.sh -w K} | the evaluation client (with $K$ hotwords requested) |
+
+### 触发：每次写 `*.tex` 后必须自检
+
+写完任意 `sections/*.tex` 后，必须用如下 regex 自查（grep / ripgrep），命中即必须改写：
+
+```
+\.py|\.sh|\.json|\.yaml|\.jsonl|\.gz|\.tar|src/|local/|configs/|/ai_sds_wuzz/|/data/
+```
+
+如该 regex 在 `sections/*.tex` 里有 match，本轮 commit 不应通过。
+
+---
+
+## 规则 5：通用约定
 
 - 修改后立即 git commit，commit message 用 conventional commit 前缀：`feat(...)` / `fix(...)` / `chore(...)` / `docs(...)` / `refactor(...)`
 - commit message 主体说明 why，不只 what
 - 不向 main.pdf 写 git（已在 .gitignore），但 figure PDF 要 commit（用于 reproducibility）
-- 引用一律 `\citep{key}` / `\citet{key}`，bib key 形式 `<lastname><year><firstword>`，例：`gulati2020conformer`
+- 引用一律 `\cite{key}`（IEEE numeric style，xlance.cls 默认），bib key 形式 `<lastname><year><firstword>`，例：`gulati2020conformer`
 - 数字带千位分隔符用 `10{,}000`，单位用 `\,`：`960\,h`、`16\,kHz`

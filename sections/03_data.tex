@@ -1,36 +1,32 @@
 \section{Data}
 \label{sec:data}
 
-All training and evaluation data are organised as
-Lhotse~\cite{zelasko2021lhotse} \texttt{recordings}, \texttt{supervisions}
-and \texttt{cuts}. The full multi-task training mixture
-(\texttt{configs/target\_speaker/train.yaml}) jointly draws from seven
-task families:
-plain Mandarin / English / multilingual ASR,
-hotword-conditioned ASR,
-target-speaker ASR (TS-ASR),
-speech emotion recognition (SER),
-speech emotion captioning (SEC) and
-environmental sound captioning (ESC). Tables~\ref{tab:data_asr} through
-\ref{tab:data_aux} list the underlying sources; Sections~\ref{subsec:tsasr-synth}
-and \ref{subsec:esc-mix} describe the two on-disk / on-the-fly
-synthesis pipelines.
+All training and evaluation data are organised through
+Lhotse~\cite{zelasko2021lhotse}'s recordings / supervisions / cuts
+abstraction. The multi-task training mixture jointly draws from
+seven task families: plain Mandarin / English / multilingual ASR,
+hotword-conditioned ASR, target-speaker ASR (TS-ASR), speech
+emotion recognition (SER), speech emotion captioning (SEC) and
+environmental sound captioning (ESC).
+Tables~\ref{tab:data_asr}--\ref{tab:data_aux} list the underlying
+sources; Sections~\ref{subsec:tsasr-synth} and \ref{subsec:esc-mix}
+describe the two synthesis pipelines that produce the additional
+training cuts.
 
 \subsection{Public ASR Sources}
 \label{subsec:asr-sources}
 
-Table~\ref{tab:data_asr} lists the 22 public ASR corpora that feed the
-ASR-zh, ASR-en and code-switching streams. ``Cap.'' is the per-source
-sample cap that
-\texttt{train\_dataset\_samples} applies before mixing; ``$r$'' is the
-\texttt{train\_dataset\_reps} multiplier (most sources are sampled
-once, see Section~\ref{subsec:mixing}).
+Table~\ref{tab:data_asr} lists the 22 public ASR corpora that feed
+the ASR-zh, ASR-en and code-switching streams. ``Cap.'' is the
+per-source utterance cap applied before mixing; ``$r$'' is the
+repeat factor (most sources are sampled once, see
+Section~\ref{subsec:mixing}). A separate dataset registry handles
+the multilingual long tail.
 
 \begin{table}[t]
   \caption{Public ASR sources used for SFT. ``Cap.'' = utterance-level
-    cap from \texttt{train\_dataset\_samples} (``--'' = no cap).
-    Multilingual sources are routed through the
-    \texttt{dataset\_registry.json} aggregator and not enumerated here.}
+    cap (``--'' = no cap). Multilingual sources are routed through the
+    dataset registry and not enumerated here.}
   \label{tab:data_asr}
   \centering
   \small
@@ -44,7 +40,7 @@ once, see Section~\ref{subsec:mixing}).
     common\_voice\_en   & CommonVoice 17 EN (cleaned) \cite{ardila2020commonvoice}        & en       & 500\,k & 1 \\
     gigaspeech          & GigaSpeech XL \cite{chen2021gigaspeech}                         & en       & 1\,M & 1 \\
     singaporean         & National Speech Corpus (Singapore EN)                           & en       & --   & 1 \\
-    singapore\_english  & HF \texttt{singapore\_english}                                  & en       & --   & 1 \\
+    singapore\_english  & Hugging Face singapore\_english                                 & en       & --   & 1 \\
     aishell             & AISHELL-1 \cite{bu2017aishell}                                  & zh       & --   & 1 \\
     aishell2            & AISHELL-2 \cite{du2018aishell2}                                 & zh       & 500\,k & 1 \\
     aishell3            & AISHELL-3 \cite{shi2021aishell3}                                & zh       & --   & 1 \\
@@ -59,7 +55,7 @@ once, see Section~\ref{subsec:mixing}).
     kespeech            & KeSpeech \cite{tang2021kespeech}                                & zh (8 dial.) & 500\,k & 1 \\
     talcs               & TALCS Mandarin--English code-switch \cite{li2022talcs}          & zh--en   & --   & 1 \\
     fleurs              & FLEURS (zh, en)                                                 & multi    & --   & 1 \\
-    \emph{multilingual} & \texttt{dataset\_registry} (10 langs $\times$ \{fleurs, common\_voice, yodas, mls, emilia\})
+    \emph{multilingual} & dataset registry: 10 langs $\times$ \{fleurs, common\_voice, yodas, mls, emilia\}
                                                                                           & multi    & per-lang & 1 \\
     \bottomrule
   \end{tabular}
@@ -67,45 +63,43 @@ once, see Section~\ref{subsec:mixing}).
 
 \paragraph{Language tag canonicalisation.}
 Source manifests use a mixture of ISO-639-1, ISO-639-3 and locale tags
-(\texttt{zh}, \texttt{zh-cn}, \texttt{en-us}, \texttt{eng}). The
-\texttt{\_LANGUAGE\_NORMALIZE\_MAP} in
-\texttt{src/integrations/ms\_swift/data/convert.py} normalises every
-\texttt{supervision.language} to a Title-Case English name (e.g.\
-\texttt{zh}\,$\to$\,Chinese, \texttt{en-us}\,$\to$\,English) across
-zh / en / ja / ko / fr / de / es / ru / pt / it / nl / tr / ar / hi /
-vi / th / id / ms; unknown values are preserved verbatim and warned
-once per worker.
+(``zh'', ``zh-cn'', ``en-us'', ``eng''). The data conversion layer
+normalises every supervision-level language tag to a Title-Case
+English name (e.g.\ ``zh''\,$\to$\,Chinese, ``en-us''\,$\to$\,English)
+across the eighteen languages we currently support
+(zh, en, ja, ko, fr, de, es, ru, pt, it, nl, tr, ar, hi, vi, th, id, ms);
+unknown values are preserved verbatim.
 
 \subsection{Hotword-Conditioned ASR Sources}
 \label{subsec:hotword-sources}
 
-Three of the public ASR datasets carry an extra
-\texttt{custom.hotwords} field on each \texttt{supervision} that
-contains the ground-truth rare entities for that utterance
-(extracted offline by a domain-name miner; see
-Table~\ref{tab:data_hotwords}). At training time we do not re-mix the
-audio; the same waveform is paired with the hotword-bearing
-supervisions to teach the model the prompt-conditioned biasing
-behaviour. Two CommonVoice splits with the same annotation are reserved
-for evaluation.
+Three of the public ASR datasets carry, on every utterance, a
+ground-truth list of rare entities mined offline from the transcript
+(Table~\ref{tab:data_hotwords}). At training time we do not re-mix
+the audio; the same waveform is paired with the hotword-bearing
+supervision to teach the model the prompt-conditioned biasing
+behaviour. Two CommonVoice splits with the same annotation are
+reserved for evaluation, after applying the per-utterance QA
+acceptance flag shipped with each split.
 
 \begin{table}[t]
-  \caption{Hotword-bearing supervision splits. The audio is the same as
-    the corresponding row in Table~\ref{tab:data_asr}; only the
-    supervision file changes (\texttt{custom.hotwords} field added).}
+  \caption{Hotword-bearing supervision splits. The audio is the same
+    as the corresponding row in Table~\ref{tab:data_asr}; only the
+    supervision metadata is augmented with the ground-truth hotword
+    list.}
   \label{tab:data_hotwords}
   \centering
   \small
   \begin{tabular}{llcr}
     \toprule
-    Key & Underlying audio & Split & $r$ \\
+    Split & Underlying audio & Use & $r$ \\
     \midrule
-    aidatatang\_hotwords    & aidatatang\_200zh & train & 3 \\
-    magicdata\_hotwords     & MagicData         & train & 2 \\
-    gigaspeech\_hotwords    & GigaSpeech XL     & train (cap 1\,M) & 1 \\
+    aidatatang hotwords    & aidatatang\_200zh & train & 3 \\
+    magicdata hotwords     & MagicData         & train & 2 \\
+    gigaspeech hotwords    & GigaSpeech XL     & train (cap 1\,M) & 1 \\
     \midrule
-    commonvoice\_zh\_hotwords & CommonVoice ZH test & test (with \texttt{custom.clean.pass} QA) & -- \\
-    commonvoice\_en\_hotwords & CommonVoice EN test & test (with \texttt{custom.clean.pass} QA) & -- \\
+    CV ZH hotwords         & CommonVoice ZH test & test (QA-filtered) & -- \\
+    CV EN hotwords         & CommonVoice EN test & test (QA-filtered) & -- \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -118,8 +112,8 @@ recognition (single-label classification across eight categories
 \{Neutral, Happy, Sad, Angry, Fear, Disgust, Surprise, Other/Complex\}),
 speech emotion captioning (single-sentence emotion description) and
 environmental sound captioning. Sources are listed in
-Table~\ref{tab:data_aux}; \texttt{local/prepare\_ser\_manifests.py}
-maps every source's raw label set to the unified eight-class taxonomy.
+Table~\ref{tab:data_aux}; a unified manifest preparation step maps
+every source's raw label inventory to the eight-class taxonomy above.
 
 \begin{table}[t]
   \caption{SER / SEC / ESC training sources. Each SER and SEC source
@@ -180,37 +174,37 @@ overlap-add. Noise is mixed at a configured signal-to-noise ratio
 \subsection{Subsampling and Mixing}
 \label{subsec:mixing}
 
-We use Lhotse's mux to draw mini-batches uniformly across all
-data sources after the per-source caps and repeat factors of
-Tables~\ref{tab:data_asr}--\ref{tab:data_aux} have been applied. The
-two knobs implement different objectives:
+Mini-batches are drawn uniformly across all data sources via Lhotse's
+mux operator, after the per-source caps and repeat factors of
+Tables~\ref{tab:data_asr}--\ref{tab:data_aux} have been applied.
+The two knobs implement different objectives:
 
 \begin{itemize}
-  \item \texttt{train\_dataset\_samples} caps over-large corpora
-        (WenetSpeech and GigaSpeech at 1\,M utterances; Emilia,
-        WenetSpeech4TTS, MLS, AISHELL-2, CommonVoice EN, KeSpeech at
-        500\,k) so that no single source dominates the mux.
-  \item \texttt{train\_dataset\_reps} up-samples small corpora to a
-        comparable scale: hotword splits at $r{=}2$--$3$, every SER /
-        SEC source at $r{=}5$, and AudioSet ESC at $r{=}10$ (its raw
-        $\sim$218\,k cuts become $\sim$2.2\,M after repetition,
-        matching the major ASR streams).
+  \item The per-source utterance \emph{cap} truncates over-large
+        corpora -- WenetSpeech and GigaSpeech at $1\,$M utterances;
+        Emilia, WenetSpeech4TTS, MLS, AISHELL-2, CommonVoice EN,
+        KeSpeech at $500\,$k -- so that no single source dominates
+        the mux.
+  \item The per-source \emph{repeat factor} $r$ up-samples small
+        corpora to a comparable scale: hotword splits at $r{=}2$--$3$,
+        every SER / SEC source at $r{=}5$, and AudioSet ESC at $r{=}10$
+        (its raw $\sim$218\,k cuts become $\sim$2.2\,M after
+        repetition, matching the major ASR streams).
 \end{itemize}
 
-The synthesised TS-ASR cut set
-(Section~\ref{subsec:tsasr-synth}) is added with $r{=}1$ because the
-underlying $\sim$3\,M positive cuts already match the major ASR
-streams in size.
+The synthesised TS-ASR cut set (Section~\ref{subsec:tsasr-synth}) is
+added with $r{=}1$ because its $\sim$3\,M positive cuts already match
+the major ASR streams in size.
 
 \subsection{TS-ASR Synthesis}
 \label{subsec:tsasr-synth}
 
-The target-speaker training data is produced offline by
-\texttt{local/prepare\_tsasr\_data.py}. Given 16 single-speaker source
-manifests (10 Mandarin + 6 English, listed in Table~\ref{tab:tsasr_sources}),
-each output sample contains a target waveform mixed with
-$K$ interferers, an enrollment utterance from the same speaker but
-\emph{a different recording}, and the target's transcript:
+The target-speaker training data is produced by an offline
+synthesiser. Given 16 single-speaker source manifests (10 Mandarin +
+6 English; Table~\ref{tab:tsasr_sources}), each output sample contains
+a target waveform mixed with $K$ interferers, an enrollment utterance
+from the same speaker but \emph{a different recording}, and the
+target's transcript:
 
 \begin{equation}
   \mathrm{mixed}[n] = s_\text{tgt}[n] + \sum_{k=1}^{K}\,\alpha_k\,s_{\text{int},k}[n - o_k],
@@ -221,23 +215,21 @@ $K$ interferers, an enrollment utterance from the same speaker but
 
 where $\rho$ denotes RMS energy, $o_k$ is a uniformly sampled time
 offset that places interferer $k$ inside the target, and the overlap
-fraction $|\text{int}_k|/|\text{tgt}| = \mathrm{Uniform}[0.1, 1.0]$
-controls how much of the target the interferer covers.
-The default ``clean'' configuration
-(\texttt{configs/target\_speaker/synth\_template.json}) draws
-$K{\sim}\mathrm{Cat}(\{1{:}0.8, 2{:}0.2\})$,
-$\mathrm{SNR}{\sim}\mathcal{N}(5,7^2)$\,dB clipped to $[-5, 20]$, and
-$3$--$5$\,s enrollments. After
-mixing we apply an RIR with probability $0.5$
-(Table~\ref{tab:data_rir_noise}) and additive background noise
-(SNR drawn from $[0, 25]$\,dB).
+fraction $|\text{int}_k|/|\text{tgt}|\!\sim\!\mathrm{Uniform}[0.1, 1.0]$
+controls how much of the target the interferer covers. The
+``clean'' default configuration draws
+$K\!\sim\!\mathrm{Cat}(\{1{:}0.8, 2{:}0.2\})$,
+$\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to $[-5, 20]$,
+and $3$--$5$\,s enrollments. After mixing we apply an RIR with
+probability $0.5$ (Table~\ref{tab:data_rir_noise}) and an additive
+background noise segment with $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB.
 
 \begin{table}[t]
   \caption{Single-speaker source manifests fed to the TS-ASR
-    synthesiser. \texttt{SpeakerPool} drops every speaker with $<2$
-    utterances and every utterance flagged
-    \texttt{custom.clean.pass=false}; speakers, languages and datasets
-    are indexed for cross-source interferer sampling.}
+    synthesiser. The synthesiser drops every speaker with $<\!2$
+    utterances and every utterance flagged as failing the per-corpus
+    QA check; speakers, languages and source datasets are indexed
+    independently to allow cross-source interferer sampling.}
   \label{tab:tsasr_sources}
   \centering
   \small
@@ -245,8 +237,8 @@ mixing we apply an RIR with probability $0.5$
     \toprule
     Lang. & Sources & Coverage \\
     \midrule
-    zh (10) & aishell, aishell2, aishell3, magicdata, kespeech, aidatatang, primewords, thchs30, cv\_zh, emilia\_zh & full speaker pools, capped at \texttt{samples\_per\_speaker} \\
-    en (6)  & librispeech\_\{100,360,500\}, mls\_en, cv\_en, emilia\_en & same \\
+    zh (10) & AISHELL-1/2/3, MagicData, KeSpeech, aidatatang\_200zh, Primewords, THCHS-30, CommonVoice ZH, Emilia ZH & full speaker pools, capped per speaker \\
+    en (6)  & LibriSpeech (clean-100/360, other-500), MLS English, CommonVoice EN, Emilia EN & same \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -254,11 +246,10 @@ mixing we apply an RIR with probability $0.5$
 \paragraph{Anti-hallucination negatives.}
 Five to ten percent of every training shard is replaced by
 \emph{negative} samples whose ground-truth transcript is the empty
-string. Two sub-types are sampled with weights $\{ \texttt{noise\_only},
-\texttt{distractor\_only}\}$ (Table~\ref{tab:tsasr_negatives}); both
-preserve a real enrollment but remove the target speaker from the
-mixed channel, training the model to remain silent when the requested
-speaker is absent.
+string. Two sub-types (Table~\ref{tab:tsasr_negatives}) are sampled
+with equal weight; both preserve a real enrollment but remove the
+target speaker from the mixed channel, training the model to remain
+silent when the requested speaker is absent.
 
 \begin{table}[t]
   \caption{Anti-hallucination negative sub-types.}
@@ -270,87 +261,74 @@ speaker is absent.
     \toprule
     Sub-type & Composition & Key parameters \\
     \midrule
-    \texttt{noise\_only}      & Real enrollment + 1--2 noise / silence segments & duration $[3,15]$\,s; \texttt{noise\_gain\_db} $\in[-30, 0]$; \texttt{include\_silence\_prob}=0.1; sources weighted $\{$road-traffic\,0.6, MUSAN noise\,0.3, MUSAN music\,0.1$\}$ \\
-    \texttt{distractor\_only} & Real enrollment + 1--3 non-target speakers      & SNR $[-5, 20]$\,dB; overlap $[0.1, 1.0]$ \\
+    Noise-only       & Real enrollment + 1--2 noise / silence segments & duration $[3,15]$\,s; gain $[-30, 0]$\,dB; silence inclusion probability $0.1$; sources weighted road-traffic $0.6$, MUSAN noise $0.3$, MUSAN music $0.1$ \\
+    Distractor-only  & Real enrollment + 1--3 non-target speakers      & SNR $[-5, 20]$\,dB; overlap fraction $[0.1, 1.0]$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \paragraph{Output and scale.}
-The default budget is $3{,}000{,}000$ training samples (with up to
-$200$ samples per speaker), written as a single
-\texttt{mix\_all\_cuts\_all.jsonl.gz} cut set under a structured
-output directory (\texttt{mixed\_audio/<dataset>/<spk>\_mix\_<idx>.wav},
-\texttt{enrollment\_audio/<dataset>/<spk>\_enroll\_<idx>.wav},
-plus \texttt{\_negative/silence} and \texttt{\_negative/distractor}
-sub-trees). Section~\ref{sec:tsasr} reports evaluation results on a
-held-out 10\,k-cut test set (\texttt{ts\_hw\_test}) generated by the
-same pipeline with $\texttt{seed}=124$ to guarantee zero overlap with
-training.
+The default budget is $3{,}000{,}000$ training samples, with up to
+$200$ samples per speaker. Section~\ref{sec:tsasr} reports
+evaluation results on a held-out $10\,$k-cut test set generated by
+the same pipeline with a held-out random seed to guarantee zero
+overlap with training.
 
 \subsection{ESC Foreground Mixing}
 \label{subsec:esc-mix}
 
-Environmental sound captioning is trained with on-the-fly mixing
-(\texttt{EscForegroundMix} in \path{src/esc_mixing.py}). Each AudioSet ESC
-``background'' cut is paired with an Emilia
-foreground utterance (DNSMOS-filtered \cite{he2024emilia, reddy2021dnsmos})
-of $0.5$--$10$\,s, and combined under one of three modes drawn with
-probabilities $\{$overlap$\,0.8$, prepend$\,0.1$, append$\,0.1\}$. The
-SNR is $\mathrm{Uniform}(0, 20)$\,dB by default, except when the
-background's \texttt{custom.label\_only\_class} is \texttt{silence},
-in which case SNR is unconstrained (the foreground simply plays over
-the silence). Validation and the offline ESC test set
-(\texttt{audioset\_esc\_test\_mixed\_cuts.jsonl.gz}, $\sim$2{,}166 cuts)
-use a fixed mix seed so that loss curves stay comparable across
-checkpoints.
+An on-the-fly foreground mixer pairs each AudioSet ESC ``background''
+cut with an Emilia foreground utterance
+(DNSMOS-filtered~\cite{he2024emilia, reddy2021dnsmos}) of
+$0.5$--$10$\,s. The two are combined under one of three modes drawn
+with probabilities $\{$overlap $0.8$, prepend $0.1$, append $0.1\}$;
+SNR is $\mathrm{Uniform}(0, 20)$\,dB by default, and unconstrained
+when the background is itself a silence cut (the foreground simply
+plays over the silence). Validation and the offline ESC test set
+($\sim$$2{,}166$ cuts) use a fixed mix seed so that loss curves stay
+comparable across checkpoints.
 
 \subsection{Hotword Pool Construction at Training Time}
 \label{subsec:hotword-pool}
 
-Training-time hotword lists are assembled per-sample by
-\texttt{build\_hotwords\_for\_sample} in
-\path{src/integrations/ms_swift/data/hotwords.py}, in three stages
-configured through \path{configs/target_speaker/train.yaml}:
+Training-time hotword lists are assembled per sample in three stages:
 
 \begin{enumerate}
-  \item \textbf{Real terms.} Each ground-truth hotword from
-        \texttt{custom.hotwords} is independently dropped with
-        probability $\texttt{miss\_prob}=0.05$ to simulate imperfect
-        retrieval recall.
+  \item \textbf{Real terms.} Each ground-truth hotword is
+        independently dropped with probability $0.05$ to simulate
+        imperfect retrieval recall.
   \item \textbf{Hard negatives.} An online retriever fetches up to
-        $\texttt{online\_hard\_neg\_top\_k}=10$ confusable terms per
-        sample using a weighted score $0.6\cdot\text{char-overlap}
-        + 0.4\cdot\text{bigram-Jaccard}$ on a per-dataset hotword
-        index, augmented for Mandarin by a \texttt{pypinyin}-based
-        single-syllable swap retriever.
+        $K\!=\!10$ confusable terms per sample using the weighted
+        score $0.6\cdot\text{char-overlap} +
+        0.4\cdot\text{bigram-Jaccard}$ over a per-corpus hotword
+        index, augmented for Mandarin by a syllable-level
+        nearest-neighbour search.
   \item \textbf{Random distractors.} The remaining
-        $n_\text{distractor}\!\in[1, 20]$ slots
-        (\texttt{max\_hotwords}=20) are filled from the global hotword
-        pool, with \texttt{hard\_neg\_ratio}=1.0 of slots reserved for
-        hard negatives.
+        $n_\text{distractor}\!\in\![1, 20]$ slots are filled from the
+        global hotword pool, with the hard-to-random ratio set so
+        that hard negatives saturate first.
 \end{enumerate}
 
-The whole \texttt{Hotwords:} prompt line is then kept with probability
-$\texttt{prompt\_hotword\_prob}=0.8$ and dropped otherwise; this trains
-the same model to behave gracefully when no hotword side-channel is
-available.
+The whole hotword prompt line is then kept with probability $0.8$
+and dropped otherwise, training the same model to behave gracefully
+when no hotword side-channel is available at inference time.
 
 \subsection{Evaluation Datasets and Metrics}
 \label{subsec:eval-data}
 
-All evaluations are dispatched through a single registry
-(\texttt{src/dataset\_registry.py}) that the icefall-style decoder and
-the vLLM HTTP client share. Table~\ref{tab:eval} summarises the test
-sets that are reported in this paper. Per-language WER / CER, silence
-recall on negative TS-ASR samples, classification accuracy / macro-F1
-for SER, and Tag-set Micro / Macro F1 plus ROUGE-L for ESC are
-computed by \texttt{src/compute\_wer.py}.
+All evaluations are dispatched through a unified dataset registry,
+shared between the offline (icefall-style) decoder and the online
+batched inference server. Table~\ref{tab:eval} lists the test sets
+reported in this paper. Per-language WER and CER, silence recall on
+negative TS-ASR samples, classification accuracy and macro-F1 for
+SER, and tag-set micro / macro F1 plus ROUGE-L for ESC are computed
+by a single evaluation harness, so that all numbers in the paper come
+from the same metric implementation.
 
 \begin{table}[t]
-  \caption{Evaluation sets used in this report
-    (\texttt{configs/eval\_plans/asr\_full.yaml},
-    \texttt{hotwords.yaml}, \texttt{ts\_hw\_test\_only.yaml}).}
+  \caption{Evaluation sets used in this report. The hotword sweep
+    pads each test utterance to $k$ in-prompt hotwords by adding
+    random distractors drawn from the same corpus.}
   \label{tab:eval}
   \centering
   \small
@@ -358,16 +336,17 @@ computed by \texttt{src/compute\_wer.py}.
     \toprule
     Task & Test sets & Metric \\
     \midrule
-    ASR-zh        & aishell, aishell2, aishell3, magicdata, kespeech,
-                    thchs30, cv\_zh, wenetspeech \texttt{net}/\texttt{meeting},
-                    fleurs zh                                                  & CER \\
-    ASR-en        & librispeech \texttt{test-clean}/\texttt{-other},
-                    gigaspeech, mls, cv\_en, fleurs en                         & WER \\
+    ASR-zh        & AISHELL-1/2/3, MagicData, KeSpeech, THCHS-30,
+                    CommonVoice ZH, WenetSpeech (net / meeting),
+                    FLEURS ZH                                                  & CER \\
+    ASR-en        & LibriSpeech (test-clean / -other), GigaSpeech, MLS,
+                    CommonVoice EN, FLEURS EN                                  & WER \\
     Code-switch   & TALCS test \cite{li2022talcs}                              & MER \\
-    Hotword ASR   & cv\_zh\_hotwords, cv\_en\_hotwords (sweep
-                    $k\!\in\!\{0,5,10,15,20\}$)                                & CER / WER \\
-    TS-ASR        & internal \texttt{ts\_hw\_test} ($n{=}6{,}227$, $5$\,\%
-                    negatives) + LibriMix 2 / 3 \cite{cosentino2020librimix}    & MER + silence \\
+    Hotword ASR   & CommonVoice ZH / EN hotword splits (sweep
+                    $k\!\in\!\{0, 5, 10, 15, 20\}$)                            & CER / WER \\
+    TS-ASR        & internal hot+TS test ($n\!=\!6{,}227$, with $5$\,\%
+                    silent negatives) + LibriMix 2 / 3 \cite{cosentino2020librimix}
+                                                                              & MER + silence \\
     \bottomrule
   \end{tabular}
 \end{table}

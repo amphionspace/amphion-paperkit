@@ -6,7 +6,8 @@
 
 \paragraph{Decoding.}
 Unless otherwise stated we report greedy-decoded results obtained
-through the released vLLM server (\texttt{serve\_vllm.sh}).
+through the released vLLM~\cite{kwon2023vllm} batched inference
+server.
 % TODO: confirm whether the released numbers in Tables~\ref{tab:asr_en}
 % and \ref{tab:asr_zh} are greedy or beam-decoded.
 
@@ -14,10 +15,9 @@ through the released vLLM server (\texttt{serve\_vllm.sh}).
 For English benchmarks we apply the Whisper English text normalizer
 \cite{radford2023whisper} to both reference and hypothesis before
 computing WER. For Mandarin we apply a stripped-down normalizer that
-removes punctuation, normalises full-width / half-width characters and
-maps Arabic numerals to their Mandarin equivalents before CER.
+removes punctuation, normalises full-width / half-width characters
+and maps Arabic numerals to their Mandarin equivalents before CER.
 For TALCS we apply the union of the two normalizers and report MER.
-% TODO: link to the exact normalizer scripts in the released repo.
 
 \paragraph{Baselines.}
 We compare against Whisper-large-v3 \cite{radford2023whisper}, the
@@ -74,8 +74,8 @@ Section~\ref{sec:training}.
     KeSpeech                           & 19{,}723 & ? & ? & \textbf{6.72} \\
     THCHS-30                           & 2{,}495  & ? & ? & \textbf{3.99} \\
     CommonVoice 17 zh                  & 10{,}647 & ? & ? & \textbf{6.57} \\
-    WenetSpeech \texttt{test\_net}     & 24{,}774 & ? & ? & \textbf{10.67} \\
-    WenetSpeech \texttt{test\_meeting} & 8{,}370  & ? & ? & \textbf{10.38} \\
+    WenetSpeech test-net               & 24{,}774 & ? & ? & \textbf{10.67} \\
+    WenetSpeech test-meeting           & 8{,}370  & ? & ? & \textbf{10.38} \\
     FLEURS zh                          & 945      & ? & ? & \textbf{15.99} \\
     \bottomrule
   \end{tabular}

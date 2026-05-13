@@ -16,9 +16,9 @@ The full computational graph is reproduced as the teaser
 \Cref{fig:teaser} on the title page.
 
 Component-level parameter counts are summarised in
-Table~\ref{tab:params}. The total of $\approx 4.74$\,B includes the
-tied \texttt{lm\_head}; counting distinct parameters the model is
-$\approx 4.3$\,B.
+Table~\ref{tab:params}. The total of $\approx\!4.74$\,B includes the
+tied output projection; counting distinct parameters the model is
+$\approx\!4.3$\,B.
 
 \begin{table}[t]
   \caption{Per-component parameter counts.}
@@ -29,12 +29,12 @@ $\approx 4.3$\,B.
     \toprule
     Component & Parameters & Source / role \\
     \midrule
-    Audio encoder \texttt{audio\_encoder}      & 314.33\,M  & Qwen3-AuT (Whisper-style) \\
-    Multi-modal projector \texttt{projector}   &   9.18\,M  & Linear--SwooshR--Linear \\
-    Language model \texttt{language\_model}    & 4{,}411.42\,M  & Qwen3-4B-Instruct-2507 \\
-    Boundary prompt embedding                  &   0.01\,M  & $4 \times 2560$ learnable vectors \\
+    Audio encoder              & $314.33$\,M     & Qwen3-AuT (Whisper-style) \\
+    Multi-modal projector      & $9.18$\,M       & Linear--SwooshR--Linear \\
+    Language model             & $4{,}411.42$\,M & Qwen3-4B-Instruct-2507 \\
+    Boundary prompt embedding  & $0.01$\,M       & $4\!\times\!2560$ learnable vectors \\
     \midrule
-    Total                                      & $\approx 4.735$\,B & 4.3\,B distinct after lm\_head tying \\
+    Total                      & $\approx 4.735$\,B & $\approx 4.3$\,B distinct after output-embedding tying \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -43,14 +43,14 @@ $\approx 4.3$\,B.
 \label{subsec:audio-encoder}
 
 \paragraph{Front-end.}
-Audio is resampled to 16\,kHz mono and passed through the
-\texttt{WhisperFeatureExtractor} configuration in
-Table~\ref{tab:fe}: 25\,ms FFT window with 10\,ms hop produces a
-$128$-bin log-mel spectrogram at 100\,Hz; segments are padded or
-truncated to a 30\,s frame budget (3000 mel frames).
+Audio is resampled to 16\,kHz mono and passed through a Whisper-style
+log-mel front-end (Table~\ref{tab:fe}): a 25\,ms FFT window with
+10\,ms hop produces a $128$-bin log-mel spectrogram at 100\,Hz, and
+segments are padded or truncated to a 30\,s frame budget (3000 mel
+frames).
 
 \begin{table}[t]
-  \caption{Audio front-end configuration (\texttt{preprocessor\_config.json}).}
+  \caption{Audio front-end configuration.}
   \label{tab:fe}
   \centering
   \small
@@ -77,10 +77,10 @@ plane to a 1024-dimensional sequence.
 The encoder body is a 24-layer Whisper-style pre-LN Transformer with
 $d_{\text{model}}=1024$, $16$ attention heads and feed-forward width
 $4096$ (GELU activation). The full configuration is reproduced in
-Table~\ref{tab:enc}. The chunked-inference window
-\texttt{n\_window\_infer} of 800 lifts the standard Whisper
-$30$\,s ceiling and lets the encoder process long-form audio in
-constant memory by sliding over windows.
+Table~\ref{tab:enc}. A chunked-inference window of $800$ frames
+(versus $50$ at training time) lifts the standard Whisper $30$\,s
+ceiling and lets the encoder process long-form audio in constant
+memory by sliding over windows.
 
 \begin{table}[t]
   \caption{Qwen3-AuT audio encoder configuration.}
@@ -89,7 +89,7 @@ constant memory by sliding over windows.
   \small
   \begin{tabular}{ll}
     \toprule
-    Type                    & \texttt{amphion\_asr\_audio\_encoder} (Qwen3ASRAudioEncoder) \\
+    Architecture            & Whisper-style pre-LN encoder \\
     Input feature           & 128-bin log-mel \\
     Conv stem               & 3 layers, 480 channels each, $3\!\times\!3$ \\
     Conv exit projection    & Linear $7680 \!\to\! 1024$ \\
@@ -98,9 +98,9 @@ constant memory by sliding over windows.
     Attention heads         & 16 \\
     FFN width               & 4096 \\
     Activation              & GELU \\
-    Post-norm               & \texttt{ln\_post}: LayerNorm(1024) \\
+    Post-norm               & LayerNorm($1024$) \\
     Max source positions    & 1500 \\
-    Train / infer window    & $n_\text{window}{=}50$ / $n_{\text{window\_infer}}{=}800$ \\
+    Train / infer window    & $50$ / $800$ frames \\
     Output dimension        & 1024 \\
     \bottomrule
   \end{tabular}
@@ -154,25 +154,25 @@ Table~\ref{tab:llm}. Two points are worth highlighting:
 
 \begin{itemize}
   \item \textbf{Long context.} The 256\,K (262{,}144) native context
-        length carries over to AmphionASR; together with the encoder's
-        sliding window this enables long-form transcription that does
-        not rely on chunk stitching.
-  \item \textbf{Tied lm\_head.} \texttt{tie\_word\_embeddings} is
-        \texttt{true}; the saved \texttt{lm\_head.weight} is bit-equal
-        to \texttt{embed\_tokens.weight}. The component count of
+        length carries over to AmphionASR; together with the
+        encoder's sliding window this enables long-form transcription
+        that does not rely on chunk stitching.
+  \item \textbf{Tied output embedding.} The model uses input--output
+        embedding tying, so the language-modelling head shares weights
+        with the input embedding. The component count in
         Table~\ref{tab:params} is therefore an over-count by one
-        embedding tensor; we report ``$\approx 4.3$\,B distinct''
-        alongside ``$\approx 4.74$\,B total''.
+        embedding tensor; we report ``$\approx\!4.3$\,B distinct''
+        alongside ``$\approx\!4.74$\,B total''.
 \end{itemize}
 
 \begin{table}[t]
-  \caption{Language model configuration (\texttt{config.text\_config}).}
+  \caption{Language model configuration.}
   \label{tab:llm}
   \centering
   \small
   \begin{tabular}{ll}
     \toprule
-    Architecture                & Qwen3ForCausalLM \\
+    Architecture                & Qwen3-style decoder-only Transformer \\
     Hidden size                 & 2560 \\
     Hidden layers               & 36 \\
     Attention heads             & 32 \\
@@ -186,7 +186,7 @@ Table~\ref{tab:llm}. Two points are worth highlighting:
     Sliding window              & none (full attention in all 36 layers) \\
     Max position embeddings     & 262{,}144 (256\,K) \\
     Vocabulary                  & 151{,}936 \\
-    \texttt{tie\_word\_embeddings} & \texttt{true} \\
+    Input--output embedding     & tied \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -256,19 +256,17 @@ embedding sequence.
 
 AmphionASR exposes the same model under two prompt conventions
 (Table~\ref{tab:tasks}): the \emph{Swift} convention used by the
-ms-swift training pipeline (and shared by every released SFT and
+ms-swift training pipeline (and adopted in every released SFT and
 GRPO recipe in this report) and the \emph{Train} convention bundled
-with the icefall-style \texttt{src/train.py}. The two differ only in
-line ordering, the colon-vs-period at the end of the main instruction,
-the spacing around the \verb|Hotwords:| value, and whether the
-\verb|Language:| line is rendered. The vLLM client must be invoked
-with the matching style (\verb|-s swift| or \verb|-s train|) -- a
-mismatch causes the model to either repeat hotwords verbatim or skip
-the language hint, with measurable WER damage. The released
-preprocessor (\texttt{processing\_amphion\_asr.py}) implements a
-sixth Train-style task family for environmental sound captioning
-(\texttt{esc}) on top of the five published in
-\texttt{refs/docs/model\_arch.md}.
+with the legacy icefall-style training scripts. The two differ only
+in line ordering, the colon-vs-period at the end of the main
+instruction, the spacing around the hotword value, and whether the
+language hint is rendered as a separate line. The inference client
+must be invoked with the matching style; a mismatch causes the model
+to either repeat hotwords verbatim or skip the language hint, with
+measurable WER damage. In addition to the five tasks defined in the
+released model card, the preprocessor implements a sixth task family
+for environmental sound captioning (\texttt{esc}).
 
 \begin{table}[t]
   \caption{Task prompt templates. \texttt{\{speech\}} expands to
@@ -322,28 +320,27 @@ No special token marks the hotword list, so the LLM must learn the
 \subsection{Forward Pass and Merge}
 \label{subsec:merge}
 
-Given a raw waveform $\mathbf{x}$ and a tokenized prompt with
-\texttt{input\_ids}, the forward pass proceeds as follows
-(implemented in \texttt{forward} and \texttt{generate}):
+Given a raw waveform $\mathbf{x}$ and a tokenised prompt, the forward
+pass proceeds as follows:
 
 \begin{enumerate}
-  \item $\mathbf{x} \to \text{WhisperFeatureExtractor} \to (B, T_\text{mel}, 128)$ log-mel
+  \item $\mathbf{x} \to$ log-mel front-end $\to (B, T_\text{mel}, 128)$
         spectrogram;
   \item Audio encoder produces $(B, T', 1024)$ frame representations;
   \item Projector maps to $(B, T', 2560)$;
   \item Text branch yields $(B, L, 2560)$ token embeddings;
-  \item \texttt{\_merge\_input\_ids\_with\_speech\_features} performs
-        three operations: (i)~replace each \verb|<speech>| placeholder
-        with the corresponding audio embedding sequence in left-to-right
-        order; (ii)~override the four boundary-token embeddings with
-        the learnable prompt vectors; (iii)~apply a flip--pad--flip
-        trick that realises left-padding semantics so that batched
-        autoregressive decoding stays aligned;
-  \item The merged \texttt{inputs\_embeds} is fed to Qwen3-4B-Instruct
-        for next-token prediction. Training loss is the standard
-        causal-LM cross-entropy with audio positions masked
-        (\texttt{IGNORE\_TOKEN\_ID} $= -100$); only assistant tokens
-        contribute gradients.
+  \item A merge step performs three operations: (i)~replace each
+        \verb|<speech>| placeholder with the corresponding audio
+        embedding sequence in left-to-right order; (ii)~override the
+        four boundary-token embeddings with the learnable prompt
+        vectors; (iii)~apply a flip--pad--flip trick that realises
+        left-padding semantics so that batched autoregressive decoding
+        stays aligned;
+  \item The merged token / audio embedding stream is fed to
+        Qwen3-4B-Instruct for next-token prediction. Training loss is
+        the standard causal-LM cross-entropy with audio positions
+        masked from the loss; only assistant tokens contribute
+        gradients.
 \end{enumerate}
 
 Formally, with
@@ -368,31 +365,26 @@ A few engineering decisions are worth recording for reproducibility:
 \begin{itemize}
   \item \textbf{Pure-PyTorch SwooshR.} The activation in
         Equation~\ref{eq:swooshr} is reimplemented in PyTorch so the
-        inference graph does not depend on the
-        \texttt{k2}~\cite{yao2024zipformer} C++ runtime.
-  \item \textbf{Long-form audio.} \texttt{n\_window\_infer} of 800
-        lets the encoder process audio well beyond Whisper's 30\,s
-        budget; \texttt{Qwen3AudioEncoderWrapper.forward} runs encoder
-        chunks per-utterance to accommodate variable-length inputs.
-  \item \textbf{KV-cache.} \texttt{generate} feeds only
-        \texttt{inputs\_embeds + attention\_mask} to the LLM and
-        re-uses Qwen3's KV-cache; encoder and merge logic are skipped
-        once \texttt{past\_key\_values} is populated.
-  \item \textbf{Pluggable encoder.} The \texttt{build\_audio\_encoder}
-        factory registers \texttt{qwen3asr}, \texttt{qwen3omni},
-        \texttt{qwen3omni\_captioner}, and \texttt{zipformer}; the v3
-        checkpoint uses \texttt{qwen3asr}, but the same code path
-        loads a Zipformer \cite{yao2024zipformer} encoder for
-        ablation purposes.
-  \item \textbf{Backward-compatible state-dict migration.}
-        \texttt{\_migrate\_old\_state\_dict} silently remaps legacy
-        \texttt{audio\_encoder.*} weights into the wrapped
-        \texttt{audio\_encoder.encoder.*} namespace, so older
-        checkpoints can be loaded without conversion.
-  \item \textbf{Serving.} The released
-        \texttt{src/integrations/scripts/deploy/serve\_vllm.sh} brings
-        up vLLM \cite{kwon2023vllm} as a batched HTTP endpoint;
-        greedy decoding is the default for production traffic.
+        inference graph does not depend on any external C++ runtime.
+  \item \textbf{Long-form audio.} The encoder is wrapped to process
+        audio beyond Whisper's 30\,s budget by running per-utterance
+        chunked inference, accommodating variable-length inputs.
+  \item \textbf{KV-cache.} Generation feeds only the input embeddings
+        and attention mask to the LLM; the audio encoder and the
+        merge step are skipped once the KV-cache is populated, so
+        per-step decoding cost is identical to a text-only LLM.
+  \item \textbf{Pluggable encoder.} The audio encoder is loaded
+        through a small factory that supports the Qwen3 audio
+        encoder family as well as a Zipformer encoder
+        \cite{yao2024zipformer}; the v3 checkpoint uses Qwen3-AuT,
+        but the same code path can host a Zipformer for ablation.
+  \item \textbf{Backward-compatible state-dicts.} A migration
+        routine silently remaps weights from earlier checkpoints into
+        the wrapped encoder namespace, so previous releases can be
+        loaded without manual conversion.
+  \item \textbf{Serving.} The released model is served via vLLM
+        \cite{kwon2023vllm} as a batched HTTP endpoint; greedy
+        decoding is the default for production traffic.
         % TODO: confirm the exact decoding settings (beam, temperature,
         % repetition penalty, max-new-tokens) used to produce the
         % numbers in the main results table.

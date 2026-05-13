@@ -23,13 +23,12 @@ the augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
         $\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to
         $[-5, 20]$, with overlap fraction
         $\rho\!\sim\!\mathcal{N}(0.35, 0.2^2)$ in $[0.1, 1.0]$.
-  \item \textbf{Background-only / silence inputs.} The
-        \texttt{noise\_only} negative sub-type
-        (Section~\ref{subsec:tsasr-synth}, $\sim$$2$--$5$\,\% of cuts)
-        consists of a real enrollment paired with a $3$--$15$\,s
-        noise-only mixed channel and an empty target transcript,
-        explicitly teaching the decoder to stay silent when no speech
-        is present.
+  \item \textbf{Background-only / silence inputs.} The noise-only
+        negative sub-type (Section~\ref{subsec:tsasr-synth},
+        $\sim$$2$--$5$\,\% of cuts) consists of a real enrollment
+        paired with a $3$--$15$\,s noise-only mixed channel and an
+        empty target transcript, explicitly teaching the decoder to
+        stay silent when no speech is present.
 \end{itemize}
 
 This means that v3's apparent ``noise robustness'' on the standard
@@ -49,11 +48,10 @@ worth flagging:
         never reverberated and never overlaid with MUSAN or AudioSet
         traffic, so the noise-augmentation distribution is partially
         confounded with the TS-ASR conditioning prompt.
-  \item The internal far-field benchmark at
-        \path{/ai_sds_wuzz/MULTILINGUAL_DATA/noise/rirmega/data/manifests}
+  \item Our internal far-field benchmark
         % TODO: confirm the canonical citation / source URL for
-        % the Whisper-RIR-Mega test set and add the corresponding bib
-        % entry.
+        % the Whisper-RIR-Mega-style test set used internally and add
+        % the corresponding bib entry.
         is staged but not yet decoded against v3. Reporting it in a
         follow-up revision will let us isolate the marginal gain from
         the incidental TS-ASR augmentation against an explicit noise

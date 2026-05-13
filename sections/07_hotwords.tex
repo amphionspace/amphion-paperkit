@@ -3,32 +3,28 @@
 
 \subsection{Setup}
 
-The CommonVoice 17 hotword test splits
-(\texttt{commonvoice\_zh\_hotwords}, \texttt{commonvoice\_en\_hotwords})
-ship with a per-utterance ground-truth list
-\texttt{custom.hotwords} (offline-mined rare entities), filtered by
-the QA flag \texttt{custom.clean.pass}. For a target prompt size $k$,
-the eval client (\verb|eval_vllm.sh -w |$k$) pads each utterance's
-list to $k$ entries by mixing the ground-truth hotwords with random
-distractors drawn from the same dataset's hotword pool -- no online
-hard negatives are added at evaluation time, in contrast to training
-(Section~\ref{subsec:hotword-pool}). The $k=0$ row drops the
-\verb|Hotwords:| line entirely (the Train-style prompt instead
-renders \verb|Hotwords:N/A|, mirroring the training-time fallback)
-and is identical to the corresponding row of
+The CommonVoice 17 hotword test splits ship with a per-utterance
+ground-truth list of rare entities (mined offline) and a per-utterance
+QA acceptance flag. For a target prompt size $k$, the inference client
+pads each utterance's list to $k$ entries by mixing the ground-truth
+hotwords with random distractors drawn from the same corpus's hotword
+pool; no online hard negatives are added at evaluation time, in
+contrast to training (Section~\ref{subsec:hotword-pool}). The $k=0$
+row drops the hotword prompt line entirely (mirroring the training-time
+fallback) and is identical to the corresponding row of
 Tables~\ref{tab:asr_zh}--\ref{tab:asr_en}. We report CER for Mandarin
 and WER for English.
 
 Training-time hotword exposure for the v3 checkpoint follows
 Section~\ref{subsec:hotword-pool}: each sample's prompt is built from
-\textbf{real terms} (each ground-truth term independently dropped at
-$\texttt{miss\_prob}=0.05$), \textbf{up to 10 hard negatives} from a
+\textbf{real terms} (each ground-truth term independently dropped with
+probability $0.05$), \textbf{up to 10 hard negatives} from the
 char-overlap + bigram-Jaccard + pinyin-syllable retriever, and the
 \textbf{remainder of $n_\text{distractor}\!\in\![1, 20]$ slots} from
-the global pool, with the entire \verb|Hotwords:| line itself kept at
-$\texttt{prompt\_hotword\_prob}=0.8$. Training and evaluation sweeps
-therefore cover the same prompt-length regime, but evaluation is
-strictly easier (no hard-negative pressure).
+the global pool. The hotword prompt line itself is kept with
+probability $0.8$. Training and evaluation sweeps therefore cover the
+same prompt-length regime, but evaluation is strictly easier because
+it omits hard-negative pressure.
 
 \subsection{Results}
 

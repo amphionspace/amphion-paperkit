@@ -18,33 +18,27 @@ more of the model and adds more demanding tasks:
         representations into the LLM's token space without disturbing
         either the encoder's acoustic priors or the LLM's text
         capabilities.
-  \item \textbf{Stage~2 -- Continue SFT (\texttt{continue\_sft}).}
-        Projector, boundary prompts and the LLM are jointly fine-tuned
-        on a balanced mixture of Mandarin and English transcription.
-        The audio encoder remains frozen
-        (\texttt{--freeze\_vit true}).
-        The LLM is updated through a LoRA adapter
-        (\texttt{--tuner\_type lora}, rank $64$, $\alpha=128$, target
-        modules \texttt{all-linear}); the released checkpoint merges
-        the adapter back into the base weights via
-        \texttt{convert\_amphion\_to\_hf.py} (default
-        \texttt{merge-lora}), which is why the safetensors dump
-        contains no LoRA tensors. We use ms-swift
-        \cite{msswift} for distributed SFT.
-  \item \textbf{Stage~3 -- Capability SFT
-        (\texttt{ts\_hw\_v3}).} On top of the Stage~2 checkpoint, we
-        continue SFT on the full multi-task mixture
+  \item \textbf{Stage~2 -- Continue SFT.} Projector, boundary prompts
+        and the LLM are jointly fine-tuned on a balanced mixture of
+        Mandarin and English transcription; the audio encoder remains
+        frozen. The LLM is updated through a LoRA adapter (rank $64$,
+        $\alpha=128$, applied to all linear projections), and the
+        released checkpoint folds the adapter back into the base
+        weights, which is why the public weight dump contains no LoRA
+        tensors. SFT runs on top of ms-swift~\cite{msswift}.
+  \item \textbf{Stage~3 -- Capability SFT.} On top of the Stage~2
+        checkpoint, we continue SFT on the full multi-task mixture
         (Section~\ref{sec:data}): Mandarin / English / multilingual
-        ASR, hotword-conditioned ASR (with the online distractor +
+        ASR, hotword-conditioned ASR (with the online distractor and
         hard-negative pool of Section~\ref{subsec:hotword-pool}),
         target-speaker ASR (Section~\ref{subsec:tsasr-synth}),
-        anti-hallucination negatives, SER, SEC and ESC. Hyper-parameters
-        are inherited from Stage~2 unless noted.
+        anti-hallucination negatives, SER, SEC and ESC.
+        Hyper-parameters are inherited from Stage~2 unless noted.
 \end{enumerate}
 
-The version suffix \texttt{v3} indicates the third released iteration
-of Stage~3; v1 and v2 are referred to in
-Section~\ref{sec:analysis} only when relevant for ablation discussions.
+The version suffix v3 indicates the third released iteration of
+Stage~3; v1 and v2 are referred to in Section~\ref{sec:analysis}
+only when relevant for ablation discussions.
 % TODO: drop the v1/v2 sentence if no v1/v2 numbers are eventually reported.
 
 \subsection{Objective}
@@ -52,11 +46,11 @@ Section~\ref{sec:analysis} only when relevant for ablation discussions.
 For all three stages we use token-level cross-entropy on the assistant
 tokens, with loss masked over the prompt tokens (system instructions,
 task header, language line, hotword line, audio embedding positions
-and the enrollment audio block). Audio positions carry the special
-\texttt{IGNORE\_TOKEN\_ID = -100}. Anti-hallucination negatives use an
-empty assistant string, so the model learns to terminate immediately
-after the assistant header. For an input prompt $\mathbf{p}$ and
-reference transcript $\mathbf{y} = (y_1, \ldots, y_T)$,
+and the enrollment audio block). Audio positions are masked from the
+loss as a hard rule. Anti-hallucination negatives use an empty
+assistant string, so the model learns to terminate immediately after
+the assistant header. For an input prompt $\mathbf{p}$ and reference
+transcript $\mathbf{y} = (y_1, \ldots, y_T)$,
 
 \begin{equation}
   \mathcal{L}(\theta) = -\sum_{t=1}^{T} \log p_\theta(y_t \mid y_{<t}, \mathbf{p}).
@@ -68,16 +62,14 @@ projector is trained purely through the LLM gradient.
 
 \subsection{Optimisation}
 
-Table~\ref{tab:hparams} summarises the per-stage hyperparameters
-extracted from \path{src/integrations/scripts/train/sft_swift.sh};
-entries marked \texttt{?} are still pending the published training
-log.
+Table~\ref{tab:hparams} summarises the per-stage hyperparameters used
+to produce the v3 checkpoint; entries marked \texttt{?} are still
+pending the published training log.
 
 \begin{table}[t]
-  \caption{Per-stage SFT hyperparameters
-    (\texttt{src/integrations/scripts/train/sft\_swift.sh}). Effective
-    global batch size at Stage~2/3 is
-    $16 \times 4 \times 4 = 256$ samples per step.}
+  \caption{Per-stage SFT hyperparameters. The effective global batch
+    size at Stage~2/3 is $16 \times 4 \times N_\text{gpu}$ samples
+    per step.}
   \label{tab:hparams}
   \centering
   \small
@@ -125,18 +117,16 @@ HTTP service (Section~\ref{subsec:inference}).
 \subsection{Reinforcement Learning Stage (Optional)}
 \label{subsec:grpo}
 
-The integration code ships with a Group Relative Policy Optimisation
-(GRPO) recipe in
-\texttt{src/integrations/scripts/train/grpo\_swift.sh} that can be
-applied as a fourth stage on top of any SFT checkpoint. We sketch the
-recipe here for completeness, even though the v3 checkpoint reported
-in this paper is SFT-only
+The integration stack also ships a Group Relative Policy Optimisation
+(GRPO) recipe that can be applied as a fourth stage on top of any
+SFT checkpoint. We sketch the recipe here for completeness, even
+though the v3 checkpoint reported in this paper is SFT-only
 % TODO: confirm whether v3 already includes a GRPO pass, or whether
 % GRPO will only appear in v4. Move this subsection accordingly.
 .
 
-GRPO uses three rule-based, verifiable rewards directly on the bare
-assistant text -- no LLM judge is required:
+GRPO uses three rule-based, verifiable rewards computed directly on
+the bare assistant text -- no LLM judge is required:
 
 \begin{equation}
   R = w_\text{acc}\cdot R_\text{acc}
@@ -156,28 +146,26 @@ with the three components defined as follows:
         empty-reference branch handles anti-hallucination negatives:
         the model is rewarded only if it stays silent.
   \item \textbf{Hotword.}
-        For a candidate set $C$ extracted from the prompt's
-        \verb|Hotwords:| line, $R_\text{hw} = |C|^{-1}\sum_{c\in C}
+        For a candidate set $C$ extracted from the prompt's hotword
+        line, $R_\text{hw} = |C|^{-1}\sum_{c\in C}
         \mathbf{1}[\mathbf{1}[c\in\hat y]\!=\!\mathbf{1}[c\in y]]$.
-        When the prompt has no \verb|Hotwords:| line we return a
-        neutral $R_\text{hw}=1$ so that ordinary ASR samples are not
+        When the prompt has no hotword line we return a neutral
+        $R_\text{hw}=1$ so that ordinary ASR samples are not
         penalised for ``missing'' hotword signal.
-  \item \textbf{Format.} A silence-aware structural check that returns
-        $0$ when (i) $y$ is non-empty but $\hat y$ is blank,
+  \item \textbf{Format.} A silence-aware structural check that
+        returns $0$ when (i) $y$ is non-empty but $\hat y$ is blank,
         (ii) $y$ is empty but $\hat y$ is non-blank, or (iii) $\hat y$
-        re-emits one of the prompt scaffolding tokens
-        \verb|Language:| / \verb|Hotwords:| / \verb|Transcription:|
-        (preventing prompt copy-back loops). Any other output returns
-        $1$.
+        copies back any of the prompt scaffolding tokens (e.g.\ a
+        ``Language:'' or ``Hotwords:'' header), preventing prompt
+        copy-back loops. Any other output returns $1$.
 \end{itemize}
 
 A representative configuration draws $16$ generations per prompt at
-temperature $0.6$ (\texttt{top\_k}\,=\,$50$), with peak learning rate
-$1\!\times\!10^{-6}$ for one epoch, per-device prompt batch of $8$
-and grad-accumulation $2$. An optional rollout server
-(\texttt{run\_rollout\_server.sh}, vLLM in \texttt{enforce\_eager}
-mode on port 8006) decouples sampling from gradient updates. The same
-unified prompt template (Section~\ref{subsec:tokens}) makes both
-$R_\text{acc}$ and $R_\text{hw}$ recoverable from the prompt and
-ground-truth alone, so \emph{no LLM judge} is needed -- a deliberate
-design choice that keeps RL inexpensive and audit-friendly.
+temperature $0.6$, with peak learning rate $1\!\times\!10^{-6}$ for
+one epoch, per-device prompt batch of $8$ and grad-accumulation $2$.
+An optional asynchronous rollout server decouples sampling from the
+gradient update loop. The same unified prompt template
+(Section~\ref{subsec:tokens}) makes both $R_\text{acc}$ and
+$R_\text{hw}$ recoverable from the prompt and ground-truth alone, so
+\emph{no LLM judge} is needed -- a deliberate design choice that keeps
+RL inexpensive and audit-friendly.
