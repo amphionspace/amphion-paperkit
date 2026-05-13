@@ -2,42 +2,105 @@
 \label{sec:model}
 
 \subsection{Overview}
-% TODO: Figure of architecture (audio -> encoder -> adapter -> LLM -> text).
+
+Figure~\ref{fig:arch} shows the overall design. AmphionASR is a
+three-block model: a speech encoder produces frame-level
+representations; a small adapter downsamples and projects them into the
+LLM's token space; the LLM decoder produces the transcript
+auto-regressively, conditioned on a structured prompt that may carry a
+hotword list and a target-speaker reference.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/architecture.pdf}
-  \caption{Overview of LLM-ASR. A speech encoder produces frame-level
-    representations that are downsampled by a lightweight adapter and
-    consumed as soft prefix tokens by a pre-trained LLM decoder. The
-    encoder is frozen during early training; the adapter is always
-    trainable; the LLM is unlocked progressively across the three
-    training stages described in Section~\ref{sec:training}.}
+  \caption{Overview of AmphionASR. The audio encoder is frozen
+    throughout training; the adapter is always trainable; the LLM
+    backbone (Qwen3-4B-Base) is unlocked progressively across the three
+    training stages described in Section~\ref{sec:training}. Hotwords
+    enter the prompt as a plain text list; a target-speaker reference
+    enters as either a reference utterance or a speaker identifier.}
   \label{fig:arch}
 \end{figure}
 
 \subsection{Audio Encoder}
-% TODO: Whisper-large-v3 encoder / Conformer / your own. Frame rate, dim, params.
+
+We use the encoder of Whisper-large-v3 \citep{radford2023whisper}: 32
+Transformer layers with hidden size 1280, producing a 50\,Hz frame-level
+representation from a log-Mel spectrogram. The encoder is frozen during
+all training stages; this preserves Whisper's robustness on noisy and
+out-of-domain audio while letting the adapter and LLM specialise to the
+text decoder we wire up.
 
 \subsection{Adapter}
-% TODO: Conv downsampling + Q-Former / linear projection / cross-attention.
-% Justify the design and report the parameter count.
-The adapter consists of a strided convolutional stack that reduces the
-encoder frame rate from 50\,Hz to 12.5\,Hz, followed by a two-layer MLP
-that projects to the LLM hidden size.
+
+The adapter is a stride-4 convolutional stack that lowers the encoder
+frame rate from 50\,Hz to 12.5\,Hz, followed by a two-layer MLP that
+projects to the LLM's hidden size of 2560. Total adapter size is
+approximately 25\,M parameters.
+% TODO: confirm exact conv kernel widths, channel sizes, dropout, and
+% the exact MLP width used in the released checkpoint.
+The adapter is the only fully trainable module in Stage~1 (audio--text
+alignment, see Section~\ref{sec:training}).
 
 \subsection{LLM Decoder}
-% TODO: Backbone (Qwen2.5 / Llama-3 / your own), size, vocab, context length.
+
+The decoder is Qwen3-4B-Base \citep{qwen2025qwen3}: 36 Transformer
+layers, hidden size 2560, FFN intermediate size 9728, grouped-query
+attention with 32 query heads and 8 key/value heads
+(head dim 128), 32K context length, and a 151{,}936-token tokenizer
+shared with the rest of the Qwen3 family. We retain SwiGLU activations,
+RMSNorm pre-normalization, RoPE positional encoding and QK-norm as
+inherited from the Qwen3-Base configuration.
+% Source: huggingface.co/Qwen/Qwen3-4B-Base config.json (retrieved 2026-05).
+
+\subsection{Hotword Conditioning}
+\label{subsec:hotword-mech}
+
+Hotwords are passed to the model as a plain text list inside the
+prompt, before the audio token segment. No architectural change is
+needed. Concretely, the prompt template includes a
+\verb|<|hotwords\verb|>| field whose payload is up to twenty
+comma-separated terms; during training the model sees a mixture of
+empty, true-positive (terms that appear in the transcript) and
+distractor lists so that it learns to bias toward terms only when they
+are acoustically supported.
+% TODO: confirm the exact in-prompt syntax (delimiter, max number,
+% whether a special token marks the end of the list) and the
+% distractor-sampling policy used during Stage~3.
+
+\subsection{Target-Speaker Conditioning}
+\label{subsec:tsasr-mech}
+
+Target-speaker recognition is also handled through the prompt: the
+\verb|<|target\verb|>| field can carry either a short reference
+utterance (encoded by the same audio encoder and projected by the same
+adapter, then concatenated as additional audio tokens before the main
+audio segment) or a speaker identifier from a known enrollment set.
+% TODO: confirm the released checkpoint's actual target-speaker
+% conditioning path -- in particular, whether a separate speaker
+% encoder is used or whether the reference utterance is consumed by
+% the same Whisper encoder, and how the boundary between reference
+% and target audio is signalled to the model.
 
 \subsection{Inference}
-% TODO: Prompt template, decoding (beam vs. greedy), timestamp / segmentation.
 
-\begin{lstlisting}[caption={Default ASR prompt template.}]
+At inference time we deploy the model with vLLM \citep{kwon2023vllm}
+behind a batched HTTP endpoint
+(\texttt{src/integrations/scripts/deploy/serve\_vllm.sh} in the
+released code). We use greedy decoding by default, with a
+beam search of width 4 reserved for the headline numbers reported in
+Section~\ref{sec:experiments}.
+% TODO: confirm the exact beam, temperature, repetition penalty, and
+% max-new-tokens settings used to produce the numbers in the main
+% results table.
+
+\begin{lstlisting}[caption={Default AmphionASR prompt template (illustrative; see Section~\ref{subsec:hotword-mech} and \ref{subsec:tsasr-mech}).}]
 <|system|>
 You are a careful speech transcriber. Produce a verbatim transcript
 in the language spoken in the audio.
-<|audio|>
-<|user|>
-Transcribe the audio.
+<|hotwords|>{hot_1, hot_2, ..., hot_k}
+<|target|>{<reference audio> | <speaker_id>}
+<|audio|>[audio tokens]
+<|user|>Transcribe the audio.
 <|assistant|>
 \end{lstlisting}

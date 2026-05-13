@@ -1,0 +1,63 @@
+\section{Hotword Conditioning}
+\label{sec:hotwords}
+
+\subsection{Setup}
+
+We construct CommonVoice 17 hotword test sets by sampling, for each
+utterance in the standard CV17 test split, $k$ ``hotword'' terms drawn
+from the union of (i)~rare named entities present in the reference
+transcript and (ii)~distractor terms drawn from the global rare-word
+distribution that are \emph{not} present in the transcript. We sweep
+$k \in \{0, 5, 10, 15, 20\}$ and report CER for Mandarin and WER for
+English. The $k=0$ row is identical to the corresponding row of
+Tables~\ref{tab:asr_zh} and \ref{tab:asr_en} and serves as the
+no-hotword reference.
+% TODO: confirm the exact distractor-to-positive ratio used to build the
+% test sets, and whether the same ratio is used during Stage~3 training.
+
+\subsection{Results}
+
+\begin{table}[t]
+  \caption{Effect of in-prompt hotwords on CommonVoice 17. CER (\%) for
+    Mandarin and WER (\%) for English. Lower is better. $k$ is the
+    number of hotwords supplied through the prompt.}
+  \label{tab:hotwords}
+  \centering
+  \small
+  \begin{tabular}{lrccccc}
+    \toprule
+    & & $k=0$ & $k=5$ & $k=10$ & $k=15$ & $k=20$ \\
+    \midrule
+    CV17 zh hotword test  & $n=10{,}647$ & 6.57 & \textbf{2.83} & 2.85 & 2.89 & 2.91 \\
+    CV17 en hotword test  & $n=16{,}294$ & 9.65 & \textbf{4.89} & 4.99 & 5.03 & 5.09 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Analysis}
+
+Two effects are visible in Table~\ref{tab:hotwords}:
+
+\paragraph{Large absolute gains from a small list.}
+Five hotwords already deliver a $3.74$ absolute CER reduction on
+Mandarin (from $6.57$\% to $2.83$\%) and a $4.76$ absolute WER reduction
+on English (from $9.65$\% to $4.89$\%). This is consistent with the
+intuition that the rare-entity tail dominates the residual error of an
+otherwise-well-trained ASR model, and that an LLM is well placed to
+``snap'' to the suggested term when it is acoustically supported.
+
+\paragraph{Diminishing -- and slightly inverted -- returns past five.}
+Going from five to twenty hotwords has a small but consistent negative
+effect (roughly $+0.08$ CER on Mandarin, $+0.20$ WER on English).
+% TODO: verify that this monotone pattern persists when we control for
+% the number of true-positive terms in the list -- the current sweep
+% mixes positives and distractors and the distractor count grows with
+% k.
+We attribute this in part to false-positive triggering on distractors;
+Section~\ref{sec:analysis} returns to this with a per-utterance
+breakdown of insertion versus substitution errors.
+
+\paragraph{Implication for deployment.}
+For latency- and quality-sensitive deployments, supplying around five
+likely hotwords per utterance (rather than dumping a full domain
+glossary) appears to be a strong default for AmphionASR.

@@ -2,31 +2,64 @@
 \label{sec:related}
 
 \paragraph{End-to-end ASR.}
-% TODO: CTC / RNN-T / AED briefly. Conformer \citep{gulati2020conformer}.
-End-to-end ASR replaces traditional pipelines with a single neural model
-\citep{graves2006ctc, graves2012rnnt, chan2016las, gulati2020conformer}.
-
-\paragraph{Self-supervised speech representations.}
-% TODO: wav2vec 2.0, HuBERT, WavLM, BEATs.
-Self-supervised pre-training on unlabeled audio
-\citep{baevski2020wav2vec2, hsu2021hubert} provides strong encoders that
-transfer well to downstream ASR with limited supervision.
+End-to-end ASR replaces the HMM-DNN pipeline with a single neural model
+\citep{graves2006ctc, graves2012rnnt, chan2016las}. The Conformer
+encoder \citep{gulati2020conformer} has become a near-universal
+backbone, and self-supervised pre-training on unlabeled audio
+\citep{baevski2020wav2vec2, hsu2021hubert} provides strong starting
+points that transfer to ASR with limited supervision.
 
 \paragraph{Large-scale weakly-supervised ASR.}
-% TODO: Whisper, USM, Canary, OWSM.
-Whisper \citep{radford2023whisper} and follow-up systems demonstrated the
-benefit of scaling weakly-supervised data, achieving robust performance
-across domains and languages.
+Whisper \citep{radford2023whisper} demonstrated that 680\,k hours of
+noisy weakly-supervised data yield a model that is robust across
+languages and recording conditions. Its encoder, in particular, has
+become a popular off-the-shelf speech feature extractor for downstream
+audio LLMs, and is the encoder we use in this work.
 
 \paragraph{LLM-based and audio-LLM ASR.}
-% TODO: SLAM-ASR, Qwen-Audio, SALMONN, Step-Audio, Kimi-Audio, Seed-ASR.
-Recent work couples speech encoders with pre-trained LLMs as the decoder,
-yielding systems that share a single backbone for transcription and
-downstream language tasks \citep{chu2023qwenaudio, tang2024salmonn}.
-Our work follows this line and contributes a careful study of data mixing,
-adapter design, and staged training.
+A growing line of work pairs a speech encoder with a pre-trained LLM
+decoder. Qwen-Audio \citep{chu2023qwenaudio} and
+SALMONN \citep{tang2024salmonn} established the basic recipe -- encoder,
+adapter, frozen-then-fine-tuned LLM. More recent technical reports such
+as Step-Audio~2 \citep{stepaudio22025}, Kimi-Audio \citep{kimiaudio2025}
+and Qwen3-ASR \citep{qwen2025qwen3asr} push the data scale and add
+features such as in-prompt context biasing, multilingual support and
+streaming inference. AmphionASR follows this template but is optimised
+specifically for transcription quality together with hotword and
+target-speaker capabilities, and is built on Qwen3-4B-Base
+\citep{qwen2025qwen3} for an explicit cost--quality target.
+
+\paragraph{Hotword / contextual biasing.}
+Classical approaches inject biasing via finite-state transducer
+contextual graphs or on-the-fly shallow fusion. End-to-end neural
+approaches such as CLAS \citep{pundak2018deep} learn to attend to
+embeddings of hotword n-grams jointly with the recognizer, which is
+robust to out-of-vocabulary terms supplied at inference time. With
+LLM-based ASR, a textual hotword list can simply enter the prompt; this
+is the route taken by Qwen3-ASR Flash \citep{qwen2025qwen3asr} and by
+AmphionASR (Section~\ref{sec:hotwords}).
+
+\paragraph{Multi-talker and target-speaker ASR.}
+Multi-talker ASR aims to transcribe overlapping speech; representative
+end-to-end approaches include serialized output training
+\citep{kanda2020serialized}. Target-speaker ASR is the related but
+narrower task of transcribing one designated speaker, typically using a
+reference utterance to derive a speaker embedding that conditions the
+recognizer. We train this capability end-to-end through prompt
+conditioning and report results both on our internal Mandarin set and
+on the public LibriMix benchmarks \citep{cosentino2020librimix}
+(Section~\ref{sec:tsasr}).
+
+\paragraph{Code-switching ASR.}
+Mandarin--English code-switching is a stress test for multilingual ASR.
+TALCS \citep{li2022talcs} provides 587\,h of real Mandarin--English
+classroom audio and is the standard public benchmark in the line; we
+report TALCS test-set MER as one of our headline numbers.
 
 \paragraph{Positioning.}
-Compared with prior audio-LLMs that focus on general audio understanding,
-\textbf{LLM-ASR} is optimized specifically for transcription quality and
-contextual ASR while preserving the LLM's instruction-following abilities.
+Compared with general-purpose audio LLMs, AmphionASR is narrower in
+scope (transcription, hotwords, target speaker) and explicit about its
+gaps (no dedicated noise-robustness training in this version). Compared
+with the open Qwen3-ASR-1.7B / 0.6B \citep{qwen2025qwen3asr}, our model
+has a larger LLM decoder and is positioned to favour bilingual quality
+and prompt-driven biasing rather than the broadest language coverage.

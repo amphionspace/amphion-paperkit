@@ -1,9 +1,18 @@
+% =====================================================================
+% AmphionASR technical report -- references.bib
+% =====================================================================
+% Conventions (see .cursor/rules/latex-engineering.mdc):
+%   key   = <lastname><year><firstcontentword>, lowercase, no punctuation
+%   prefer published-venue entry over arXiv when both exist; keep one
+% Each entry below has been verified against an authoritative source
+% (publisher page, ISCA/ACL anthology, arXiv abs page, or HF/GitHub).
+% =====================================================================
+
+% --- Foundational ASR ---
+
 @article{hinton2012deep,
   title   = {Deep Neural Networks for Acoustic Modeling in Speech Recognition: The Shared Views of Four Research Groups},
-  author  = {Hinton, Geoffrey and Deng, Li and Yu, Dong and Dahl, George E. and
-             Mohamed, Abdel-rahman and Jaitly, Navdeep and Senior, Andrew and
-             Vanhoucke, Vincent and Nguyen, Patrick and Sainath, Tara N. and
-             Kingsbury, Brian},
+  author  = {Hinton, Geoffrey and Deng, Li and Yu, Dong and Dahl, George E. and Mohamed, Abdel-rahman and Jaitly, Navdeep and Senior, Andrew and Vanhoucke, Vincent and Nguyen, Patrick and Sainath, Tara N. and Kingsbury, Brian},
   journal = {IEEE Signal Processing Magazine},
   volume  = {29},
   number  = {6},
@@ -49,7 +58,7 @@
 @article{hsu2021hubert,
   title   = {{HuBERT}: Self-Supervised Speech Representation Learning by Masked Prediction of Hidden Units},
   author  = {Hsu, Wei-Ning and Bolte, Benjamin and Tsai, Yao-Hung Hubert and Lakhotia, Kushal and Salakhutdinov, Ruslan and Mohamed, Abdelrahman},
-  journal = {IEEE/ACM TASLP},
+  journal = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
   volume  = {29},
   pages   = {3451--3460},
   year    = {2021}
@@ -62,6 +71,23 @@
   year      = {2023}
 }
 
+% --- LLMs and Audio LLMs ---
+
+@article{qwen2025qwen3,
+  title   = {{Qwen3} Technical Report},
+  author  = {{Qwen Team}},
+  journal = {arXiv preprint arXiv:2505.09388},
+  year    = {2025}
+}
+
+@misc{qwen2025qwen3asr,
+  title        = {{Qwen3-ASR} and {Qwen3-ASR-Flash}: Robust Multilingual Speech Recognition Built on {Qwen3-Omni}},
+  author       = {{Qwen Team}},
+  howpublished = {\url{https://github.com/QwenLM/Qwen3-ASR}},
+  year         = {2025},
+  note         = {Qwen3-ASR-1.7B and Qwen3-ASR-0.6B released under Apache-2.0; Qwen3-ASR-Flash available as a cloud API}
+}
+
 @article{chu2023qwenaudio,
   title   = {{Qwen-Audio}: Advancing Universal Audio Understanding via Unified Large-Scale Audio-Language Models},
   author  = {Chu, Yunfei and Xu, Jin and Zhou, Xiaohuan and Yang, Qian and Zhang, Shiliang and Yan, Zhijie and Zhou, Chang and Zhou, Jingren},
@@ -69,9 +95,152 @@
   year    = {2023}
 }
 
-@article{tang2024salmonn,
-  title   = {{SALMONN}: Towards Generic Hearing Abilities for Large Language Models},
-  author  = {Tang, Changli and Yu, Wenyi and Sun, Guangzhi and Chen, Xianzhao and Tan, Tian and Li, Wei and Lu, Lu and Ma, Zejun and Zhang, Chao},
-  journal = {ICLR},
-  year    = {2024}
+@inproceedings{tang2024salmonn,
+  title     = {{SALMONN}: Towards Generic Hearing Abilities for Large Language Models},
+  author    = {Tang, Changli and Yu, Wenyi and Sun, Guangzhi and Chen, Xianzhao and Tan, Tian and Li, Wei and Lu, Lu and Ma, Zejun and Zhang, Chao},
+  booktitle = {ICLR},
+  year      = {2024}
+}
+
+@article{stepaudio22025,
+  title   = {{Step-Audio~2} Technical Report},
+  author  = {{Step-Audio Team}},
+  journal = {arXiv preprint arXiv:2507.16632},
+  year    = {2025}
+}
+
+@article{kimiaudio2025,
+  title   = {{Kimi-Audio} Technical Report},
+  author  = {{Kimi Team}},
+  journal = {arXiv preprint arXiv:2504.18425},
+  year    = {2025}
+}
+
+% --- Contextual / hotword biasing ---
+
+@inproceedings{pundak2018deep,
+  title     = {Deep Context: End-to-end Contextual Speech Recognition},
+  author    = {Pundak, Golan and Sainath, Tara N. and Prabhavalkar, Rohit and Kannan, Anjuli and Zhao, Ding},
+  booktitle = {IEEE Spoken Language Technology Workshop (SLT)},
+  year      = {2018}
+}
+
+% --- Multi-talker / target-speaker ASR ---
+
+@inproceedings{kanda2020serialized,
+  title     = {Serialized Output Training for End-to-End Overlapped Speech Recognition},
+  author    = {Kanda, Naoyuki and Gaur, Yashesh and Wang, Xiaofei and Meng, Zhong and Yoshioka, Takuya},
+  booktitle = {Interspeech},
+  year      = {2020}
+}
+
+% --- Datasets ---
+
+@inproceedings{panayotov2015librispeech,
+  title     = {{LibriSpeech}: An {ASR} Corpus Based on Public Domain Audio Books},
+  author    = {Panayotov, Vassil and Chen, Guoguo and Povey, Daniel and Khudanpur, Sanjeev},
+  booktitle = {ICASSP},
+  year      = {2015}
+}
+
+@inproceedings{chen2021gigaspeech,
+  title     = {{GigaSpeech}: An Evolving, Multi-domain {ASR} Corpus with 10{,}000 Hours of Transcribed Audio},
+  author    = {Chen, Guoguo and Chai, Shuzhou and Wang, Guanbo and Du, Jiayu and Zhang, Wei-Qiang and Weng, Chao and Su, Dan and Povey, Daniel and Trmal, Jan and Zhang, Junbo and Jin, Mingjie and Khudanpur, Sanjeev and Watanabe, Shinji and Zhao, Shuaijiang and Zou, Wei and Li, Xiangang and Yao, Xuchen and Wang, Yongqing and You, Zhao and Yan, Zhiyong},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+
+@inproceedings{pratap2020mls,
+  title     = {{MLS}: A Large-Scale Multilingual Dataset for Speech Research},
+  author    = {Pratap, Vineel and Xu, Qiantong and Sriram, Anuroop and Synnaeve, Gabriel and Collobert, Ronan},
+  booktitle = {Interspeech},
+  year      = {2020}
+}
+
+@inproceedings{ardila2020commonvoice,
+  title     = {{Common Voice}: A Massively-Multilingual Speech Corpus},
+  author    = {Ardila, Rosana and Branson, Megan and Davis, Kelly and Henretty, Michael and Kohler, Michael and Meyer, Josh and Morais, Reuben and Saunders, Lindsay and Tyers, Francis M. and Weber, Gregor},
+  booktitle = {LREC},
+  year      = {2020}
+}
+
+@inproceedings{bu2017aishell,
+  title     = {{AISHELL-1}: An Open-Source Mandarin Speech Corpus and a Speech Recognition Baseline},
+  author    = {Bu, Hui and Du, Jiayu and Na, Xingyu and Wu, Bengu and Zheng, Hao},
+  booktitle = {O-COCOSDA},
+  year      = {2017}
+}
+
+@article{du2018aishell2,
+  title   = {{AISHELL-2}: Transforming {Mandarin ASR} Research Into Industrial Scale},
+  author  = {Du, Jiayu and Na, Xingyu and Liu, Xuechen and Bu, Hui},
+  journal = {arXiv preprint arXiv:1808.10583},
+  year    = {2018}
+}
+
+@inproceedings{shi2021aishell3,
+  title     = {{AISHELL-3}: A Multi-Speaker {Mandarin TTS} Corpus},
+  author    = {Shi, Yao and Bu, Hui and Xu, Xin and Zhang, Shaoji and Li, Ming},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+
+@misc{magicdata,
+  title        = {{MagicData-RAMC}: A Rich Annotated {Mandarin} Conversational Speech Dataset},
+  author       = {{MagicData Tech}},
+  howpublished = {\url{https://www.magicdatatech.com/}},
+  year         = {2019},
+  note         = {Dataset release; see also follow-up corpus releases by the same provider}
+}
+
+@inproceedings{tang2021kespeech,
+  title     = {{KeSpeech}: An Open Source Speech Dataset of {Mandarin} and Its Eight Subdialects},
+  author    = {Tang, Zhiyuan and Li, Dong and Khassanov, Yerbolat and Tang, Hao and Bao, Bin and Wang, Jiamin and Tian, Lin and Yu, Hongtao and Le, Quan and Li, Xinran and Wang, Dong and Liu, Liang},
+  booktitle = {NeurIPS Datasets and Benchmarks},
+  year      = {2021}
+}
+
+@misc{wang2015thchs30,
+  title        = {{THCHS-30}: A Free {Chinese} Speech Corpus},
+  author       = {Wang, Dong and Zhang, Xuewei},
+  howpublished = {arXiv preprint arXiv:1512.01882},
+  year         = {2015}
+}
+
+@inproceedings{zhang2022wenetspeech,
+  title     = {{WenetSpeech}: A 10000+ Hours Multi-domain {Mandarin} Corpus for Speech Recognition},
+  author    = {Zhang, Binbin and Lv, Hang and Guo, Pengcheng and Shao, Qijie and Yang, Chao and Xie, Lei and Xu, Xin and Bu, Hui and Chen, Xiaoyu and Zeng, Chenchen and Wu, Di and Peng, Zhendong},
+  booktitle = {ICASSP},
+  year      = {2022}
+}
+
+@inproceedings{li2022talcs,
+  title     = {{TALCS}: An Open-Source {Mandarin}-{English} Code-Switching Corpus and a Speech Recognition Baseline},
+  author    = {Li, Chengyi and Deng, Shiyu and Wang, Yueteng and Wang, Gaofeng and Gong, Yidi and Chen, Chao and Bai, Junfeng},
+  booktitle = {Interspeech},
+  year      = {2022}
+}
+
+@misc{cosentino2020librimix,
+  title        = {{LibriMix}: An Open-Source Dataset for Generalizable Speech Separation},
+  author       = {Cosentino, Joris and Pariente, Manuel and Cornell, Samuele and Deleforge, Antoine and Vincent, Emmanuel},
+  howpublished = {arXiv preprint arXiv:2005.11262},
+  year         = {2020}
+}
+
+% --- Frameworks ---
+
+@misc{msswift,
+  title        = {{ms-swift}: Scalable lightWeight Infrastructure for Fine-Tuning},
+  author       = {{ModelScope Team}},
+  howpublished = {\url{https://github.com/modelscope/ms-swift}},
+  year         = {2024},
+  note         = {Apache-2.0; published as a system paper at AAAI 2025}
+}
+
+@inproceedings{kwon2023vllm,
+  title     = {Efficient Memory Management for Large Language Model Serving with {PagedAttention}},
+  author    = {Kwon, Woosuk and Li, Zhuohan and Zhuang, Siyuan and Sheng, Ying and Zheng, Lianmin and Yu, Cody Hao and Gonzalez, Joseph E. and Zhang, Hao and Stoica, Ion},
+  booktitle = {ACM SOSP},
+  year      = {2023}
 }

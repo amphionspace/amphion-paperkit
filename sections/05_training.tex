@@ -2,24 +2,59 @@
 \label{sec:training}
 
 \subsection{Stages}
-We adopt a three-stage training recipe:
+
+The released checkpoint
+\texttt{qwen3asr\_aut\_qwen3\_4b\_continue\_sft\_ts\_hw\_v3} is the v3
+output of a three-stage recipe. Each stage progressively unlocks more
+of the model and adds more demanding tasks:
 
 \begin{enumerate}
-  \item \textbf{Stage 1 -- Alignment.} The audio encoder and LLM are frozen;
-        only the adapter is trained on (audio, transcript) pairs to align
-        speech representations with the LLM token space.
-  \item \textbf{Stage 2 -- Supervised fine-tuning (SFT).} The adapter and the
-        LLM are jointly fine-tuned on a balanced multi-task mixture
-        (transcription, contextual ASR, instruction-style ASR).
-  \item \textbf{Stage 3 -- Preference optimization.} We further refine the
-        model with DPO/RLAIF using preference pairs sampled from Stage 2.
+  \item \textbf{Stage~1 -- Audio--Text Alignment (\texttt{aut}).}
+        Encoder and LLM are both frozen; only the adapter is trained on
+        plain (audio, transcript) pairs. The objective is to bring
+        speech representations into the LLM's token space without yet
+        perturbing the LLM's text capabilities.
+  \item \textbf{Stage~2 -- Continue SFT (\texttt{continue\_sft}).}
+        Adapter and LLM are jointly fine-tuned on a balanced mixture of
+        Mandarin and English transcription. The encoder remains frozen.
+        We use ms-swift \citep{msswift} for distributed SFT.
+  \item \textbf{Stage~3 -- Capability SFT
+        (\texttt{ts\_hw\_v3}).} On top of the Stage~2 checkpoint, we
+        continue SFT with hotword and target-speaker examples mixed into
+        the transcription stream. The mixing ratio is the main knob in
+        this stage.
+        % TODO: report the exact mixture (\% hotword, \% TS, \% plain)
+        % used in v3, plus the data sources for each.
 \end{enumerate}
 
+The version suffix \texttt{v3} indicates the third released iteration
+of Stage~3; v1 and v2 are described in Section~\ref{sec:analysis} where
+relevant for ablation discussions.
+% TODO: keep this only if v1/v2 numbers appear in the analysis section,
+% otherwise drop the sentence.
+
 \subsection{Objective}
-% TODO: Token-level cross-entropy on the transcript; loss masking on prompt tokens.
+
+For all three stages we use token-level cross-entropy on the transcript
+tokens, with loss masked over the prompt tokens (system instructions,
+hotword list, target-speaker reference, audio token positions). For an
+input prompt $\mathbf{p}$ and reference transcript
+$\mathbf{y} = (y_1, \ldots, y_T)$, the per-example loss is
+
+\[
+  \mathcal{L}(\theta) = -\sum_{t=1}^{T} \log p_\theta(y_t \mid y_{<t}, \mathbf{p}).
+\]
+
+% TODO: if any auxiliary objective is used in Stage~1 (e.g. CTC head on
+% the adapter output), document it here.
 
 \subsection{Optimization}
-% TODO: AdamW, lr schedule (warmup + cosine), batch size in tokens, sequence length.
+
+Table~\ref{tab:hparams} summarises the per-stage hyperparameters; values
+marked \texttt{?} are pending verification against the released training
+configs.
+% TODO: fill in the ? entries from the
+% AmphionASR/exp/qwen3asr_aut_qwen3_4b_continue_sft_ts_hw_v3 config.
 
 \begin{table}[t]
   \caption{Training hyperparameters per stage.}
@@ -28,16 +63,27 @@ We adopt a three-stage training recipe:
   \small
   \begin{tabular}{lccc}
     \toprule
-    & Stage 1 & Stage 2 & Stage 3 \\
+    & Stage 1 (aut) & Stage 2 (continue SFT) & Stage 3 (TS+HW) \\
     \midrule
-    Trainable params & adapter & adapter+LLM & adapter+LLM \\
-    Learning rate    & 1e-3    & 2e-5        & 5e-7 \\
-    Batch (audio hr) & ?       & ?           & ? \\
-    Steps            & ?       & ?           & ? \\
-    Precision        & bf16    & bf16        & bf16 \\
+    Trainable           & adapter      & adapter + LLM      & adapter + LLM \\
+    Encoder             & frozen       & frozen             & frozen \\
+    Peak learning rate  & ?            & ?                  & ? \\
+    LR schedule         & cosine       & cosine             & cosine \\
+    Warmup              & ?            & ?                  & ? \\
+    Batch (audio hr)    & ?            & ?                  & ? \\
+    Sequence length     & ?            & ?                  & ? \\
+    Total update steps  & ?            & ?                  & ? \\
+    Optimizer           & AdamW        & AdamW              & AdamW \\
+    Precision           & bf16         & bf16               & bf16 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsection{Infrastructure}
-% TODO: GPUs/TPUs, parallelism strategy (FSDP / DeepSpeed-Zero), throughput.
+
+Training was performed on the internal HPC cluster.
+% TODO: report GPU type and count, parallelism strategy
+% (FSDP / DeepSpeed-Zero), and total wall-clock training time for the
+% v3 checkpoint.
+We use ms-swift \citep{msswift} as the training framework and vLLM
+\citep{kwon2023vllm} for inference and evaluation throughput.

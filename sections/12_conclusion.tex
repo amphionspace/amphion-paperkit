@@ -1,0 +1,23 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented AmphionASR, a 4.3\,B parameter LLM-ASR system that pairs a
+Whisper-large-v3 encoder with the Qwen3-4B-Base language model through
+a small adapter and trains in three stages -- audio--text alignment,
+continue-SFT for Mandarin and English transcription, and capability SFT
+that adds in-prompt hotword conditioning and reference-utterance
+target-speaker recognition. On Mandarin benchmarks the v3 checkpoint
+reaches single-digit CER on most sets, including AISHELL-1 at
+$1.80$\%; on English it covers the standard Librispeech / GigaSpeech /
+MLS / CommonVoice grid; on TALCS Mandarin--English code-switching it
+reaches $14.99$\% MER; and with as few as five in-prompt hotwords the
+CommonVoice CER and WER drop by roughly half.
+
+What still needs to be solved -- and is the explicit subject of the
+next release -- is closing the gap on the public multi-talker LibriMix
+benchmarks, training a noise-robust variant that competes with
+Qwen3-ASR-1.7B on far-field / reverberant audio, and upgrading the
+inference path with a measured streaming mode. We will release model
+weights, inference code, and the eval scripts that produced every
+number in this report at
+\url{https://github.com/amphionspace/AmphionASR} % TODO: verify URL.

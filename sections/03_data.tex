@@ -2,35 +2,71 @@
 \label{sec:data}
 
 \subsection{Sources}
-% TODO: Bullet list of sources (LibriSpeech, GigaSpeech, CommonVoice, WenetSpeech, in-house, etc.)
 
-\subsection{Cleaning Pipeline}
-% TODO: VAD, language ID, ASR-based filtering, dedup, PII scrubbing.
-Our cleaning pipeline consists of voice activity detection, language
-identification, an ASR-based confidence filter, and near-duplicate
-removal at both the utterance and document level.
-
-\subsection{Statistics}
-% TODO: Total hours, hours per language, hours per domain, segment length histogram.
+The training corpus combines public English and Mandarin ASR resources
+with internal Mandarin data and a smaller code-switching slice. The
+exact mixture is given in Table~\ref{tab:data}; per-source totals
+in this draft are placeholders pending the final dataset card
+% TODO: replace placeholders in Table~\ref{tab:data} with the verified hours, sampling weights and license per source from the internal training manifest.
+.
 
 \begin{table}[t]
-  \caption{Composition of the LLM-ASR training corpus.}
+  \caption{Composition of the AmphionASR training corpus. Hours refer to
+    audio duration after VAD filtering. License is the SPDX identifier
+    of the source, where available.}
   \label{tab:data}
   \centering
   \small
-  \begin{tabular}{lrrr}
+  \begin{tabular}{lrrll}
     \toprule
-    Source & Hours & \% & Languages \\
+    Source & Hours & \% & Lang. & License \\
     \midrule
-    LibriSpeech & 960 & x.x & en \\
-    GigaSpeech & 10{,}000 & x.x & en \\
-    CommonVoice & ? & x.x & multi \\
-    In-house & ? & x.x & multi \\
+    LibriSpeech \citep{panayotov2015librispeech}        & 960    & ?  & en & CC-BY-4.0 \\
+    GigaSpeech \citep{chen2021gigaspeech}               & 10{,}000 & ? & en & apache-2.0 (transcripts) \\
+    MLS \citep{pratap2020mls}                           & ?      & ?  & en & CC-BY-4.0 \\
+    CommonVoice 17 \citep{ardila2020commonvoice}        & ?      & ?  & en, zh & CC0 \\
+    AISHELL-1/2/3 \citep{bu2017aishell, du2018aishell2, shi2021aishell3}
+                                                        & ?      & ?  & zh & Apache-2.0 / restricted \\
+    MagicData \citep{magicdata}                         & ?      & ?  & zh & CC-BY-NC-ND-4.0 \\
+    KeSpeech \citep{tang2021kespeech}                   & ?      & ?  & zh & ? \\
+    THCHS-30 \citep{wang2015thchs30}                    & ?      & ?  & zh & Apache-2.0 \\
+    WenetSpeech \citep{zhang2022wenetspeech}            & ?      & ?  & zh & CC-BY-NC-ND \\
+    TALCS \citep{li2022talcs}                           & 587    & ?  & zh--en CS & ? \\
+    Internal Mandarin                                   & ?      & ?  & zh & internal \\
+    Internal target-speaker / hotword                   & ?      & ?  & zh & internal \\
     \midrule
-    Total & ? & 100.0 & ? \\
+    Total                                               & ?      & 100.0 & multi & --- \\
     \bottomrule
   \end{tabular}
 \end{table}
 
+\subsection{Cleaning Pipeline}
+% TODO: replace TODOs below with the actual configuration once the data team confirms (VAD model + threshold, langID model, ASR confidence filter and threshold, dedup strategy, PII scrubbing).
+
+We apply a four-stage cleaning pipeline:
+
+\begin{enumerate}
+  \item \textbf{VAD.} Voice activity detection with
+        % TODO: model name (e.g. Silero VAD vX) + threshold
+        a model-based VAD; segments shorter than 1\,s and longer than
+        30\,s are dropped.
+  \item \textbf{Language identification.} A multilingual LangID model
+        % TODO: model name + threshold
+        labels each utterance; mismatched labels relative to the source
+        manifest are filtered.
+  \item \textbf{ASR-based confidence filter.} A reference ASR system
+        % TODO: which model used as filter
+        scores each utterance; we drop utterances below a CER /
+        confidence threshold.
+  \item \textbf{Deduplication.} Utterance-level near-duplicate removal
+        via MinHash on the transcripts, plus document-level dedup
+        across (source, transcript) pairs.
+\end{enumerate}
+
 \subsection{Mixing Strategy}
-% TODO: Temperature sampling per language; per-task balancing if multi-task.
+% TODO: confirm the actual sampling temperature / weights used during
+% Stage~1 and Stage~2 training.
+
+During training we draw mini-batches with temperature-based language
+sampling so that low-resource languages and the code-switching slice are
+not drowned out by the larger Mandarin and English buckets.

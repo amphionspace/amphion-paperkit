@@ -1,0 +1,39 @@
+\section{Noise Robustness}
+\label{sec:noise}
+
+This section is intentionally short: explicit noise-robustness training
+is not part of the v3 checkpoint described in this report. We document
+the planned evaluation protocol so that the next release can be
+measured against this baseline.
+
+\subsection{Planned target benchmark}
+
+The chosen reference benchmark for the next iteration is
+\textbf{Whisper-RIR-Mega test}, a far-field / reverberant test split
+that mixes synthetic room impulse responses (RIRs) with real-world
+noise. The dataset is already archived internally
+% TODO: confirm the canonical citation / source URL for
+% Whisper-RIR-Mega test and add the corresponding bib entry.
+under
+\texttt{/ai\_sds\_wuzz/MULTILINGUAL\_DATA/noise/rirmega/data/manifests}.
+
+\subsection{Reference baseline}
+
+The reference baseline is Qwen3-ASR-1.7B \citep{qwen2025qwen3asr},
+chosen because (i)~it is a strong open-source small model with
+documented robustness on noisy / far-field audio
+\citep{qwen2025qwen3asr}, and (ii)~it occupies the same family of
+LLM-ASR designs as AmphionASR. The bar for the next release is to
+match-or-beat Qwen3-ASR-1.7B's WER on Whisper-RIR-Mega test, in
+particular at low SNRs.
+
+\subsection{Planned recipe}
+
+The plan is to add a noise-augmented mixture (clean speech convolved
+with internal-and-public RIR sets, with stationary and non-stationary
+noise mixed at SNRs covering a range of low-to-medium values) to
+Stage~2 / Stage~3 training, while keeping the rest of the recipe
+unchanged. Results will appear in a follow-up revision of this
+technical report.
+% TODO: replace this section with concrete numbers as soon as the
+% noise-augmented checkpoint exists.

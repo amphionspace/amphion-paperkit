@@ -43,46 +43,31 @@
 }
 \lstset{style=prompt}
 
+% --------- Recurring macros ---------
+\newcommand{\wer}{\mathrm{WER}}
+\newcommand{\cer}{\mathrm{CER}}
+\newcommand{\mer}{\mathrm{MER}}
+\newcommand{\hotwerN}[1]{\wer^{\text{hot}}_{#1}}
+
 % --------- Title / metadata ---------
-\title{LLM-ASR: A Technical Report on \\ Large Language Model based Automatic Speech Recognition}
+\title{AmphionASR: A 4.3\,B LLM-based Speech Recognizer with \\
+       Hotword Conditioning and Target-Speaker Capability}
 
-% \date{}  % uncomment to remove date
+% \date{} % uncomment to remove date
 
-\newif\ifuniqueAffiliation
-\uniqueAffiliationtrue
-
-\ifuniqueAffiliation
-\author{
-    Your Name\thanks{Corresponding author: \texttt{you@example.com}} \\
-    Your Team / Lab \\
-    Your Organization \\
-    \texttt{you@example.com} \\
-    \And
-    Co-author Name \\
-    Your Team / Lab \\
-    Your Organization \\
-    \texttt{coauthor@example.com} \\
-}
-\else
-\usepackage{authblk}
-\renewcommand\Authfont{\bfseries}
-\setlength{\affilsep}{0em}
-\author[1]{Your Name\thanks{\texttt{you@example.com}}}
-\author[1]{Co-author Name}
-\author[1,2]{Senior Author}
-\affil[1]{Your Lab, Your Organization}
-\affil[2]{Partner Lab, Partner Organization}
-\fi
+\author{Amphion ASR Team\thanks{Correspondence: \texttt{TODO@example.com}}}
 
 \renewcommand{\headeright}{Technical Report}
 \renewcommand{\undertitle}{Technical Report}
-\renewcommand{\shorttitle}{LLM-ASR Technical Report}
+\renewcommand{\shorttitle}{AmphionASR Technical Report}
 
 \hypersetup{
-  pdftitle={LLM-ASR: A Technical Report on Large Language Model based Automatic Speech Recognition},
+  pdftitle={AmphionASR: A 4.3B LLM-based Speech Recognizer with Hotword Conditioning and Target-Speaker Capability},
   pdfsubject={cs.CL, cs.SD, eess.AS},
-  pdfauthor={Your Name},
-  pdfkeywords={Speech Recognition, Large Language Models, Audio LLM, Multimodal},
+  pdfauthor={Amphion ASR Team},
+  pdfkeywords={Speech Recognition, Large Language Models, Audio LLM,
+               Hotword Biasing, Target Speaker ASR, Code-switching,
+               Multilingual Speech Recognition, Noise Robustness},
 }
 
 \begin{document}
@@ -90,7 +75,9 @@
 
 \input{sections/00_abstract}
 
-\keywords{Automatic Speech Recognition \and Large Language Models \and Audio LLM \and Multimodal Learning \and Speech Foundation Models}
+\keywords{Speech Recognition \and Large Language Models \and Audio LLM
+          \and Hotword Biasing \and Target Speaker ASR \and Code-switching
+          \and Mandarin--English}
 
 \input{sections/01_introduction}
 \input{sections/02_related_work}
@@ -98,9 +85,12 @@
 \input{sections/04_model}
 \input{sections/05_training}
 \input{sections/06_experiments}
-\input{sections/07_analysis}
-\input{sections/08_limitations_ethics}
-\input{sections/09_conclusion}
+\input{sections/07_hotwords}
+\input{sections/08_ts_asr}
+\input{sections/09_noise_robustness}
+\input{sections/10_analysis}
+\input{sections/11_limitations_ethics}
+\input{sections/12_conclusion}
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}

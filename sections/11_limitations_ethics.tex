@@ -1,0 +1,72 @@
+\section{Limitations and Broader Impact}
+\label{sec:limitations}
+
+\subsection{Limitations}
+
+\paragraph{Scope.}
+AmphionASR v3 is optimised for Mandarin and English, with a small
+amount of Mandarin--English code-switching data. We do not claim broad
+multilingual coverage and we do not benchmark on languages outside
+those reported in Section~\ref{sec:experiments}.
+
+\paragraph{Open multi-talker benchmarks.}
+The v3 target-speaker path is substantially weaker on the public
+LibriMix test sets ($65.83$\% WER on Libri2Mix, $87.06$\% on Libri3Mix)
+than on our internal multi-talker set ($14.29$\% MER). The likely
+causes -- training/test mismatch in reference-utterance distribution,
+limited LibriMix-style data in Stage~3 -- are documented in
+Section~\ref{sec:tsasr}, but until the next training iteration the
+public multi-talker numbers should be read as a known weakness, not a
+final result.
+
+\paragraph{No explicit noise-robustness training (yet).}
+Section~\ref{sec:noise} is deliberately short: this release does not
+include dedicated noise-augmented training. The released model inherits
+Whisper's encoder-level robustness, but is not benchmarked against
+Qwen3-ASR-1.7B \citep{qwen2025qwen3asr} on noisy / far-field audio in
+this report.
+
+\paragraph{Inherited LLM failure modes.}
+As discussed in Section~\ref{sec:analysis}, the model can repeat on
+long silences, drift between languages on code-switched content, and
+over-bias on prompt-supplied hotwords when a term is not actually
+spoken. These are well-known characteristics of LLM-based ASR and we
+are explicit that AmphionASR shares them.
+
+\paragraph{Latency and streaming.}
+The v3 release is offline-batch, served via vLLM. Streaming inference
+and a measured first-token-latency report are out of scope for this
+version.
+
+\subsection{Broader Impact}
+
+\paragraph{Surveillance risk.}
+A target-speaker recognizer that operates from a short reference
+utterance lowers the technical barrier to selectively transcribing a
+designated person in multi-speaker audio. This capability has
+legitimate uses (transcribing one's own voice in a meeting,
+accessibility) but can also be misused for unconsented surveillance.
+The released model card will state that the intended use is
+user-initiated transcription with the consent of all recorded parties
+and will explicitly call out unconsented surveillance as out-of-scope.
+
+\paragraph{Bias.}
+% TODO: insert per-accent / per-dialect WER breakdown when the
+% KeSpeech-by-dialect split is added to the eval pack.
+We have not yet measured per-accent WER systematically. KeSpeech is the
+natural starting point for Mandarin dialectal coverage and will be
+broken out in a follow-up.
+
+\paragraph{Data provenance.}
+% TODO: confirm provenance and licensing for every internal data source
+% before public release of weights or checkpoints.
+Public sources are used under their stated licenses
+(see Table~\ref{tab:data}). Internal sources are subject to internal
+data-governance review prior to any model-weight release.
+
+\paragraph{LLM-assisted writing.}
+Portions of this report were drafted with the assistance of large
+language models. All technical claims, numbers, and citations were
+verified by the authors against the corresponding primary sources.
+% TODO: maintain ack/llm-usage.md as new sections are written and
+% reflect the final disclosure here.

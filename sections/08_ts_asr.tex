@@ -1,0 +1,78 @@
+\section{Target-Speaker Recognition}
+\label{sec:tsasr}
+
+\subsection{Setup}
+
+We evaluate target-speaker recognition (TS-ASR) on three test sets:
+
+\begin{itemize}
+  \item \textbf{Internal hot+TS test set (\texttt{ts\_hw\_test}).}
+        % TODO: describe the construction process: source corpus, mixing
+        % SNR distribution, number of interfering speakers, hotword
+        % construction, license and release plan.
+        Mandarin two-speaker mixtures with target-speaker reference and
+        a small in-prompt hotword list.
+  \item \textbf{LibriMix~2 (Libri2Mix).} The standard public
+        two-speaker mixture benchmark derived from
+        LibriSpeech~\citep{cosentino2020librimix}.
+  \item \textbf{LibriMix~3 (Libri3Mix).} The three-speaker variant of
+        LibriMix.
+\end{itemize}
+
+For all three sets the prompt carries either a short reference utterance
+of the target speaker or a speaker identifier, as described in
+Section~\ref{subsec:tsasr-mech}. We report MER for the internal set
+(mixed Mandarin-English vocabulary) and WER for LibriMix.
+
+\subsection{Results}
+
+\begin{table}[t]
+  \caption{Target-speaker recognition. Lower is better. Internal set
+    reports MER, LibriMix reports WER.}
+  \label{tab:tsasr}
+  \centering
+  \small
+  \begin{tabular}{lrcc}
+    \toprule
+    Test set & $n$ & Metric & \textbf{AmphionASR (4.3B)} \\
+    \midrule
+    Internal \texttt{ts\_hw\_test}  & 6{,}227 & MER (\%) & \textbf{14.29} \\
+    Libri2Mix \texttt{test}         & 6{,}000 & WER (\%) & 65.83 \\
+    Libri3Mix \texttt{test}         & 9{,}000 & WER (\%) & 87.06 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Analysis}
+
+\paragraph{Strong on the in-domain set.}
+$14.29$\% MER on the internal hot+TS set indicates that when the model
+sees mixtures whose acoustic conditions and reference-utterance pipeline
+match the training distribution, the prompt-based target-speaker path
+works as intended.
+
+\paragraph{Substantial gap on LibriMix.}
+LibriMix numbers are much weaker -- $65.83$\% WER on Libri2Mix and
+$87.06$\% on Libri3Mix. We have not yet diagnosed the root cause; the
+hypotheses we plan to test are
+% TODO: replace with the conclusion of the diagnostic effort tracked in
+% the project plan (see refs/docs/plan.md).
+\begin{enumerate}
+  \item Mismatch in reference-utterance length distribution between
+        training and LibriMix evaluation;
+  \item LibriMix uses LibriSpeech speakers / read speech that the
+        model's TS path saw little of during Stage~3;
+  \item Insufficient overlap-energy diversity in the training mixtures;
+  \item Prompt-template formatting differences (e.g. how the reference
+        utterance boundary is signalled).
+\end{enumerate}
+We treat this gap as a known issue and call it out explicitly in
+Section~\ref{sec:limitations}.
+
+\paragraph{Hotwords + target speaker (combined).}
+The released checkpoint supports both hotword and target-speaker
+prompting simultaneously; a dedicated combined test set is in
+preparation
+% TODO: cite plan.md task ``制备 TS-ASR 热词测试集'' once that set is
+% built and the numbers are available.
+and will appear in a future revision of this report.

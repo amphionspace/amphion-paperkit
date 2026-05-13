@@ -2,51 +2,78 @@
 \label{sec:intro}
 
 % --- Background: ASR landscape ---
-Automatic Speech Recognition (ASR) has progressed from hybrid HMM-DNN systems
-\citep{hinton2012deep} to end-to-end sequence-to-sequence models such as
-CTC \citep{graves2006ctc}, RNN-T \citep{graves2012rnnt}, and attention-based
-encoder--decoders \citep{chan2016las}. Large-scale weakly-supervised models
-such as Whisper \citep{radford2023whisper} further demonstrated that scaling
-data and model size yields highly robust speech recognition across languages
-and acoustic conditions.
+End-to-end speech recognition has matured from hybrid HMM-DNN systems
+\citep{hinton2012deep} to large-scale weakly-supervised models such as
+Whisper \citep{radford2023whisper}, which demonstrate that scaling data
+and model size delivers strong recognition across languages and acoustic
+conditions. In parallel, large language models (LLMs) have become the
+dominant backbone for text understanding and generation, and several
+recent systems -- Qwen-Audio \citep{chu2023qwenaudio},
+SALMONN \citep{tang2024salmonn}, Step-Audio~2 \citep{stepaudio22025},
+Kimi-Audio \citep{kimiaudio2025} and Qwen3-ASR \citep{qwen2025qwen3asr}
+-- show that connecting a strong audio encoder to a pre-trained LLM
+yields a single model that transcribes, understands and follows
+instructions in one pass.
 
-% --- Motivation: why LLM-based ASR ---
-In parallel, large language models (LLMs) have become the dominant paradigm for
-text understanding and generation. A natural question is whether the strong
-linguistic priors and in-context capabilities of LLMs can be leveraged to
-improve ASR --- not only in raw word error rate (WER), but also in
-\emph{contextual biasing}, \emph{multilingual transfer}, \emph{spoken language
-understanding}, and \emph{instruction following}.
-
-% --- This work ---
-In this report we describe the design and training of \textbf{LLM-ASR}, a system
-that connects a high-quality audio encoder to a pre-trained LLM via a
-lightweight adapter, trained in three stages on a mixture of public and
-in-house speech corpora. Our contributions are:
+% --- Motivation: real-world capabilities the LLM brings ---
+The LLM backbone is more than a stronger language model: its prompt
+interface is a natural place to express the kind of side information
+that real deployments require. Two pieces of side information are
+particularly common and particularly awkward for end-to-end ASR:
 
 \begin{itemize}
-  \item \textbf{Architecture.} A modular encoder--adapter--LLM design that
-        keeps the LLM backbone frozen during early training and unlocks it
-        progressively. (Section~\ref{sec:model})
-  \item \textbf{Data.} A curated multilingual speech corpus covering
-        \textit{N} hours across \textit{K} languages, with a transparent
-        cleaning and deduplication pipeline. (Section~\ref{sec:data})
-  \item \textbf{Training recipe.} A three-stage recipe (alignment,
-        supervised fine-tuning, preference optimization) that scales
-        stably from 1B to \textit{X}B parameters. (Section~\ref{sec:training})
-  \item \textbf{Empirical results.} Strong results on standard ASR
-        benchmarks and on contextual / instruction-driven variants, with
-        ablations isolating the contribution of each component.
-        (Sections~\ref{sec:experiments}--\ref{sec:analysis})
+  \item \textbf{Hotwords.} Names, jargon, product SKUs, and rare
+        entities that a generic ASR model is unlikely to have memorised.
+        Classical solutions involve external biasing graphs or
+        on-the-fly LM rescoring; an LLM can simply accept the list as
+        text in its prompt.
+  \item \textbf{Target speaker.} In multi-talker audio the user often
+        wants the transcript of \emph{one} known speaker. Source
+        separation followed by ASR is brittle; an end-to-end LLM that
+        receives a short reference utterance can be trained to decode
+        only the matching speaker.
+\end{itemize}
+
+% --- This work ---
+We describe \textbf{AmphionASR}, a 4.3\,B parameter LLM-ASR system that
+treats both capabilities as first-class citizens of the prompt, while
+remaining competitive on standard Mandarin and English ASR benchmarks.
+
+Our contributions are:
+
+\begin{itemize}
+  \item \textbf{A 4.3\,B Mandarin--English LLM-ASR recipe.} We train a
+        Whisper-large-v3 encoder coupled to Qwen3-4B-Base
+        \citep{qwen2025qwen3} via a small convolution-plus-MLP adapter
+        on a curated public-plus-internal corpus. The model reaches
+        $1.8$\% CER on AISHELL-1, $7.17$\% WER on LibriSpeech
+        \texttt{test-clean} and $14.99$\% MER on the TALCS Mandarin--English
+        code-switching test set \citep{li2022talcs} (Section~\ref{sec:experiments}).
+  \item \textbf{Strong hotword conditioning out of the prompt.} With
+        five in-prompt hotwords the CommonVoice CER drops from $6.57$\%
+        to $2.83$\% (Mandarin) and the WER from $9.65$\% to $4.89$\%
+        (English); we further show diminishing returns beyond five
+        hotwords (Section~\ref{sec:hotwords}).
+  \item \textbf{Target-speaker recognition with reference audio.} A
+        short reference utterance suffices to make the model attend to a
+        single speaker in mixed audio. On our internal hotword + target-speaker
+        test we reach $14.29$\% MER; we report and analyse the
+        substantially weaker numbers on the public LibriMix benchmarks
+        (Section~\ref{sec:tsasr}).
+  \item \textbf{An honest accounting of gaps.} Explicit
+        noise-robustness training is not yet integrated; we describe the
+        target benchmark and planned recipe so that the next release can
+        be measured against this report
+        (Section~\ref{sec:noise}).
 \end{itemize}
 
 % --- Roadmap ---
-The remainder of the report is organized as follows.
-Section~\ref{sec:related} surveys related work.
-Section~\ref{sec:data} describes the data pipeline.
-Section~\ref{sec:model} introduces the architecture, and
-Section~\ref{sec:training} details the training recipe.
-Sections~\ref{sec:experiments} and \ref{sec:analysis} report results and
-ablations. We discuss limitations and broader impact in
-Section~\ref{sec:limitations} before concluding in
+Section~\ref{sec:related} surveys related work; Section~\ref{sec:data}
+documents the training corpus; Section~\ref{sec:model} introduces the
+architecture; Section~\ref{sec:training} details the staged training
+recipe; Section~\ref{sec:experiments} reports the multilingual main
+results; Sections~\ref{sec:hotwords}--\ref{sec:noise} dig into the three
+flagship capabilities; Section~\ref{sec:analysis} consolidates failure
+modes and ablations; we discuss limitations in
+Section~\ref{sec:limitations} and conclude in
 Section~\ref{sec:conclusion}.

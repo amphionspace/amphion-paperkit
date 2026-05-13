@@ -2,47 +2,105 @@
 \label{sec:experiments}
 
 \subsection{Setup}
-% TODO: Eval datasets (LibriSpeech test-clean/other, TED-LIUM, AMI, GigaSpeech,
-% CommonVoice, FLEURS, in-house), metrics (WER, CER, MER, U-WER vs B-WER),
-% decoding settings.
+\label{subsec:setup}
 
-\subsection{Baselines}
-% TODO: Whisper-large-v3, OWSM-v3.1, Canary-1B, your prior internal model.
+\paragraph{Decoding.}
+Unless otherwise stated we report greedy-decoded results obtained
+through the released vLLM server (\texttt{serve\_vllm.sh}).
+% TODO: confirm whether the released numbers in Tables~\ref{tab:asr_en}
+% and \ref{tab:asr_zh} are greedy or beam-decoded.
 
-\subsection{Main Results}
+\paragraph{Normalization.}
+For English benchmarks we apply the Whisper English text normalizer
+\citep{radford2023whisper} to both reference and hypothesis before
+computing WER. For Mandarin we apply a stripped-down normalizer that
+removes punctuation, normalises full-width / half-width characters and
+maps Arabic numerals to their Mandarin equivalents before CER.
+For TALCS we apply the union of the two normalizers and report MER.
+% TODO: link to the exact normalizer scripts in the released repo.
+
+\paragraph{Baselines.}
+We compare against Whisper-large-v3 \citep{radford2023whisper}, the
+open-source Qwen3-ASR-1.7B \citep{qwen2025qwen3asr}, and any prior
+in-house checkpoint where available.
+% TODO: confirm baseline numbers come from "we re-ran" or
+% "as reported in [cite]"; populate the Whisper / Qwen3-ASR-1.7B columns
+% accordingly. Until then those columns are left blank.
+
+\subsection{Multilingual Main Results}
+
+Tables~\ref{tab:asr_en} and \ref{tab:asr_zh} report AmphionASR on the
+standard English and Mandarin ASR benchmarks; Table~\ref{tab:asr_cs}
+reports the Mandarin--English code-switching test from TALCS. All
+AmphionASR numbers are produced from the v3 checkpoint described in
+Section~\ref{sec:training}.
 
 \begin{table}[t]
-  \caption{Word error rate (\%) on English benchmarks. Lower is better.}
-  \label{tab:main_en}
+  \caption{English ASR. WER (\%) on standard test sets, Whisper English
+    normalizer applied. Lower is better. Baseline columns marked ``?''
+    will be filled by re-running each baseline through the same
+    normalizer; see Section~\ref{subsec:setup}.}
+  \label{tab:asr_en}
   \centering
   \small
-  \begin{tabular}{lccccc}
+  \begin{tabular}{lrccc}
     \toprule
-    Model & LS test-clean & LS test-other & TED-LIUM3 & GigaSpeech & AMI \\
+    Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR (4.3B)} \\
     \midrule
-    Whisper-large-v3      & ? & ? & ? & ? & ? \\
-    Canary-1B             & ? & ? & ? & ? & ? \\
-    OWSM-v3.1             & ? & ? & ? & ? & ? \\
-    \midrule
-    \textbf{LLM-ASR (ours)} & ? & ? & ? & ? & ? \\
+    LibriSpeech \texttt{test-clean}   & 2{,}620  & ? & ? & \textbf{7.17} \\
+    LibriSpeech \texttt{test-other}   & 2{,}939  & ? & ? & \textbf{11.25} \\
+    GigaSpeech                        & 19{,}930 & ? & ? & \textbf{21.84} \\
+    MLS English                       & 3{,}769  & ? & ? & \textbf{15.90} \\
+    CommonVoice 17 en                 & 16{,}402 & ? & ? & \textbf{10.12} \\
+    FLEURS en                         & 647      & ? & ? & \textbf{30.47} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \begin{table}[t]
-  \caption{Multilingual WER (\%) on FLEURS, averaged across language groups.}
-  \label{tab:main_multi}
+  \caption{Mandarin ASR. CER (\%) on standard test sets, with the
+    Mandarin normalizer described in Section~\ref{subsec:setup}.}
+  \label{tab:asr_zh}
   \centering
   \small
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lrccc}
     \toprule
-    Model & High-resource & Mid-resource & Low-resource & Average \\
+    Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR (4.3B)} \\
     \midrule
-    Whisper-large-v3       & ? & ? & ? & ? \\
-    \textbf{LLM-ASR (ours)} & ? & ? & ? & ? \\
+    AISHELL-1                          & 7{,}176  & ? & ? & \textbf{1.80} \\
+    AISHELL-2                          & 5{,}000  & ? & ? & \textbf{3.00} \\
+    AISHELL-3                          & 24{,}773 & ? & ? & \textbf{2.58} \\
+    MagicData                          & 24{,}279 & ? & ? & \textbf{4.93} \\
+    KeSpeech                           & 19{,}723 & ? & ? & \textbf{6.72} \\
+    THCHS-30                           & 2{,}495  & ? & ? & \textbf{3.99} \\
+    CommonVoice 17 zh                  & 10{,}647 & ? & ? & \textbf{6.57} \\
+    WenetSpeech \texttt{test\_net}     & 24{,}774 & ? & ? & \textbf{10.67} \\
+    WenetSpeech \texttt{test\_meeting} & 8{,}370  & ? & ? & \textbf{10.38} \\
+    FLEURS zh                          & 945      & ? & ? & \textbf{15.99} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{Contextual ASR}
-% TODO: Demonstrate biasing via prompt with hot-word lists; report B-WER / U-WER.
+\begin{table}[t]
+  \caption{Mandarin--English code-switching ASR. MER (\%) on the
+    TALCS test set \citep{li2022talcs}.}
+  \label{tab:asr_cs}
+  \centering
+  \small
+  \begin{tabular}{lrccc}
+    \toprule
+    Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR (4.3B)} \\
+    \midrule
+    TALCS test                         & 15{,}000 & ? & ? & \textbf{14.99} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+% TODO: write 1--2 paragraphs once baseline columns are filled in.
+% Likely talking points:
+%   - Strong Mandarin (single-digit CER on most sets, including
+%     AISHELL-1 at 1.80% which is competitive with the field).
+%   - English is acceptable but FLEURS-en is high (30.47%), which we
+%     return to in Section~\ref{sec:analysis}.
+%   - TALCS at 14.99% MER positions us well on bilingual code-switching.
