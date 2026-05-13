@@ -1,0 +1,69 @@
+---
+description: Reproducibility, release, and ethics standards for the LLM-ASR report. Aligned with NeurIPS / ICLR 2026 expectations.
+alwaysApply: true
+---
+
+# Reproducibility & Release Rules
+
+Distilled from: NeurIPS 2026 Call for Reproducibility, NeurIPS Code Submission Policy (Papers with Code "releasing-research-code" guidelines), NeurIPS 2026 Evaluations & Datasets Track requirements (Croissant metadata), ML Reproducibility Checklist (Pineau et al.).
+
+## 1. What must be releasable
+
+If the paper makes empirical claims, the following must be releasable (or you must justify why not in Limitations / Appendix):
+
+- Inference code (load weights → take wav → produce transcript)
+- Training code (or a faithful reference implementation; close-source justification ok)
+- Eval scripts that reproduce every number in the main results table
+- Configs (model, training, eval) as version-controlled YAML / JSON, not just buried in shell commands
+- Model weights (Hugging Face Hub or equivalent persistent host)
+- A `requirements.txt` or `pyproject.toml` pinned to specific versions; for CUDA-sensitive deps, document the exact CUDA / PyTorch combination
+- A README in the release repo that walks through reproducing the headline LibriSpeech (or equivalent) result end-to-end
+
+## 2. Dataset release standard
+
+For any in-house data we release alongside the model:
+
+- Hosted on a long-term-preservation platform (Hugging Face Hub, Harvard Dataverse, Zenodo). Persistent identifier (DOI or HF dataset URL).
+- Croissant `metadata.json` with both core and Responsible-AI (RAI) fields.
+- License: explicit SPDX identifier. Note any access restrictions.
+- A datasheet (see Gebru et al. "Datasheets for Datasets") covering: motivation, composition, collection process, preprocessing, uses, distribution, maintenance.
+- PII / consent statement: what was scrubbed, what was not, what consent the speakers gave.
+
+## 3. Model card
+
+We MUST ship a model card with the released weights. Required sections:
+
+- Intended use and out-of-scope use
+- Training data summary (per-source hours, language coverage, time period)
+- Evaluation: WER on each main benchmark with normalization spec (see `asr-domain.mdc`)
+- Known limitations (per Limitations section of the paper)
+- Bias and fairness: per-accent / per-dialect WER breakdown if available
+- Carbon footprint: training compute (GPU-hours) and approximate kWh / CO₂e
+- Contact and licensing
+
+## 4. LLM use disclosure (ICLR / NeurIPS 2026)
+
+- Maintain `ack/llm-usage.md` (create if missing). Each entry: date, scope (e.g. "drafted §3.2 introduction sentence"), model used.
+- Acknowledgment section in the paper must state "Portions of the manuscript were drafted with the assistance of large language models. All technical content was verified by the authors."
+- Never paste a citation produced solely by an LLM without verifying the entry exists (author / year / venue) on a primary source.
+
+## 5. Ethics and broader impact
+
+- The paper must include a Limitations section (already in `sections/08_limitations_ethics.tex`). Be specific, not boilerplate. Examples to consider:
+  - Surveillance and unconsented transcription risk
+  - Accent / dialect bias (especially if the data skews mainstream Mandarin or American English)
+  - Hallucination risk in medical / legal settings
+  - Overlapping speech and diarization is out of scope
+- Carbon footprint: report training-time GPU-hours and (where available) PUE-adjusted estimate.
+- Data provenance: do not include data without verified license. If any source is borderline, document why we believe inclusion is acceptable (e.g. "publicly broadcast under CC-BY", "explicit speaker consent recorded in the source").
+
+## 6. Reproducibility checklist (run before any submission / public release)
+
+1. `git status` clean and tagged
+2. `latexmk -pdf main.tex` produces PDF with zero warnings (or warnings annotated in CHANGELOG)
+3. Every cite in the rendered PDF resolves (no `[?]` markers)
+4. Every `% TODO` removed or moved to a tracked issue
+5. Numbers in main tables traceable to a script in the release repo
+6. Model card and datasheet drafted
+7. `ack/llm-usage.md` reviewed and reflected in Acknowledgments
+8. `requirements.txt` produces a working environment from a fresh venv on the documented Python / CUDA versions

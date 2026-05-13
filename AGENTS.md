@@ -7,6 +7,19 @@
 编译命令：`PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex`
 默认沟通语言：中文（代码注释保持英文）
 
+## 配套规则集（必须连同本文件一起遵守）
+
+更细颗粒度的规则在 `.cursor/rules/`，按 Cursor / Claude Code / Codex 通用 rules 协议加载：
+
+| 文件 | 范围 | 说明 |
+| --- | --- | --- |
+| .cursor/rules/paper-writing.mdc | 始终生效 | 写作风格、章节结构、anti-hallucination、回复必含 fact-check block |
+| .cursor/rules/latex-engineering.mdc | *.tex / *.bib / *.cls / *.sty | 文件布局、bib key、单位、编译流程 |
+| .cursor/rules/asr-domain.mdc | 始终生效 | WER 上报规范、baseline 选择、数据 / 模型 / 训练 / 鲁棒性的报告项 |
+| .cursor/rules/reproducibility.mdc | 始终生效 | 代码 / 模型 / 数据 release 标准、model card、ICLR 2026 LLM 使用披露 |
+
+调研到的所有外部参考源（论文 / blog / github skill / 评审指南）见 `refs/notes/research-references.md`。
+
 ---
 
 ## 规则 1：所有图一律用 TikZ，多图必须风格统一

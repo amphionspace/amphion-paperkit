@@ -1,0 +1,69 @@
+---
+description: Universal writing rules for the LLM-ASR technical report. Covers prose style, structure, and anti-hallucination discipline.
+alwaysApply: true
+---
+
+# Paper Writing Rules
+
+Sources distilled from: Simon Peyton Jones (How to write a great research paper), Jennifer Widom (Tips for writing technical papers), Jason Eisner, Vibe Paper Writing skill, ICLR 2026 reviewer guide, Highly Opinionated Advice on How to Write ML Papers (2026).
+
+## 1. One ping, told as a story
+
+- The paper has exactly one sharp idea ("one ping"). State it explicitly: "The main idea of this paper is …".
+- Write the paper as if you were explaining at a whiteboard: problem → why it is interesting → why prior work falls short → our idea → evidence it works → implications.
+- Do not start from "what we did". Start from "what is the problem and why should the reader care".
+- Don't wait until the experiments are done to start writing. Writing forces clarity and exposes gaps.
+
+## 2. Section formulas
+
+Abstract (4 sentences):
+
+1. The problem we tackle.
+2. Why it matters / why current approaches are insufficient.
+3. What our solution achieves (one concrete number if possible).
+4. What this implies for the field / what we release.
+
+Introduction (about 1 page):
+
+1. Open with a concrete example or scenario of the problem.
+2. State the contributions as a bullet list — nothing more.
+3. The five questions (Widom): What is the problem? Why is it interesting? Why is it hard? What have others done? What do we propose?
+
+Section ordering and depth: each successive section is read by fewer readers. Title → Abstract → Intro → Problem → Solution → Details → Related Work → Appendix.
+
+## 3. Prose style
+
+- Write in paragraphs, not bullet lists. Use bullets only for genuinely enumerable items (contributions, datasets, hyperparameters).
+- Hedge consistently: use "suggests", "indicates", "may", not "proves" or "demonstrates conclusively" unless you really proved it.
+- Pronoun: "we" throughout. Do not switch between "we" / "I" / "the authors".
+- Bold and italic only for technical terms or conventional emphasis. Never for decoration.
+- Every inserted paragraph must connect explicitly to the one before and the one after via a transition sentence — no orphan paragraphs.
+- Avoid LLM-ish writing tells: triple-rhyme rhetorical lists, "delve", "tapestry", "in the realm of", "pivotal", "leverage" (use "use"), "crucial" (use "important" or remove), "comprehensive" without measurement.
+
+## 4. Endorsement awareness
+
+- Only put into the paper what the user has explicitly agreed to or asked for. Conversations and notes contain many tentative ideas; do not silently promote them to claims in the paper.
+- If part of the user's input is ambiguous about endorsement, write what is clearly endorsed and explicitly flag the rest in the reply: "I left X out — please confirm if you want it in".
+
+## 5. Anti-hallucination (hard rules)
+
+- Every concrete number, dataset name, model name, dataset size, year, author name, conference name, arXiv ID, license, and benchmark score must trace to a citable source. If you can't find one, write `?` or `% TODO: verify ...` rather than a plausible-sounding fabrication.
+- Never invent a citation. If a `\citep{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
+- Lookup order before writing any factual claim:
+  1. `refs/` (use Grep + Read)
+  2. WebSearch / WebFetch on primary source (paper PDF, official repo README, official blog)
+  3. If still uncertain → `% TODO: verify ...`
+- ICLR 2026 / NeurIPS 2026 require disclosure of significant LLM use in writing. Keep an `ack/llm-usage.md` log noting which sections were drafted with agent assistance, so the disclosure can be written truthfully later.
+
+## 6. Reply contract for every content edit
+
+The reply must include a short "Fact check" block, e.g.:
+
+```
+Fact check:
+- LibriSpeech total hours: 960h (refs/papers/panayotov2015-librispeech.pdf §3.1) — confirmed
+- Conformer first author: Anmol Gulati, Interspeech 2020 (arXiv 2005.08100) — confirmed
+- Seed-ASR training data scale: no authoritative number, marked TODO in 03_data.tex
+```
+
+Do not ship a content edit without this block.

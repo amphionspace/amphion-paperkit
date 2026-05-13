@@ -1,0 +1,95 @@
+---
+description: ASR / Audio-LLM domain conventions — how to report data, metrics, baselines, and architecture details for an LLM-ASR technical report.
+alwaysApply: true
+---
+
+# ASR / Audio-LLM Domain Rules
+
+Distilled from: Aksenova et al. 2021 "How Might We Create Better Benchmarks for Speech Recognition?" (ACL bppf), the ASR Leaderboard 2025 paper (arXiv 2510.06961), Whisper paper (Radford et al. 2023), Step-Audio 2 / Kimi-Audio / Seed-ASR / Qwen-Audio technical reports, NeurIPS 2026 evaluations & datasets call.
+
+## 1. Reporting WER (and friends)
+
+- Never report a single WER without specifying:
+  - dataset name AND split (e.g. `LibriSpeech test-clean`, not just `LibriSpeech`)
+  - normalization pipeline (e.g. "Whisper English normalizer", or describe rules: lowercase, expand contractions, strip punctuation, number normalization)
+  - decoding configuration (greedy vs beam-N, temperature, length penalty, max new tokens)
+  - whether you re-ran the baseline yourself or copied the number from a paper (cite both ways)
+- The same normalization MUST be applied to both reference and hypothesis, and MUST be the same across compared systems. If you can't apply identical normalization across rows in a table, split the table or annotate with a footnote.
+- Report at least one slice in addition to the average: per-language for multilingual, per-domain for multi-domain, per-noise-condition for robustness, U-WER vs B-WER for contextual ASR. A single average WER is necessary but never sufficient.
+- If reporting CER, MER, BLEU, COMET (for translation), or named-entity F1, define the metric in a footnote at first use.
+
+## 2. Baselines and comparisons
+
+- For every baseline number you cite or include in a table, you must specify one of:
+  - "as reported in [cite]" with the cite
+  - "we re-ran with [config]" with brief reproduction details
+  - "from public leaderboard [URL] retrieved on [date]"
+- Strongly prefer re-running with your own normalizer for the headline table; cite-as-reported numbers belong in a separate appendix table titled "Comparison to numbers reported in prior work".
+- Required baselines for an English LLM-ASR report: Whisper-large-v3 (must), at least one strong recent open model (Canary / Parakeet / OWSM v3.1 / SeamlessM4T), and your prior internal version if any.
+
+## 3. Data section requirements
+
+For every data source listed:
+
+- name
+- hours (audio duration after VAD filtering — state which)
+- number of utterances or segments
+- language(s) and language code (ISO 639-1/3)
+- license (SPDX identifier if possible) and whether redistributable
+- domain category (read / spontaneous / conversational / broadcast / call-center / etc.)
+- collection year or release year
+- citation
+
+Add a transparent description of the cleaning pipeline:
+
+- VAD model and threshold
+- language ID model
+- ASR-based confidence filter (if any), threshold, and filter rate
+- de-duplication: utterance-level (e.g. MinHash threshold), and document-level
+- PII / profanity scrubbing if applicable
+
+Include a per-source table summing to a clear "Total" row.
+
+## 4. Model / architecture description
+
+For every component, report:
+
+- module name (Encoder / Adapter / LLM)
+- backbone identity and version (e.g. `Whisper-large-v3 encoder`, `Qwen2.5-7B-Base`)
+- parameter count (millions or billions, with one decimal)
+- hidden dimension, number of layers, attention heads
+- frame rate (Hz) at the boundary between modules
+- which weights are frozen / trainable / LoRA-adapted in each training stage
+
+For the prompt template, paste the literal template (using `lstlisting` with the `prompt` style defined in `main.tex`). Do not paraphrase.
+
+## 5. Training section requirements
+
+- State the objective (e.g. token-level CE on transcript tokens, with prompt-token loss masking) explicitly with the formula on first use.
+- Per stage: trainable params, learning rate schedule, batch size in audio-hours and in tokens, sequence length cap, total tokens consumed, total update steps, precision (fp32 / bf16 / fp16-amp), optimizer (AdamW betas, weight decay).
+- Hardware: GPU/TPU type and count, parallelism strategy (FSDP / ZeRO-3 / TP+PP), throughput in TFLOPS or audio-hours/GPU/day, total wall-clock training time.
+- If RL / DPO is used: preference data source, pair construction policy, KL coefficient.
+
+## 6. Robustness, long-form, streaming
+
+If the model claims any of the following, you must include the corresponding evaluation:
+
+- "Robust to noise" → SNR sweep on a noise-augmented dev set with at least 3 SNR levels.
+- "Long-form" → numbers on at least one long-form benchmark (TED-LIUM 3 long-form, GigaSpeech long, AMI, Earnings22, or a corpus of ≥30 min recordings).
+- "Streaming" → measured first-token latency and real-time factor with the streaming setting actually used.
+- "Multilingual" → FLEURS or similar multilingual benchmark with per-language-group averages.
+- "Code-switch" → at least one benchmark like SEAME or ASCEND.
+
+If the model does not claim a property, it is acceptable to omit the corresponding evaluation, but say so explicitly in Limitations.
+
+## 7. Failure modes (must include)
+
+LLM-based ASR has well-documented failure modes — be honest:
+
+- Repetition / hallucination loops on silence or noise.
+- Language drift under code-switching.
+- Rare named-entity errors (especially without contextual biasing).
+- Sensitivity to the system prompt.
+- Catastrophic forgetting of the LLM's text capabilities after speech fine-tuning.
+
+Show one qualitative example per claimed failure mode if making the claim.
