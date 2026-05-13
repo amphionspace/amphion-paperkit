@@ -6,11 +6,13 @@
 
 \begin{figure}[t]
   \centering
-  % \includegraphics[width=0.85\linewidth]{figures/architecture.pdf}
-  \fbox{\rule{0pt}{4cm}\rule{12cm}{0pt}}
+  \includegraphics[width=\linewidth]{figures/architecture.pdf}
   \caption{Overview of LLM-ASR. A speech encoder produces frame-level
     representations that are downsampled by a lightweight adapter and
-    consumed as soft prefix tokens by a pre-trained LLM decoder.}
+    consumed as soft prefix tokens by a pre-trained LLM decoder. The
+    encoder is frozen during early training; the adapter is always
+    trainable; the LLM is unlocked progressively across the three
+    training stages described in Section~\ref{sec:training}.}
   \label{fig:arch}
 \end{figure}
 

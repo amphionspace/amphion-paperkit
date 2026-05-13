@@ -1,0 +1,93 @@
+\documentclass[tikz, border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc, decorations.pathmorphing}
+
+% Color palette (consistent with arxiv-style serif body)
+\definecolor{cAudio}{HTML}{F2F4F7}
+\definecolor{cEnc}{HTML}{D9E5F4}
+\definecolor{cEncB}{HTML}{4A7BB7}
+\definecolor{cAdp}{HTML}{D9F0DA}
+\definecolor{cAdpB}{HTML}{4F9D58}
+\definecolor{cLLM}{HTML}{FBE3CC}
+\definecolor{cLLMB}{HTML}{D08A3F}
+\definecolor{cText}{HTML}{F2F4F7}
+\definecolor{cPrompt}{HTML}{F7F2E8}
+\definecolor{cPromptB}{HTML}{B89464}
+\definecolor{cFrozen}{HTML}{8A8A8A}
+\definecolor{cTrain}{HTML}{2F6FB1}
+\definecolor{cTune}{HTML}{2F8E40}
+
+\tikzset{
+  module/.style    ={draw, rounded corners=3pt, minimum width=2.7cm, minimum height=1.25cm,
+                     align=center, font=\sffamily\small, line width=0.7pt},
+  audio/.style     ={module, fill=cAudio, draw=black!40, minimum width=1.7cm},
+  encoder/.style   ={module, fill=cEnc, draw=cEncB},
+  adapter/.style   ={module, fill=cAdp, draw=cAdpB},
+  llm/.style       ={module, fill=cLLM, draw=cLLMB, minimum width=3.0cm, minimum height=1.6cm},
+  textout/.style   ={module, fill=cText, draw=black!40, minimum width=1.8cm},
+  prompt/.style    ={draw=cPromptB, fill=cPrompt, dashed, rounded corners=2pt,
+                     align=left, font=\ttfamily\scriptsize, inner sep=4pt},
+  flow/.style      ={-Stealth, line width=0.8pt, draw=black!70},
+  promptflow/.style={-Stealth, line width=0.6pt, draw=cPromptB!80, dashed},
+  ratelabel/.style ={font=\sffamily\scriptsize, text=black!55},
+  tag/.style       ={font=\sffamily\tiny, inner sep=1pt}
+}
+
+\begin{document}
+\begin{tikzpicture}[node distance=0.9cm and 0.85cm]
+
+  % --- Main chain ---
+  \node[audio] (audio) {Audio\\\scriptsize 16\,kHz};
+
+  \node[encoder, right=of audio] (enc) {%
+    Audio Encoder\\
+    \scriptsize Whisper-large-v3\\[-1pt]
+    \scriptsize 32 layers, 1280 dim
+  };
+
+  \node[adapter, right=of enc] (adp) {%
+    Adapter\\
+    \scriptsize Conv$\downarrow$4 + MLP\\[-1pt]
+    \scriptsize $\sim$25\,M params
+  };
+
+  \node[llm, right=of adp] (llm) {%
+    LLM Decoder\\
+    \scriptsize Qwen2.5-7B\\[-1pt]
+    \scriptsize 28 layers, 3584 dim
+  };
+
+  \node[textout, right=of llm] (text) {Transcript};
+
+  % --- Arrows along the main chain ---
+  \draw[flow] (audio) -- (enc);
+  \draw[flow] (enc)   -- (adp)   node[midway, above, ratelabel] {50\,Hz};
+  \draw[flow] (adp)   -- (llm)   node[midway, above, ratelabel] {12.5\,Hz};
+  \draw[flow] (llm)   -- (text);
+
+  % --- Prompt block above LLM ---
+  \node[prompt, above=0.85cm of llm, text width=4.2cm] (prompt) {%
+    <\textbar system\textbar> You are a careful\\
+    speech transcriber.\\
+    <\textbar audio\textbar> {[audio tokens]}\\
+    <\textbar user\textbar> Transcribe verbatim.
+  };
+  \draw[promptflow] (prompt.south) -- (llm.north);
+
+  % --- Trainability tags below modules ---
+  \node[tag, below=2pt of enc.south, text=cFrozen]
+        {{\color{cFrozen}\rule{6pt}{6pt}}\ \emph{frozen} (Stage 1--2)};
+  \node[tag, below=2pt of adp.south, text=cTrain]
+        {{\color{cTrain}\rule{6pt}{6pt}}\ \emph{trainable} (all stages)};
+  \node[tag, below=2pt of llm.south, text=cTune]
+        {{\color{cTune}\rule{6pt}{6pt}}\ \emph{LoRA / full FT} (Stage 2--3)};
+
+  % --- Stage banner above the prompt ---
+  \node[font=\sffamily\scriptsize\bfseries, above=0.25cm of prompt, text=black!70]
+        {Three-stage training: \textcolor{cTrain}{Alignment} $\to$
+         \textcolor{cTune}{SFT} $\to$ \textcolor{cLLMB}{Preference Optimization}};
+
+\end{tikzpicture}
+\end{document}
