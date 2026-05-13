@@ -35,20 +35,25 @@ particularly common and particularly awkward for end-to-end ASR:
 \end{itemize}
 
 % --- This work ---
-We describe \textbf{AmphionASR}, a 4.3\,B parameter LLM-ASR system that
-treats both capabilities as first-class citizens of the prompt, while
-remaining competitive on standard Mandarin and English ASR benchmarks.
+We describe \textbf{AmphionASR}, a 4.7\,B-parameter SpeechLLM
+($4.3$\,B distinct after \texttt{lm\_head} tying) that treats both
+capabilities as first-class citizens of the prompt, while remaining
+competitive on standard Mandarin and English ASR benchmarks.
 
 Our contributions are:
 
 \begin{itemize}
-  \item \textbf{A 4.3\,B Mandarin--English LLM-ASR recipe.} We train a
-        Whisper-large-v3 encoder coupled to Qwen3-4B-Base
-        \citep{qwen2025qwen3} via a small convolution-plus-MLP adapter
-        on a curated public-plus-internal corpus. The model reaches
-        $1.8$\% CER on AISHELL-1, $7.17$\% WER on LibriSpeech
-        \texttt{test-clean} and $14.99$\% MER on the TALCS Mandarin--English
-        code-switching test set \citep{li2022talcs} (Section~\ref{sec:experiments}).
+  \item \textbf{A 4.7\,B Mandarin--English SpeechLLM recipe.} We pair
+        the Qwen3-AuT audio tower (Whisper-style 24-layer Transformer
+        at $d{=}1024$, 314\,M parameters) with the
+        Qwen3-4B-Instruct-2507 \citep{qwen2025qwen3} LLM through a
+        9.2\,M-parameter Linear--SwooshR--Linear projector
+        \citep{yao2024zipformer} and four learnable modality-boundary
+        prompt vectors. On a curated public-plus-internal corpus the
+        model reaches $1.8$\% CER on AISHELL-1, $7.17$\% WER on
+        LibriSpeech \texttt{test-clean} and $14.99$\% MER on the TALCS
+        Mandarin--English code-switching test set \citep{li2022talcs}
+        (Section~\ref{sec:experiments}).
   \item \textbf{Strong hotword conditioning out of the prompt.} With
         five in-prompt hotwords the CommonVoice CER drops from $6.57$\%
         to $2.83$\% (Mandarin) and the WER from $9.65$\% to $4.89$\%

@@ -20,9 +20,12 @@ We evaluate target-speaker recognition (TS-ASR) on three test sets:
 \end{itemize}
 
 For all three sets the prompt carries either a short reference utterance
-of the target speaker or a speaker identifier, as described in
-Section~\ref{subsec:tsasr-mech}. We report MER for the internal set
-(mixed Mandarin-English vocabulary) and WER for LibriMix.
+of the target speaker or a speaker identifier
+% TODO: confirm and document the exact target-speaker prompt template
+% in Section~\ref{subsec:tokens} once the v3 training config is checked
+% against the feat/target_speaker branch.
+. We report MER for the internal set (mixed Mandarin-English vocabulary)
+and WER for LibriMix.
 
 \subsection{Results}
 
@@ -34,7 +37,7 @@ Section~\ref{subsec:tsasr-mech}. We report MER for the internal set
   \small
   \begin{tabular}{lrcc}
     \toprule
-    Test set & $n$ & Metric & \textbf{AmphionASR (4.3B)} \\
+    Test set & $n$ & Metric & \textbf{AmphionASR} \\
     \midrule
     Internal \texttt{ts\_hw\_test}  & 6{,}227 & MER (\%) & \textbf{14.29} \\
     Libri2Mix \texttt{test}         & 6{,}000 & WER (\%) & 65.83 \\

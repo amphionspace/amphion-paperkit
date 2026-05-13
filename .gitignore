@@ -41,3 +41,6 @@ venv/
 # Generated PDF (default: not tracked; use git tag + zip for releases)
 main.pdf
 main.synctex.gz
+
+# Reference papers (large PDFs collected for fact-checking; INDEX.md is tracked)
+refs/notes/papers/*.pdf

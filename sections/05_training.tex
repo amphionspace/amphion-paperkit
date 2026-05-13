@@ -10,21 +10,30 @@ of the model and adds more demanding tasks:
 
 \begin{enumerate}
   \item \textbf{Stage~1 -- Audio--Text Alignment (\texttt{aut}).}
-        Encoder and LLM are both frozen; only the adapter is trained on
-        plain (audio, transcript) pairs. The objective is to bring
-        speech representations into the LLM's token space without yet
-        perturbing the LLM's text capabilities.
+        The Qwen3-AuT audio encoder and the Qwen3-4B-Instruct LLM are
+        both frozen; only the Linear--SwooshR--Linear projector
+        (Section~\ref{subsec:projector}) and the four learnable
+        boundary prompt vectors (Section~\ref{subsec:boundary-prompt})
+        receive gradients. The objective is to map speech
+        representations into the LLM's token space without disturbing
+        either the encoder's acoustic priors or the LLM's text
+        capabilities.
   \item \textbf{Stage~2 -- Continue SFT (\texttt{continue\_sft}).}
-        Adapter and LLM are jointly fine-tuned on a balanced mixture of
-        Mandarin and English transcription. The encoder remains frozen.
-        We use ms-swift \citep{msswift} for distributed SFT.
+        Projector, boundary prompts and the LLM are jointly fine-tuned
+        on a balanced mixture of Mandarin and English transcription.
+        The audio encoder remains frozen. We use ms-swift
+        \citep{msswift} for distributed SFT.
   \item \textbf{Stage~3 -- Capability SFT
         (\texttt{ts\_hw\_v3}).} On top of the Stage~2 checkpoint, we
         continue SFT with hotword and target-speaker examples mixed into
         the transcription stream. The mixing ratio is the main knob in
-        this stage.
+        this stage. Hotword examples use the \texttt{asr\_hotwords}
+        prompt template (Table~\ref{tab:tasks}); target-speaker
+        examples follow the \texttt{feat/target\_speaker} branch's
+        extended prompt format.
         % TODO: report the exact mixture (\% hotword, \% TS, \% plain)
-        % used in v3, plus the data sources for each.
+        % used in v3, plus the data sources for each, and confirm the
+        % target-speaker prompt template.
 \end{enumerate}
 
 The version suffix \texttt{v3} indicates the third released iteration
@@ -65,8 +74,8 @@ configs.
     \toprule
     & Stage 1 (aut) & Stage 2 (continue SFT) & Stage 3 (TS+HW) \\
     \midrule
-    Trainable           & adapter      & adapter + LLM      & adapter + LLM \\
-    Encoder             & frozen       & frozen             & frozen \\
+    Trainable params    & projector + boundary & projector + boundary + LLM & projector + boundary + LLM \\
+    Audio encoder       & frozen       & frozen             & frozen \\
     Peak learning rate  & ?            & ?                  & ? \\
     LR schedule         & cosine       & cosine             & cosine \\
     Warmup              & ?            & ?                  & ? \\

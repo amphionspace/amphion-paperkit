@@ -15,99 +15,122 @@
 \definecolor{cText}{HTML}{F2F4F7}
 \definecolor{cPrompt}{HTML}{F7F2E8}
 \definecolor{cPromptB}{HTML}{B89464}
-\definecolor{cHot}{HTML}{F2DEDE}
-\definecolor{cHotB}{HTML}{B8585F}
-\definecolor{cSpk}{HTML}{E0DCEF}
-\definecolor{cSpkB}{HTML}{6A4DA8}
+\definecolor{cTok}{HTML}{EEE8F4}
+\definecolor{cTokB}{HTML}{6A4DA8}
+\definecolor{cBound}{HTML}{F2DEDE}
+\definecolor{cBoundB}{HTML}{B8585F}
+\definecolor{cMerge}{HTML}{FFF7D6}
+\definecolor{cMergeB}{HTML}{C5A53E}
 \definecolor{cFrozen}{HTML}{8A8A8A}
 \definecolor{cTrain}{HTML}{2F6FB1}
 \definecolor{cTune}{HTML}{2F8E40}
 
 \tikzset{
-  module/.style    ={draw, rounded corners=3pt, minimum width=2.7cm, minimum height=1.25cm,
+  module/.style    ={draw, rounded corners=3pt, minimum width=3.4cm, minimum height=1.05cm,
                      align=center, font=\sffamily\small, line width=0.7pt},
-  audio/.style     ={module, fill=cAudio, draw=black!40, minimum width=1.7cm},
+  audio/.style     ={module, fill=cAudio, draw=black!40},
   encoder/.style   ={module, fill=cEnc, draw=cEncB},
   adapter/.style   ={module, fill=cAdp, draw=cAdpB},
-  llm/.style       ={module, fill=cLLM, draw=cLLMB, minimum width=3.4cm, minimum height=1.7cm},
-  textout/.style   ={module, fill=cText, draw=black!40, minimum width=1.8cm},
-  prompt/.style    ={draw=cPromptB, fill=cPrompt, dashed, rounded corners=2pt,
-                     align=left, font=\ttfamily\scriptsize, inner sep=4pt},
-  hotbox/.style    ={module, fill=cHot, draw=cHotB, minimum width=2.4cm, minimum height=0.9cm,
-                     font=\sffamily\scriptsize},
-  spkbox/.style    ={module, fill=cSpk, draw=cSpkB, minimum width=2.4cm, minimum height=0.9cm,
-                     font=\sffamily\scriptsize},
+  llm/.style       ={module, fill=cLLM, draw=cLLMB, minimum width=8.4cm, minimum height=1.5cm},
+  textout/.style   ={module, fill=cText, draw=black!40, minimum width=2.6cm},
+  tokbox/.style    ={module, fill=cTok, draw=cTokB},
+  boundbox/.style  ={module, fill=cBound, draw=cBoundB},
+  mergebox/.style  ={module, fill=cMerge, draw=cMergeB, minimum width=8.4cm, minimum height=0.95cm,
+                     font=\sffamily\small\itshape},
   flow/.style      ={-Stealth, line width=0.8pt, draw=black!70},
-  promptflow/.style={-Stealth, line width=0.6pt, draw=cPromptB!80, dashed},
-  hotflow/.style   ={-Stealth, line width=0.6pt, draw=cHotB, dashed},
-  spkflow/.style   ={-Stealth, line width=0.6pt, draw=cSpkB, dashed},
+  rateflow/.style  ={-Stealth, line width=0.6pt, draw=black!55, dashed},
   ratelabel/.style ={font=\sffamily\scriptsize, text=black!55},
   tag/.style       ={font=\sffamily\tiny, inner sep=1pt}
 }
 
 \begin{document}
-\begin{tikzpicture}[node distance=0.9cm and 0.85cm]
+\begin{tikzpicture}[node distance=0.55cm and 0.6cm]
 
-  % --- Main chain ---
-  \node[audio] (audio) {Audio\\\scriptsize 16\,kHz};
-
-  \node[encoder, right=of audio] (enc) {%
-    Audio Encoder\\
-    \scriptsize Whisper-large-v3 enc.\\[-1pt]
-    \scriptsize 32 layers, 1280 dim
+  % ====================== Audio branch (left column) ======================
+  \node[audio]    (waveform) {Waveform 16\,kHz};
+  \node[audio,    below=of waveform] (mel) {%
+    Whisper Feature Extractor\\
+    \scriptsize 128-bin log-mel, 100\,Hz
+  };
+  \node[encoder,  below=of mel] (conv) {%
+    Conv Sub-sampler\\
+    \scriptsize $3\times$ Conv2d, 480\,ch
+  };
+  \node[encoder,  below=of conv] (qwenaut) {%
+    Qwen3-AuT Audio Encoder\\
+    \scriptsize Whisper-style, $24\!\times$ Transformer\\[-1pt]
+    \scriptsize $d{=}1024$, $h{=}16$, FFN${=}4096$\\[-1pt]
+    \scriptsize $\sim314$\,M params
+  };
+  \node[adapter,  below=of qwenaut] (proj) {%
+    Multi-Modal Projector\\
+    \scriptsize Linear--SwooshR--Linear\\[-1pt]
+    \scriptsize $1024 \!\to\! 2560$, $\sim9.18$\,M params
   };
 
-  \node[adapter, right=of enc] (adp) {%
-    Adapter\\
-    \scriptsize Conv$\downarrow$4 + MLP\\[-1pt]
-    \scriptsize ${\sim}\,$25\,M params
+  \draw[flow] (waveform) -- (mel);
+  \draw[flow] (mel)      -- (conv);
+  \draw[flow] (conv)     -- (qwenaut);
+  \draw[flow] (qwenaut)  -- (proj)
+        node[midway, right=2pt, ratelabel] {$\sim13$\,Hz};
+
+  % ====================== Text branch (right column) ======================
+  \node[tokbox, right=4.4cm of waveform] (prompt) {%
+    Text Prompt + special tokens\\
+    \scriptsize \texttt{<{}|{}im\_start{}|{}>user \dots\textbackslash n}\\
+    \scriptsize \texttt{<start\_speech><speech><end\_speech>}
+  };
+  \node[tokbox, below=of prompt] (tok) {%
+    Qwen3 Tokenizer\\
+    \scriptsize vocab 151{,}936
+  };
+  \node[tokbox, below=of tok] (embed) {%
+    Embedding Lookup\\
+    \scriptsize $\to (B,L,2560)$
+  };
+  \node[boundbox, below=of embed] (bound) {%
+    Replace 4 boundary tokens\\
+    \scriptsize by learnable prompt embedding\\[-1pt]
+    \scriptsize $4 \times 2560$ vectors
   };
 
-  \node[llm, right=of adp] (llm) {%
-    LLM Decoder\\
-    \scriptsize Qwen3-4B-Base\\[-1pt]
-    \scriptsize 36 layers, hidden 2560\\[-1pt]
-    \scriptsize GQA 32/8\,heads, 32K ctx
+  \draw[flow] (prompt) -- (tok);
+  \draw[flow] (tok)    -- (embed);
+  \draw[flow] (embed)  -- (bound);
+
+  % ====================== Merge & LLM ======================
+  \node[mergebox] at ($(proj.south) ! 0.5 ! (bound.south) + (0,-1.2)$) (merge)
+        {Replace \texttt{<speech>} placeholder by audio embedding sequence};
+
+  \draw[flow] (proj.south)  |- (merge.west);
+  \draw[flow] (bound.south) |- (merge.east);
+
+  \node[llm, below=0.6cm of merge] (llm) {%
+    Qwen3-4B-Instruct-2507 (Causal LM)\\
+    \scriptsize $36\!\times$ Transformer, $d{=}2560$, FFN${=}9728$\\[-1pt]
+    \scriptsize GQA $32/8$ heads, RoPE $\theta{=}5\mathrm{e}6$, RMSNorm\\[-1pt]
+    \scriptsize 256\,K context, $\sim4.41$\,B params (tied lm\_head)
   };
 
-  \node[textout, right=of llm] (text) {Transcript};
+  \draw[flow] (merge) -- (llm);
 
-  % --- Arrows along the main chain ---
-  \draw[flow] (audio) -- (enc);
-  \draw[flow] (enc)   -- (adp)   node[midway, above, ratelabel] {50\,Hz};
-  \draw[flow] (adp)   -- (llm)   node[midway, above, ratelabel] {12.5\,Hz};
-  \draw[flow] (llm)   -- (text);
+  \node[textout, below=of llm] (text) {Transcript};
+  \draw[flow] (llm) -- (text);
 
-  % --- Prompt block above LLM ---
-  \node[prompt, above=0.85cm of llm, text width=4.8cm] (prompt) {%
-    <\textbar system\textbar> Transcribe verbatim.\\
-    <\textbar hotwords\textbar> \{$h_1, h_2, \ldots$\}\\
-    <\textbar target\textbar> \{spk\_ref / spk\_id\}\\
-    <\textbar audio\textbar> [audio tokens]
-  };
-  \draw[promptflow] (prompt.south) -- (llm.north);
+  % ====================== Trainability tags ======================
+  \node[tag, right=4pt of qwenaut.east, text=cFrozen]
+        {{\color{cFrozen}\rule{6pt}{6pt}}\ \emph{frozen Stage 1--2}};
+  \node[tag, right=4pt of proj.east, text=cTrain]
+        {{\color{cTrain}\rule{6pt}{6pt}}\ \emph{trainable all stages}};
+  \node[tag, right=4pt of llm.east, text=cTune]
+        {{\color{cTune}\rule{6pt}{6pt}}\ \emph{full FT Stage 2--3}};
+  \node[tag, left=4pt of bound.west, text=cBoundB]
+        {{\color{cBoundB}\rule{6pt}{6pt}}\ \emph{learnable, all stages}};
 
-  % --- Hotword side input (left of prompt) ---
-  \node[hotbox, left=0.4cm of prompt, yshift=-0.05cm] (hot) {Hotwords\\\scriptsize text list};
-  \draw[hotflow] (hot.east) -- (prompt.west);
-
-  % --- Target-speaker side input (right of prompt) ---
-  \node[spkbox, right=0.4cm of prompt, yshift=-0.05cm] (spk) {Target Spk\\\scriptsize ref. utterance};
-  \draw[spkflow] (spk.west) -- (prompt.east);
-
-  % --- Trainability tags below modules ---
-  \node[tag, below=2pt of enc.south, text=cFrozen]
-        {{\color{cFrozen}\rule{6pt}{6pt}}\ \emph{frozen}};
-  \node[tag, below=2pt of adp.south, text=cTrain]
-        {{\color{cTrain}\rule{6pt}{6pt}}\ \emph{trainable}};
-  \node[tag, below=2pt of llm.south, text=cTune]
-        {{\color{cTune}\rule{6pt}{6pt}}\ \emph{continue-SFT (LoRA / full)}};
-
-  % --- Stage banner above the whole prompt area ---
-  \node[font=\sffamily\scriptsize\bfseries, above=0.25cm of prompt, text=black!70]
-        {Three-stage: \textcolor{cTrain}{Audio--Text Alignment} $\to$
-         \textcolor{cTune}{Continue SFT} $\to$
-         \textcolor{cLLMB}{+ TS / Hotword (v3)}};
+  % ====================== Title banner ======================
+  \node[font=\sffamily\scriptsize\bfseries, above=0.25cm of waveform.north,
+        text=black!70, anchor=south west, xshift=-0.4cm]
+        {AmphionASR: $\sim$4.74\,B total (4.3\,B distinct under tied lm\_head)};
 
 \end{tikzpicture}
 \end{document}

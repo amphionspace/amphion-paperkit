@@ -1,25 +1,28 @@
 \begin{abstract}
-We present \textbf{AmphionASR}, a 4.3\,B parameter speech recognizer that
-couples a Whisper-large-v3 audio encoder with the Qwen3-4B-Base large
-language model through a lightweight convolution-plus-MLP adapter.
-Beyond producing competitive Mandarin and English transcripts, AmphionASR
-is designed for two real-world capabilities that are awkward for purely
-end-to-end ASR systems: \emph{hotword conditioning} -- the model
-accepts a small list of likely terms in its prompt and reliably biases
-its output toward them -- and \emph{target-speaker recognition} -- given
-a short reference utterance the model transcribes only the matching
-speaker in mixed audio.
-On the standard public benchmarks our model reaches
-% TODO: insert headline numbers from main results once baseline rows are filled in
+We present \textbf{AmphionASR}, an open SpeechLLM for Mandarin and
+English speech recognition. The model couples a 314\,M-parameter
+Whisper-style audio tower (\textbf{Qwen3-AuT}; 24-layer Transformer at
+$d{=}1024$) to the \textbf{Qwen3-4B-Instruct-2507} large language model
+through a 9.2\,M-parameter Linear--SwooshR--Linear projector and four
+learnable modality-boundary prompt vectors. Total parameter count is
+approximately $4.74$\,B ($4.3$\,B distinct after \texttt{lm\_head}
+tying). Beyond producing competitive Mandarin and English transcripts,
+AmphionASR is designed for two real-world capabilities that are awkward
+for purely end-to-end ASR systems: \emph{hotword conditioning} -- the
+model accepts a small list of likely terms in its prompt and reliably
+biases output toward them -- and \emph{target-speaker recognition} --
+given a short reference utterance the model transcribes only the
+matching speaker in mixed audio.
+On the standard public benchmarks our v3 checkpoint reaches
 $1.8$\% CER on AISHELL-1, $7.17$\% WER on LibriSpeech \texttt{test-clean}
-and $14.99$\% MER on the TALCS Mandarin--English code-switching test set.
-With as few as five in-prompt hotwords, the CommonVoice CER drops from
-$6.57$\% to $2.83$\% (Mandarin) and the WER from $9.65$\% to $4.89$\%
-(English). On our internal hot-word-and-target-speaker test set we obtain
-$14.29$\% MER. We discuss current gaps -- in particular weak performance
-on the LibriMix open multi-talker benchmarks and an as-yet-unsupported
-explicit noise-robustness path -- and outline the next training
-iteration. We will release model weights and inference code at
-\url{https://github.com/amphionspace/AmphionASR} % TODO: verify the public URL
-.
+and $14.99$\% MER on the TALCS Mandarin--English code-switching test
+set. With as few as five in-prompt hotwords, the CommonVoice CER drops
+from $6.57$\% to $2.83$\% (Mandarin) and the WER from $9.65$\% to
+$4.89$\% (English). On our internal hotword + target-speaker test set
+we obtain $14.29$\% MER. We discuss current gaps -- in particular weak
+performance on the LibriMix open multi-talker benchmarks and an
+as-yet-unsupported explicit noise-robustness path -- and outline the
+next training iteration. We will release model weights and inference
+code at \url{https://github.com/amphionspace/AmphionASR}
+% TODO: verify the public URL.
 \end{abstract}

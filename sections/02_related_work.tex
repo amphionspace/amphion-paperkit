@@ -7,7 +7,10 @@ End-to-end ASR replaces the HMM-DNN pipeline with a single neural model
 encoder \citep{gulati2020conformer} has become a near-universal
 backbone, and self-supervised pre-training on unlabeled audio
 \citep{baevski2020wav2vec2, hsu2021hubert} provides strong starting
-points that transfer to ASR with limited supervision.
+points that transfer to ASR with limited supervision. The Zipformer
+encoder \citep{yao2024zipformer} further improves accuracy and
+training efficiency, and contributes the SwooshR activation that we
+re-use in our projector (Section~\ref{subsec:projector}).
 
 \paragraph{Large-scale weakly-supervised ASR.}
 Whisper \citep{radford2023whisper} demonstrated that 680\,k hours of
@@ -20,13 +23,16 @@ audio LLMs, and is the encoder we use in this work.
 A growing line of work pairs a speech encoder with a pre-trained LLM
 decoder. Qwen-Audio \citep{chu2023qwenaudio} and
 SALMONN \citep{tang2024salmonn} established the basic recipe -- encoder,
-adapter, frozen-then-fine-tuned LLM. More recent technical reports such
-as Step-Audio~2 \citep{stepaudio22025}, Kimi-Audio \citep{kimiaudio2025}
+adapter, frozen-then-fine-tuned LLM. SLAM-ASR \citep{ma2024slamasr}
+sharpens this idea, showing that a single linear projector trained over
+a frozen speech encoder and a frozen LLM is enough to reach competitive
+LibriSpeech numbers. More recent technical reports such as
+Step-Audio~2 \citep{stepaudio22025}, Kimi-Audio \citep{kimiaudio2025}
 and Qwen3-ASR \citep{qwen2025qwen3asr} push the data scale and add
 features such as in-prompt context biasing, multilingual support and
 streaming inference. AmphionASR follows this template but is optimised
 specifically for transcription quality together with hotword and
-target-speaker capabilities, and is built on Qwen3-4B-Base
+target-speaker capabilities, and is built on Qwen3-4B-Instruct-2507
 \citep{qwen2025qwen3} for an explicit cost--quality target.
 
 \paragraph{Hotword / contextual biasing.}

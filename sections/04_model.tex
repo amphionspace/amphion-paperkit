@@ -3,104 +3,387 @@
 
 \subsection{Overview}
 
-Figure~\ref{fig:arch} shows the overall design. AmphionASR is a
-three-block model: a speech encoder produces frame-level
-representations; a small adapter downsamples and projects them into the
-LLM's token space; the LLM decoder produces the transcript
-auto-regressively, conditioned on a structured prompt that may carry a
-hotword list and a target-speaker reference.
+AmphionASR follows the now-standard SpeechLLM template
+\citep{ma2024slamasr, chu2023qwenaudio, tang2024salmonn} -- a speech
+encoder, a small projector, and a frozen-then-fine-tuned LLM -- but is
+specialised in three respects that we describe in this section:
+(i)~the Qwen3-AuT audio tower and its Whisper-style preprocessing;
+(ii)~a lightweight Linear--SwooshR--Linear projector inherited from the
+Zipformer activation family \citep{yao2024zipformer}; and
+(iii)~four learnable \emph{boundary prompt} vectors that mark the
+audio--text boundary inside the LLM's input embedding stream.
+The full computational graph is shown in Figure~\ref{fig:arch}.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/architecture.pdf}
-  \caption{Overview of AmphionASR. The audio encoder is frozen
-    throughout training; the adapter is always trainable; the LLM
-    backbone (Qwen3-4B-Base) is unlocked progressively across the three
-    training stages described in Section~\ref{sec:training}. Hotwords
-    enter the prompt as a plain text list; a target-speaker reference
-    enters as either a reference utterance or a speaker identifier.}
+  \caption{AmphionASR architecture. The audio branch (left) maps a
+    16\,kHz waveform through a Whisper-style log-mel front-end, a
+    convolutional sub-sampler, the Qwen3-AuT 24-layer Transformer
+    encoder, and a Linear--SwooshR--Linear projector to the LLM's
+    2560-dimensional hidden space. The text branch (right) tokenizes
+    the chat template and replaces four special boundary tokens with
+    learnable prompt vectors. The two streams meet at a merge step that
+    substitutes the \texttt{<speech>} placeholder with the audio
+    embedding sequence, after which Qwen3-4B-Instruct-2507 performs
+    next-token prediction on the assistant span only.}
   \label{fig:arch}
 \end{figure}
 
-\subsection{Audio Encoder}
+Component-level parameter counts are summarised in
+Table~\ref{tab:params}. The total of $\approx 4.74$\,B includes the
+tied \texttt{lm\_head}; counting distinct parameters the model is
+$\approx 4.3$\,B.
 
-We use the encoder of Whisper-large-v3 \citep{radford2023whisper}: 32
-Transformer layers with hidden size 1280, producing a 50\,Hz frame-level
-representation from a log-Mel spectrogram. The encoder is frozen during
-all training stages; this preserves Whisper's robustness on noisy and
-out-of-domain audio while letting the adapter and LLM specialise to the
-text decoder we wire up.
+\begin{table}[t]
+  \caption{Per-component parameter counts.}
+  \label{tab:params}
+  \centering
+  \small
+  \begin{tabular}{lrl}
+    \toprule
+    Component & Parameters & Source / role \\
+    \midrule
+    Audio encoder \texttt{audio\_encoder}      & 314.33\,M  & Qwen3-AuT (Whisper-style) \\
+    Multi-modal projector \texttt{projector}   &   9.18\,M  & Linear--SwooshR--Linear \\
+    Language model \texttt{language\_model}    & 4{,}411.42\,M  & Qwen3-4B-Instruct-2507 \\
+    Boundary prompt embedding                  &   0.01\,M  & $4 \times 2560$ learnable vectors \\
+    \midrule
+    Total                                      & $\approx 4.735$\,B & 4.3\,B distinct after lm\_head tying \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-\subsection{Adapter}
+\subsection{Audio Encoder: Qwen3-AuT}
+\label{subsec:audio-encoder}
 
-The adapter is a stride-4 convolutional stack that lowers the encoder
-frame rate from 50\,Hz to 12.5\,Hz, followed by a two-layer MLP that
-projects to the LLM's hidden size of 2560. Total adapter size is
-approximately 25\,M parameters.
-% TODO: confirm exact conv kernel widths, channel sizes, dropout, and
-% the exact MLP width used in the released checkpoint.
-The adapter is the only fully trainable module in Stage~1 (audio--text
-alignment, see Section~\ref{sec:training}).
+\paragraph{Front-end.}
+Audio is resampled to 16\,kHz mono and passed through the
+\texttt{WhisperFeatureExtractor} configuration in
+Table~\ref{tab:fe}: 25\,ms FFT window with 10\,ms hop produces a
+$128$-bin log-mel spectrogram at 100\,Hz; segments are padded or
+truncated to a 30\,s frame budget (3000 mel frames).
 
-\subsection{LLM Decoder}
+\begin{table}[t]
+  \caption{Audio front-end configuration (\texttt{preprocessor\_config.json}).}
+  \label{tab:fe}
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Sampling rate    & 16{,}000\,Hz \\
+    n\_fft           & 400 \\
+    Hop length       & 160 (10\,ms step) \\
+    Feature size     & 128 mel bins \\
+    Chunk length     & 30\,s \\
+    Max frames       & 3000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-The decoder is Qwen3-4B-Base \citep{qwen2025qwen3}: 36 Transformer
-layers, hidden size 2560, FFN intermediate size 9728, grouped-query
-attention with 32 query heads and 8 key/value heads
-(head dim 128), 32K context length, and a 151{,}936-token tokenizer
-shared with the rest of the Qwen3 family. We retain SwiGLU activations,
-RMSNorm pre-normalization, RoPE positional encoding and QK-norm as
-inherited from the Qwen3-Base configuration.
-% Source: huggingface.co/Qwen/Qwen3-4B-Base config.json (retrieved 2026-05).
+\paragraph{Convolutional sub-sampler.}
+A three-layer 2-D convolutional stack ($\text{conv2d1}$:
+$1\!\to\!480$, $3\!\times\!3$; $\text{conv2d2}$: $480\!\to\!480$,
+$3\!\times\!3$; $\text{conv2d3}$: $480\!\to\!480$, $3\!\times\!3$)
+followed by a $7680\!\to\!1024$ linear projection reduces the time-frequency
+plane to a 1024-dimensional sequence.
 
-\subsection{Hotword Conditioning}
-\label{subsec:hotword-mech}
+\paragraph{Transformer stack.}
+The encoder body is a 24-layer Whisper-style pre-LN Transformer with
+$d_{\text{model}}=1024$, $16$ attention heads and feed-forward width
+$4096$ (GELU activation). The full configuration is reproduced in
+Table~\ref{tab:enc}. The chunked-inference window
+\texttt{n\_window\_infer} of 800 lifts the standard Whisper
+$30$\,s ceiling and lets the encoder process long-form audio in
+constant memory by sliding over windows.
 
-Hotwords are passed to the model as a plain text list inside the
-prompt, before the audio token segment. No architectural change is
-needed. Concretely, the prompt template includes a
-\verb|<|hotwords\verb|>| field whose payload is up to twenty
-comma-separated terms; during training the model sees a mixture of
-empty, true-positive (terms that appear in the transcript) and
-distractor lists so that it learns to bias toward terms only when they
-are acoustically supported.
-% TODO: confirm the exact in-prompt syntax (delimiter, max number,
-% whether a special token marks the end of the list) and the
-% distractor-sampling policy used during Stage~3.
+\begin{table}[t]
+  \caption{Qwen3-AuT audio encoder configuration.}
+  \label{tab:enc}
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Type                    & \texttt{amphion\_asr\_audio\_encoder} (Qwen3ASRAudioEncoder) \\
+    Input feature           & 128-bin log-mel \\
+    Conv stem               & 3 layers, 480 channels each, $3\!\times\!3$ \\
+    Conv exit projection    & Linear $7680 \!\to\! 1024$ \\
+    Transformer layers      & 24 \\
+    $d_{\text{model}}$      & 1024 \\
+    Attention heads         & 16 \\
+    FFN width               & 4096 \\
+    Activation              & GELU \\
+    Post-norm               & \texttt{ln\_post}: LayerNorm(1024) \\
+    Max source positions    & 1500 \\
+    Train / infer window    & $n_\text{window}{=}50$ / $n_{\text{window\_infer}}{=}800$ \\
+    Output dimension        & 1024 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-\subsection{Target-Speaker Conditioning}
-\label{subsec:tsasr-mech}
+\paragraph{Effective frame rate.}
+Although the front-end produces mel frames at 100\,Hz, the conv stem and
+internal sub-sampling reduce the encoder's output rate to roughly
+$13$\,Hz (i.e.\ a $\approx 76.9$\,ms step), as derived from
+\texttt{Qwen3AudioEncoderWrapper.get\_output\_lengths}. The projector
+does not perform any further temporal sub-sampling.
 
-Target-speaker recognition is also handled through the prompt: the
-\verb|<|target\verb|>| field can carry either a short reference
-utterance (encoded by the same audio encoder and projected by the same
-adapter, then concatenated as additional audio tokens before the main
-audio segment) or a speaker identifier from a known enrollment set.
-% TODO: confirm the released checkpoint's actual target-speaker
-% conditioning path -- in particular, whether a separate speaker
-% encoder is used or whether the reference utterance is consumed by
-% the same Whisper encoder, and how the boundary between reference
-% and target audio is signalled to the model.
+\paragraph{Output projection stripped.}
+The native Qwen3-AuT ships with a 2048-dimensional alignment head that
+we remove (replaced with \texttt{nn.Identity()} in
+\texttt{Qwen3AudioEncoderWrapper.\_strip\_proj}). The exposed encoder
+output dimension is therefore the body width of $1024$.
 
-\subsection{Inference}
+\subsection{Multi-Modal Projector}
+\label{subsec:projector}
 
-At inference time we deploy the model with vLLM \citep{kwon2023vllm}
-behind a batched HTTP endpoint
-(\texttt{src/integrations/scripts/deploy/serve\_vllm.sh} in the
-released code). We use greedy decoding by default, with a
-beam search of width 4 reserved for the headline numbers reported in
-Section~\ref{sec:experiments}.
-% TODO: confirm the exact beam, temperature, repetition penalty, and
-% max-new-tokens settings used to produce the numbers in the main
-% results table.
+The projector maps each $1024$-dimensional encoder frame to the LLM's
+$2560$-dimensional hidden space. Architecturally it is a two-layer MLP:
 
-\begin{lstlisting}[caption={Default AmphionASR prompt template (illustrative; see Section~\ref{subsec:hotword-mech} and \ref{subsec:tsasr-mech}).}]
-<|system|>
-You are a careful speech transcriber. Produce a verbatim transcript
-in the language spoken in the audio.
-<|hotwords|>{hot_1, hot_2, ..., hot_k}
-<|target|>{<reference audio> | <speaker_id>}
-<|audio|>[audio tokens]
-<|user|>Transcribe the audio.
-<|assistant|>
-\end{lstlisting}
+\begin{equation}
+  \mathrm{Proj}(\mathbf{h}) = \mathrm{Linear}_{2560 \to 2560}\Big(
+      \mathrm{SwooshR}\big( \mathrm{Linear}_{1024 \to 2560}(\mathrm{Drop}_{0.1}(\mathbf{h})) \big) \Big),
+  \label{eq:projector}
+\end{equation}
+
+with input dropout $0.1$ and the SwooshR activation function from the
+Zipformer/Icefall family \citep{yao2024zipformer}:
+
+\begin{equation}
+  \mathrm{SwooshR}(x) = \log(1 + e^{x-1}) - 0.08\,x - 0.313261687.
+  \label{eq:swooshr}
+\end{equation}
+
+The projector is implemented in pure PyTorch (no \texttt{k2} C++
+extension at inference time), at the cost of about $9.2$\,M
+parameters and a single dropout--linear--activation--linear stack. The
+projector is the only fully-trainable module in Stage~1 (audio--text
+alignment, Section~\ref{sec:training}).
+
+\subsection{Language Model: Qwen3-4B-Instruct-2507}
+\label{subsec:llm}
+
+The decoder is the Qwen3-4B-Instruct-2507 release of the Qwen3 family
+\citep{qwen2025qwen3}. Its full configuration is summarised in
+Table~\ref{tab:llm}. Two points are worth highlighting:
+
+\begin{itemize}
+  \item \textbf{Long context.} The 256\,K (262{,}144) native context
+        length carries over to AmphionASR; together with the encoder's
+        sliding window this enables long-form transcription that does
+        not rely on chunk stitching.
+  \item \textbf{Tied lm\_head.} \texttt{tie\_word\_embeddings} is
+        \texttt{true}; the saved \texttt{lm\_head.weight} is bit-equal
+        to \texttt{embed\_tokens.weight}. The component count of
+        Table~\ref{tab:params} is therefore an over-count by one
+        embedding tensor; we report ``$\approx 4.3$\,B distinct''
+        alongside ``$\approx 4.74$\,B total''.
+\end{itemize}
+
+\begin{table}[t]
+  \caption{Language model configuration (\texttt{config.text\_config}).}
+  \label{tab:llm}
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Architecture                & Qwen3ForCausalLM \\
+    Hidden size                 & 2560 \\
+    Hidden layers               & 36 \\
+    Attention heads             & 32 \\
+    Key/value heads             & 8 (GQA, $4\!\times$ KV compression) \\
+    Head dim                    & 128 \\
+    FFN intermediate size       & 9728 \\
+    Activation                  & SiLU \\
+    FFN style                   & SwiGLU (gate / up / down) \\
+    Normalization               & RMSNorm, $\epsilon = 10^{-6}$ \\
+    Position embedding          & RoPE, $\theta = 5 \times 10^{6}$ \\
+    Sliding window              & none (full attention in all 36 layers) \\
+    Max position embeddings     & 262{,}144 (256\,K) \\
+    Vocabulary                  & 151{,}936 \\
+    \texttt{tie\_word\_embeddings} & \texttt{true} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The LLM weights show no LoRA, adapter or quantisation tensors in the
+released checkpoint, indicating that the LLM participates in training
+under full fine-tuning during Stages~2 and 3.
+
+\subsection{Learnable Modality-Boundary Prompts}
+\label{subsec:boundary-prompt}
+
+A small but distinguishing design choice in AmphionASR is a
+$4 \times 2560$ embedding table that overrides the input embedding of
+four boundary tokens (Table~\ref{tab:bound}) at every position they
+appear:
+
+\begin{table}[t]
+  \caption{Learnable boundary prompt embedding mapping.}
+  \label{tab:bound}
+  \centering
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    Boundary token       & Token id   & Prompt index \\
+    \midrule
+    \texttt{<start\_text>}    & 151670     & 0 \\
+    \texttt{<end\_text>}      & 151671     & 1 \\
+    \texttt{<start\_speech>}  & 151672     & 2 \\
+    \texttt{<end\_speech>}    & 151673     & 3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Conceptually this is a soft-prompt mechanism in the spirit of
+prompt-tuning, restricted to the four positions that mark a switch
+between modalities; it adds about $10$\,k parameters but gives the LLM
+an explicit signal of ``a span of speech tokens starts now''. The
+boundary prompt embedding is trainable in all stages.
+
+\subsection{Special Tokens and Chat Template}
+\label{subsec:tokens}
+
+In addition to the Qwen3 vocabulary, AmphionASR defines the five
+special tokens listed in Table~\ref{tab:tokens}. The audio segments
+are wrapped as \verb|<start_speech><speech><end_speech>|, where
+\verb|<speech>| is the placeholder that the merge step
+(Section~\ref{subsec:merge}) replaces with the projected audio
+embedding sequence.
+
+\begin{table}[t]
+  \caption{Special tokens defined on top of the Qwen3 vocabulary.}
+  \label{tab:tokens}
+  \centering
+  \small
+  \begin{tabular}{lcl}
+    \toprule
+    Token            & Id      & Role \\
+    \midrule
+    \texttt{<speech>}        & 151669 & audio placeholder, replaced by audio embeddings \\
+    \texttt{<start\_text>}    & 151670 & text-segment start; embedding overridden \\
+    \texttt{<end\_text>}      & 151671 & text-segment end \\
+    \texttt{<start\_speech>}  & 151672 & speech-segment start \\
+    \texttt{<end\_speech>}    & 151673 & speech-segment end \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The processor (\texttt{processing\_amphion\_asr.py}) ships with the
+task-prompt dictionary in Table~\ref{tab:tasks}; the released
+checkpoint thus supports plain ASR (with explicit Mandarin and English
+variants), hotword-conditioned ASR, and two emotion tasks. The
+hotword variant simply prepends a \verb|Hotwords:{...}| line before the
+standard ASR instruction; no special token marks the hotword list.
+
+\begin{table}[t]
+  \caption{Task prompt templates (\texttt{TASK\_PROMPTS}). \texttt{\{speech\}}
+    expands to \texttt{<start\_speech><speech><end\_speech>}.}
+  \label{tab:tasks}
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Task key            & Template \\
+    \midrule
+    \texttt{asr}            & \texttt{Transcribe the following audio:\{speech\}} \\
+    \texttt{asr\_en}        & \texttt{Transcribe the following English audio:\{speech\}} \\
+    \texttt{asr\_zh}        & \texttt{Transcribe the following Chinese audio:\{speech\}} \\
+    \texttt{asr\_hotwords}  & \texttt{Hotwords:\{hotwords\}\textbackslash nTranscribe the following audio:\{speech\}} \\
+    \texttt{ser}            & \texttt{Classify the emotion of the following audio:\{speech\}} \\
+    \texttt{sec}            & \texttt{Describe the emotion of the following audio:\{speech\}} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Target-speaker conditioning.}
+The task-prompt dictionary above is the configuration of the
+\texttt{main} branch reflected in
+\texttt{refs/docs/model\_arch.md}; the v3 checkpoint described in this
+report is trained on the \texttt{feat/target\_speaker} branch and
+supports the target-speaker capability evaluated in
+Section~\ref{sec:tsasr}.
+% TODO: confirm the exact prompt template used for target-speaker
+% inference (likely an additional <start_speech><speech><end_speech>
+% reference utterance prepended to the main audio segment, perhaps with
+% a dedicated task key such as ``asr_target_speaker''). Update
+% Table~\ref{tab:tasks} once verified.
+
+\subsection{Forward Pass and Merge}
+\label{subsec:merge}
+
+Given a raw waveform $\mathbf{x}$ and a tokenized prompt with
+\texttt{input\_ids}, the forward pass proceeds as follows
+(implemented in \texttt{forward} and \texttt{generate}):
+
+\begin{enumerate}
+  \item $\mathbf{x} \to \text{WhisperFeatureExtractor} \to (B, T_\text{mel}, 128)$ log-mel
+        spectrogram;
+  \item Audio encoder produces $(B, T', 1024)$ frame representations;
+  \item Projector maps to $(B, T', 2560)$;
+  \item Text branch yields $(B, L, 2560)$ token embeddings;
+  \item \texttt{\_merge\_input\_ids\_with\_speech\_features} performs
+        three operations: (i)~replace each \verb|<speech>| placeholder
+        with the corresponding audio embedding sequence in left-to-right
+        order; (ii)~override the four boundary-token embeddings with
+        the learnable prompt vectors; (iii)~apply a flip--pad--flip
+        trick that realises left-padding semantics so that batched
+        autoregressive decoding stays aligned;
+  \item The merged \texttt{inputs\_embeds} is fed to Qwen3-4B-Instruct
+        for next-token prediction. Training loss is the standard
+        causal-LM cross-entropy with audio positions masked
+        (\texttt{IGNORE\_TOKEN\_ID} $= -100$); only assistant tokens
+        contribute gradients.
+\end{enumerate}
+
+Formally, with
+$\mathbf{H}_\text{audio} = \mathrm{Proj}(\mathrm{AudioEncoder}(\mathbf{x}_\text{mel}))$
+and $\mathbf{H}_\text{text}$ the text-side embedding stream after
+boundary-prompt override, the per-example training objective is
+
+\begin{equation}
+  \mathcal{L}(\theta) = -\sum_{t \in \mathcal{T}_\text{ans}}
+      \log p_\theta\!\left( y_t \,\Big|\, y_{<t},\, \mathbf{H}_\text{audio},\, \mathbf{H}_\text{text} \right),
+  \label{eq:loss}
+\end{equation}
+
+where $\mathcal{T}_\text{ans}$ is the set of token indices belonging to
+the assistant turn.
+
+\subsection{Inference and Engineering Notes}
+\label{subsec:inference}
+
+A few engineering decisions are worth recording for reproducibility:
+
+\begin{itemize}
+  \item \textbf{Pure-PyTorch SwooshR.} The activation in
+        Equation~\ref{eq:swooshr} is reimplemented in PyTorch so the
+        inference graph does not depend on the
+        \texttt{k2}~\citep{yao2024zipformer} C++ runtime.
+  \item \textbf{Long-form audio.} \texttt{n\_window\_infer} of 800
+        lets the encoder process audio well beyond Whisper's 30\,s
+        budget; \texttt{Qwen3AudioEncoderWrapper.forward} runs encoder
+        chunks per-utterance to accommodate variable-length inputs.
+  \item \textbf{KV-cache.} \texttt{generate} feeds only
+        \texttt{inputs\_embeds + attention\_mask} to the LLM and
+        re-uses Qwen3's KV-cache; encoder and merge logic are skipped
+        once \texttt{past\_key\_values} is populated.
+  \item \textbf{Pluggable encoder.} The \texttt{build\_audio\_encoder}
+        factory registers \texttt{qwen3asr}, \texttt{qwen3omni},
+        \texttt{qwen3omni\_captioner}, and \texttt{zipformer}; the v3
+        checkpoint uses \texttt{qwen3asr}, but the same code path
+        loads a Zipformer \citep{yao2024zipformer} encoder for
+        ablation purposes.
+  \item \textbf{Backward-compatible state-dict migration.}
+        \texttt{\_migrate\_old\_state\_dict} silently remaps legacy
+        \texttt{audio\_encoder.*} weights into the wrapped
+        \texttt{audio\_encoder.encoder.*} namespace, so older
+        checkpoints can be loaded without conversion.
+  \item \textbf{Serving.} The released
+        \texttt{src/integrations/scripts/deploy/serve\_vllm.sh} brings
+        up vLLM \citep{kwon2023vllm} as a batched HTTP endpoint;
+        greedy decoding is the default for production traffic.
+        % TODO: confirm the exact decoding settings (beam, temperature,
+        % repetition penalty, max-new-tokens) used to produce the
+        % numbers in the main results table.
+\end{itemize}

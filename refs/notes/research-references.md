@@ -55,17 +55,12 @@
 
 ## 6. ASR / speech 领域专属
 
+> 已下载 41 篇 audio LLM / ASR PDF 到 `refs/notes/papers/`，按主题分组的完整索引（含文件名、用处、对应章节）见 [`papers/INDEX.md`](papers/INDEX.md)。下表仅保留非论文类（评测协议、博客）参考。
+
 | 来源 | 链接 | 用处 |
 | --- | --- | --- |
 | Aksenova et al. 2021 — How Might We Create Better Benchmarks for Speech Recognition? | https://aclanthology.org/2021.bppf-1.4/ | WER 之外的 metric、benchmark 多样性 |
-| ASR Leaderboard 2025 (arXiv 2510.06961) | https://arxiv.org/html/2510.06961v4 | 多语言 / 长音频 reproducible eval 框架 |
 | Gladia ASR Benchmarking 文档 | https://docs.gladia.io/chapters/pre-recorded-stt/benchmarking | 工业界 normalization 实践 |
-| Whisper (Radford et al. 2023) | https://arxiv.org/abs/2212.04356 | 大规模弱监督 ASR baseline 范本 |
-| Step-Audio 2 | https://arxiv.org/abs/2507.16632 | Audio LLM 报告结构与术语参考 |
-| Kimi-Audio | https://arxiv.org/abs/2504.18425 | 同上 |
-| Seed-ASR (ByteDance) | 待补 | 数据规模披露范本 |
-| Qwen-Audio (Chu et al. 2023, arXiv 2311.07919) | https://arxiv.org/abs/2311.07919 | Adapter 设计参考 |
-| SALMONN (Tang et al. 2024) | https://arxiv.org/abs/2310.13289 | LLM 听觉对齐参考 |
 
 ## 7. 行业 prompt collection（不是规则，是辅助灵感）
 
