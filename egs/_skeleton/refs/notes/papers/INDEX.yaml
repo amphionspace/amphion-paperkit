@@ -1,0 +1,38 @@
+# refs/notes/papers/INDEX.yaml — TEMPLATE
+#
+# Single source of truth for the paper PDFs in this report. PDFs are
+# gitignored; download via:
+#
+#     pip install -r tools/requirements-fetch.txt
+#     python tools/fetch-refs.py egs/<<NAME>>
+#
+# Schema: tools/schemas/refs-index.schema.json
+#
+# - file   : filename relative to this directory; must end in .pdf
+# - url    : direct PDF download URL (arXiv: https://arxiv.org/pdf/<id>.pdf)
+# - sha256 : null on first add; tools/fetch-refs.py fills it in after first
+#            download. Once filled, mismatches abort with MISMATCH (loud).
+# - group  : kebab-case id; must match an entry in `groups` below.
+#
+# When adding a new paper: add a `papers` entry (sha256: null), run the fetch
+# script to download + verify, commit the yaml + the corresponding INDEX.md.
+
+groups:
+  - id: example-group
+    title: Example Group (rename me)
+    description: Replace this placeholder with a real group on first paper add.
+
+papers:
+  - file:    placeholder2026-example.pdf
+    url:     https://arxiv.org/pdf/0000.00000.pdf
+    sha256:  null
+    arxiv:   "0000.00000"
+    title:   Example Paper Title (delete this entry on first real add)
+    authors: A. N. Other
+    date:    2026-01
+    venue:   arXiv
+    group:   example-group
+    tags:    [example]
+    usage:   |
+      Placeholder entry to satisfy schema (papers and groups must be non-empty).
+      Delete or replace when adding the first real paper.

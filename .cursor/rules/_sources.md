@@ -1,6 +1,12 @@
-# Research References (collected 2026-05-13)
+# Sources for `.cursor/rules/*.mdc` and `AGENTS.md`
 
-本次为搭建 `.cursor/rules/*.mdc` 与 `AGENTS.md` 做的全网调研所引用的源。后续写作 / fact-check 时可以优先回到这里查。建议把高价值的 PDF 下载到对应子目录（papers/ 或 benchmarks/ 或 internal/）。
+> 本文件是 `.cursor/rules/*.mdc` 与 `AGENTS.md` 各项规则的源汇总。
+>
+> 原本住在 `refs/notes/research-references.md`；2026-05-14 起作为规则的附属脚注上提到此处（顶层 `refs/` 目录已取消，参考 [template/CHANGELOG.md](../../template/CHANGELOG.md)）。
+>
+> 下划线前缀 (`_sources.md`) 表示本文件是规则附属，不会被 Cursor 当作 rule 加载。
+>
+> 修改任一规则前，先回到这里查证；新增源时按现有分组归类并附"用处"。
 
 ## 1. ML paper writing 通用
 
@@ -55,12 +61,17 @@
 
 ## 6. ASR / speech 领域专属
 
-> 已下载 41 篇 audio LLM / ASR PDF 到 `refs/notes/papers/`，按主题分组的完整索引（含文件名、用处、对应章节）见 [`papers/INDEX.md`](papers/INDEX.md)。下表仅保留非论文类（评测协议、博客）参考。
+> - 领域专属论文 PDF 在每份 egs 自己的 `egs/<slug>/refs/notes/papers/`；该目录的 `INDEX.yaml` 是真相源，PDF 由 `tools/fetch-refs.py` 按 yaml 下载并 sha256 校验。
+> - 数据集 datasheet 同理在 `egs/<slug>/refs/datasets/`，`INDEX.yaml` + `INDEX.md` 一对。
+> - 闭源 / 商用 ASR / TTS / Audio-LLM 系统（Doubao / gpt-4o-transcribe 等）的官方信息源在每份 egs 的 `egs/<slug>/refs/notes/commercial-systems.md`。
+>
+> 下表仅保留非论文类（评测协议、博客、方法学）参考；具体论文 PDF 清单不在这里维护。
 
 | 来源 | 链接 | 用处 |
 | --- | --- | --- |
 | Aksenova et al. 2021 — How Might We Create Better Benchmarks for Speech Recognition? | https://aclanthology.org/2021.bppf-1.4/ | WER 之外的 metric、benchmark 多样性 |
 | Gladia ASR Benchmarking 文档 | https://docs.gladia.io/chapters/pre-recorded-stt/benchmarking | 工业界 normalization 实践 |
+| OpenSLR resources list | https://openslr.org/resources.php | aidatatang / MagicData / Primewords / RIR 等无 paper 资源的官方入口 |
 
 ## 7. 行业 prompt collection（不是规则，是辅助灵感）
 

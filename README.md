@@ -7,17 +7,16 @@ graph TD
     Root[amphion-technical-reports]
     Root --> Public["公共能力层"]
     Root --> Egs["egs/ — 报告叶子节点"]
-    Root --> Tools["tools/ — helper scripts"]
+    Root --> Tools["tools/ — helper scripts (含 fetch-refs.py)"]
     Root --> CI[".github/workflows — CI"]
 
     Public --> Template["template/  (amphion.cls + asr-macros.sty + IEEEtran2.bst)"]
-    Public --> Agents["AGENTS.md + .cursor/rules/  (AI 协作规则)"]
-    Public --> CommonRefs["refs/  (公共论文 PDF / 数据集 / leaderboards)"]
+    Public --> Agents["AGENTS.md + .cursor/rules/  (AI 协作规则 + _sources.md)"]
     Public --> Figures["figures/  (TikZ palette preset + skeleton)"]
     Public --> StarterBib["references.bib  (starter cites)"]
 
-    Egs --> Skeleton["egs/_skeleton/  (新报告脚手架)"]
-    Egs --> AsrReport["egs/amphion-asr-2026/  (首份报告)"]
+    Egs --> Skeleton["egs/_skeleton/  (新报告脚手架，含 refs/ 骨架)"]
+    Egs --> AsrReport["egs/amphion-asr-2026/  (首份报告，自带 refs/)"]
     Egs --> FutureA["egs/amphion-tts-2026/  (规划中)"]
     Egs --> FutureB["egs/amphion-omni-2026/  (规划中)"]
 ```
@@ -31,7 +30,7 @@ graph TD
 | 主题 option | 默认 amphion / `[xlance]` 红 / `[opendfm]` 蓝紫；`[withlogo]` 正交可叠加恢复 logo |
 | 报告隔离 | 每份报告自带 main.tex / sections / figures / refs / ack；不跨 egs `\input` |
 | 模板演进 | 改 `template/amphion.cls` 必须更新 `template/CHANGELOG.md` 并 build 至少 2 个 egs；详见 AGENTS.md 规则 8 |
-| 公共 refs vs 报告 refs | 通用论文 / 数据集 / leaderboards 在顶层 `refs/`；报告内部 plan / model card / 训练日志在 `egs/<slug>/refs/docs/` 与 `egs/<slug>/refs/internal/` |
+| 参考资料归属 | 每份报告完全自维护 `egs/<slug>/refs/`（含论文 PDF / 数据集 datasheet / 商用系统资料 / leaderboards / 内部 docs）；通用写作方法学源在 `.cursor/rules/_sources.md` |
 
 ## 起一份新报告
 
@@ -77,18 +76,11 @@ tools/build-all.sh
   - reproducibility.mdc — 代码/模型/数据 release 标准、model card、ICLR/NeurIPS LLM 披露
   - multi-report.mdc — mono-repo 边界：当前在哪个 egs / 是否要改公共层 / 模板 fork 流程
 
-## 公共参考
+## 参考资料
 
-`refs/` 目录由公司维护，所有报告共享：
+每份报告自维护 `egs/<slug>/refs/`，包含论文 PDF (notes/papers/)、数据集 datasheet (datasets/)、商用系统资料 (notes/commercial-systems.md)、评测榜单 (leaderboards/)、内部文档 (docs/、internal/)。`INDEX.yaml` 是 PDF 清单的真相源；PDF 不入 git，由 [`tools/fetch-refs.py`](tools/fetch-refs.py) 按 yaml 下载并 sha256 校验。
 
-```
-refs/
-├── datasets/       # 通用数据集 datasheet / paper PDF
-├── notes/
-│   ├── research-references.md   # 全局外部参考目录
-│   └── papers/                  # 公共论文 PDF + INDEX.md
-└── leaderboards/   # ASR / TTS / Audio-LLM leaderboards 截图
-```
+通用写作方法学（评审 / 复现 / 写作建议 / agent 协作 / LaTeX 工程）的源汇总在 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)，所有报告共享一份。
 
 ## 模板版本
 
@@ -111,6 +103,15 @@ tlmgr install collection-fontsrecommended tgpagella mathpazo inconsolata \
               enumitem cleveref natbib hyperref microtype hyphenat \
               setspace parskip babel-latin lipsum fontawesome5 url
 ```
+
+参考 PDF 下载（论文 + 数据集 datasheet 不入 git）：
+
+```bash
+pip install -r tools/requirements-fetch.txt
+python tools/fetch-refs.py egs/<slug>
+```
+
+脚本会按 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 并行下载并 sha256 校验。已存在文件 SKIP；首次下载后把 sha256 回填到 yaml，请 `git diff` 后 commit。
 
 ## License
 

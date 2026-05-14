@@ -28,3 +28,39 @@ class 文件层面的具体变更：
 
 - `IEEEtran2.bst`、`venues.bib`：仅文件位置从 `xlance/` 移到 `template/`，内容不变。
 - `assets/logos/*.png`：内容不变。
+
+---
+
+## v0.2 — 2026-05-14 — refs/ 下沉到 egs
+
+公共层与各 egs 之间的参考资料组织重构。**这是一次破坏性变更**：所有现存 egs 必须按下列检查表迁移；新报告由 `tools/new-report.sh` 自动产出新结构。
+
+公共层的具体变更：
+
+- 删除顶层 `refs/`（原含 `notes/papers/` + `notes/research-references.md` + `notes/commercial-systems.md` + `datasets/` + `leaderboards/` + `README.md`）。理由：可预见会有 5+ 份 egs，每份 egs 自带的论文 / 数据集 / 商用系统资料并非完全交集，强行公共会污染所有报告的引用面；下沉后每份报告自维护，启动新报告时由 `_skeleton` 拷骨架。
+- 新增 `.cursor/rules/_sources.md`：原 `refs/notes/research-references.md` 的写作 / 复现 / 评审 / agent / LaTeX 工程方法学源汇总上提。该文件作为 `.cursor/rules/*.mdc` 与 `AGENTS.md` 各项规则的脚注，所有 egs 共享一份；下划线前缀 (`_`) 表示 Cursor 不会把它当 rule 加载。
+- 新增 `tools/schemas/refs-index.schema.json`：JSON Schema (draft-07) 描述 `INDEX.yaml` 结构（groups + papers，schema 校验 + papers[*].group 与 groups[*].id 交叉校验）。
+- 新增 `tools/fetch-refs.py`：按 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 并行下载 PDF + sha256 校验 + 首次回填 + MISMATCH 硬失败。
+- 新增 `tools/requirements-fetch.txt`：fetch-refs.py 的 Python 依赖（PyYAML + jsonschema）。
+- 修改 `.gitignore`：`refs/notes/papers/*.pdf` → `egs/*/refs/notes/papers/*.pdf` + `egs/*/refs/datasets/*.pdf`。所有论文 / 数据集 PDF 一律不入 git。
+- 修改 `AGENTS.md` 第 19 / 38 行（结构图 + 规则源链接）；规则 2 全段重写为单层 egs/<slug>/refs 表 + `tools/fetch-refs.py` 工作流；规则 3 fact-check 例子路径；规则 6 多处 `refs/notes/papers/` → 本 egs `refs/notes/papers/`；规则 8 公共层定义补充 `tools/schemas/*` / `.cursor/rules/*` / `egs/_skeleton/*`。
+- 修改 `.cursor/rules/paper-writing.mdc` lookup order + fact-check 例子路径。
+- 修改 `.cursor/rules/multi-report.mdc` 公共层定义（移除 `refs/`，加入 `tools/schemas/` 与 `.cursor/rules/_sources.md`）。
+- 修改 `egs/_skeleton/refs/`：扩展为完整骨架（`notes/papers/{INDEX.yaml,INDEX.md,.gitkeep}` + `notes/commercial-systems.md` + `datasets/{INDEX.yaml,INDEX.md,.gitkeep}` + `leaderboards/.gitkeep` + `README.md`），新报告启动即可用。
+
+每 egs 的影响 / 迁移检查表：
+
+- `egs/amphion-asr-2026/`：本次 PR 内同步迁移完成。
+  - `refs/notes/papers/{INDEX.yaml + INDEX.md}` 已从原顶层 `refs/notes/papers/INDEX.md` 转 yaml，46 条 entry，sha256 全部回填；46 个 PDF 从 `refs/notes/papers/` 物理迁入。
+  - `refs/datasets/{INDEX.yaml + INDEX.md}` 已从原顶层 `refs/datasets/INDEX.md` 转 yaml，31 条 entry，sha256 全部回填；31 个 PDF 物理迁入。
+  - `refs/notes/commercial-systems.md` 物理迁入。
+  - `refs/leaderboards/.gitkeep` `git mv` 保留历史。
+  - `refs/README.md` 重写。
+- 其他 active egs：本 PR 时刻只有一份 active egs，无需额外迁移；规划中的 amphion-tts-2026 / amphion-omni-2026 启动时直接由新 `_skeleton` 拷出。
+
+被破坏的兼容性（PR 后必须手动修复的潜在外部引用）：
+
+- 任何引用 `refs/notes/papers/...pdf` / `refs/datasets/...pdf` / `refs/notes/research-references.md` / `refs/notes/commercial-systems.md` 的外部文档（仅 README / AGENTS / rules 已在本 PR 同步），如有 user-private 笔记 / external doc 需手动改。
+- 任何 CI / 脚本依赖顶层 `refs/` 路径会失败 —— 当前没有此类依赖。
+
+参考 `egs/amphion-asr-2026/refs/README.md` 与 `tools/fetch-refs.py` 顶部 docstring 看新工作流细节。

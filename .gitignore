@@ -73,5 +73,8 @@ figures/*.log
 figures/*.synctex.gz
 figures/*.synctex(busy)
 
-# Reference papers (large PDFs collected for fact-checking; INDEX.md is tracked)
-refs/notes/papers/*.pdf
+# Reference PDFs (papers and dataset datasheets) — large; not tracked.
+# INDEX.yaml (truth source) and INDEX.md (derived view) are tracked.
+# Download via: python tools/fetch-refs.py egs/<slug>
+egs/*/refs/notes/papers/*.pdf
+egs/*/refs/datasets/*.pdf

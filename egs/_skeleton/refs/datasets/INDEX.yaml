@@ -1,0 +1,29 @@
+# refs/datasets/INDEX.yaml — TEMPLATE
+#
+# Single source of truth for dataset paper / datasheet PDFs.
+# PDFs are gitignored; download via:
+#
+#     pip install -r tools/requirements-fetch.txt
+#     python tools/fetch-refs.py egs/<<NAME>>
+#
+# Schema and conventions: same as refs/notes/papers/INDEX.yaml.
+
+groups:
+  - id: example-group
+    title: Example Group (rename me)
+    description: Replace this placeholder with a real group on first dataset add.
+
+papers:
+  - file:    placeholder2026-example.pdf
+    url:     https://arxiv.org/pdf/0000.00000.pdf
+    sha256:  null
+    arxiv:   "0000.00000"
+    title:   Example Dataset Paper Title (delete this entry on first real add)
+    authors: A. N. Other
+    date:    2026-01
+    venue:   arXiv
+    group:   example-group
+    tags:    [example]
+    usage:   |
+      Placeholder entry to satisfy schema. Delete or replace when adding the
+      first real dataset.

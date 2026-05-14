@@ -50,7 +50,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - Every concrete number, dataset name, model name, dataset size, year, author name, conference name, arXiv ID, license, and benchmark score must trace to a citable source. If you can't find one, write `?` or `% TODO: verify ...` rather than a plausible-sounding fabrication.
 - Never invent a citation. If a `\citep{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
 - Lookup order before writing any factual claim:
-  1. `refs/` (use Grep + Read)
+  1. `egs/<slug>/refs/` (use Grep + Read; INDEX.yaml is the truth source for paper / dataset PDFs)
   2. WebSearch / WebFetch on primary source (paper PDF, official repo README, official blog)
   3. If still uncertain → `% TODO: verify ...`
 - ICLR 2026 / NeurIPS 2026 require disclosure of significant LLM use in writing. Keep an `ack/llm-usage.md` log noting which sections were drafted with agent assistance, so the disclosure can be written truthfully later.
@@ -61,7 +61,7 @@ The reply must include a short "Fact check" block, e.g.:
 
 ```
 Fact check:
-- LibriSpeech total hours: 960h (refs/papers/panayotov2015-librispeech.pdf §3.1) — confirmed
+- LibriSpeech total hours: 960h (egs/<slug>/refs/datasets/panayotov2015-librispeech.pdf §3.1) — confirmed
 - Conformer first author: Anmol Gulati, Interspeech 2020 (arXiv 2005.08100) — confirmed
 - Seed-ASR training data scale: no authoritative number, marked TODO in 03_data.tex
 ```

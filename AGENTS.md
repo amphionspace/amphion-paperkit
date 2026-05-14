@@ -15,11 +15,11 @@ mono-repo + icefall 风格 `egs/` 叶子节点。每份报告自包含；公共�
 ```
 amphion-technical-reports/
 ├── template/      amphion.cls + asr-macros.sty + IEEEtran2.bst + venues.bib
-├── tools/         new-report.sh / build-all.sh / fact-check-regex.sh
-├── refs/          公共参考（论文 PDF、数据集 datasheet、leaderboards）
+├── tools/         new-report.sh / build-all.sh / fact-check-regex.sh / fetch-refs.py / schemas/
 ├── figures/       公共 TikZ preset（_palette.tex / architecture-skeleton.tex）
 ├── references.bib 顶层 starter cites（仅基础公认文献）
-├── egs/_skeleton/ 新报告脚手架（不要直接编辑作发布内容）
+├── .cursor/rules/ 公共写作 / 工程规则（含 _sources.md 方法学源汇总）
+├── egs/_skeleton/ 新报告脚手架（含 refs/ 骨架；不要直接编辑作发布内容）
 └── egs/<slug>/    单份报告：main.tex / sections / figures / tables / refs / ack
 ```
 
@@ -35,7 +35,7 @@ amphion-technical-reports/
 | .cursor/rules/reproducibility.mdc | 始终生效 | 代码 / 模型 / 数据 release 标准、model card、ICLR 2026 LLM 使用披露 |
 | .cursor/rules/multi-report.mdc | 始终生效 | mono-repo 边界：当前在哪个 egs / 是否要改公共层 / 模板 fork 流程 |
 
-调研到的所有外部参考源（论文 / blog / github skill / 评审指南）见 `refs/notes/research-references.md`。
+调研到的所有外部参考源（论文 / blog / github skill / 评审指南）见 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)。
 
 ---
 
@@ -89,42 +89,66 @@ amphion-technical-reports/
 
 ---
 
-## 规则 2：参考资料在 `refs/`，写内容前必须查阅
+## 规则 2：参考资料在 `egs/<slug>/refs/`，写内容前必须查阅
 
-### 公共 refs vs 报告 refs
+### 单层结构（每份 egs 自维护）
 
-| 路径 | 范围 | 由谁维护 |
+| 路径 | 范围 | git 跟踪 |
 | --- | --- | --- |
-| 顶层 `refs/notes/papers/` | 公共论文 PDF + INDEX | 公司层面 |
-| 顶层 `refs/datasets/` | 通用数据集 datasheet / paper PDF | 公司层面 |
-| 顶层 `refs/leaderboards/` | ASR / TTS / Audio-LLM leaderboards 截图 | 公司层面 |
-| `egs/<slug>/refs/docs/` | 单份报告的内部 plan / model_arch / task_prompts / train_eval_data | 报告维护者 |
-| `egs/<slug>/refs/internal/` | 单份报告的数据统计、内部 model card、训练日志摘要 | 报告维护者 |
+| `egs/<slug>/refs/docs/` | 内部 plan / model_arch / task_prompts / train_eval_data | tracked |
+| `egs/<slug>/refs/internal/` | 数据统计、内部 model card、训练日志摘要 | tracked |
+| `egs/<slug>/refs/notes/papers/INDEX.yaml` | 论文清单真相源（file/url/sha256/group/usage） | tracked |
+| `egs/<slug>/refs/notes/papers/INDEX.md` | 论文清单人类视图（由 yaml 派生） | tracked |
+| `egs/<slug>/refs/notes/papers/*.pdf` | 论文 PDF | gitignored |
+| `egs/<slug>/refs/notes/commercial-systems.md` | 闭源 / 商用 ASR / TTS / Audio-LLM 系统的官方信息源 | tracked |
+| `egs/<slug>/refs/datasets/INDEX.yaml` | 数据集清单真相源 | tracked |
+| `egs/<slug>/refs/datasets/INDEX.md` | 数据集清单人类视图 | tracked |
+| `egs/<slug>/refs/datasets/*.pdf` | 数据集 datasheet PDF | gitignored |
+| `egs/<slug>/refs/leaderboards/` | 评测榜单截图（按需） | tracked |
+| `egs/<slug>/refs/README.md` | 本目录说明 | tracked |
+
+通用写作方法学源（评审 / 复现 / 写作建议 / agent 协作 / LaTeX 工程）见 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)，所有报告共享一份；不在 egs refs 里。
 
 ### 工作流
 
-`refs/` 目录（顶层 + egs 下）由用户陆续填充。
+首次准备 PDF：
+
+```bash
+pip install -r tools/requirements-fetch.txt
+python tools/fetch-refs.py egs/<slug>
+```
+
+脚本会按 INDEX.yaml 并行下载（默认 4 路）+ sha256 校验 + 失败 / mismatch 报告。后续 sha256 不一致会硬失败（URL 漂移 / 文件损坏的早期信号）。
 
 在「写任何一节」或「画任何一张图」前，agent 必须执行：
 
-1. `ls refs/` 与 `ls egs/<slug>/refs/` 看当前可用参考
-2. 用文件名 / 标题做 keyword 匹配，识别与本次任务相关的文件
-3. 用 Read / Grep 读取相关文件
-4. 在内容里复用参考的术语、引用其中文献（能定位的话）
+1. `ls egs/<slug>/refs/` 看当前可用参考
+2. 用文件名 / 标题 / INDEX.yaml 的 `usage` 字段做 keyword 匹配，识别与本次任务相关的文件
+3. 用 Read / Grep 读取相关 PDF / md
+4. 在内容里复用参考的术语、引用其中文献
 
 ### 禁止
 
-- 跳过 `refs/` 直接凭"领域常识"写——哪怕只是一段引言。
+- 跳过 `egs/<slug>/refs/` 直接凭"领域常识"写——哪怕只是一段引言。
 - 引用 `refs/` 里没出现 且 自己也无法外部验证 的"事实"。
 - 把模型架构数字、数据集 hours、benchmark 分数当默认知识写出，无对照来源。
+- 加新 PDF 时只 download 不更新 INDEX.yaml —— `tools/fetch-refs.py` 是按 yaml 驱动的，没在 yaml 里 declare 的 PDF 等同于不存在。
 
-### 推荐放进 `refs/` 的内容
+### 推荐放进 `egs/<slug>/refs/` 的内容
 
-- 同类系统的 technical report（Whisper / Step-Audio / Kimi-Audio / Seed-ASR / Qwen-Audio / SALMONN / SLAM-ASR）
-- 用到的数据集 datasheet（LibriSpeech / GigaSpeech / CommonVoice / FLEURS / AMI 等）
-- 内部数据统计表 / 训练日志摘要
-- 自有模型的 model card / config 截图
-- 特定 benchmark 的 README（评测协议）
+- 同类系统的 technical report（Whisper / Step-Audio / Kimi-Audio / Seed-ASR / Qwen-Audio / SALMONN / SLAM-ASR）→ `notes/papers/`
+- 用到的数据集 datasheet（LibriSpeech / GigaSpeech / CommonVoice / FLEURS / AMI 等）→ `datasets/`
+- 闭源系统资料（Doubao / gpt-4o-transcribe 等）→ `notes/commercial-systems.md`
+- 内部数据统计表 / 训练日志摘要 → `internal/`
+- 自有模型的 model card / config 截图 → `internal/`
+- 特定 benchmark 的 README（评测协议）→ `leaderboards/` 或 `notes/papers/`
+
+### 加新论文 / 数据集 PDF 的步骤
+
+1. 在 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 加 entry，`sha256: null` 待回填
+2. 跑 `python tools/fetch-refs.py egs/<slug>`，脚本下载并把 sha256 写回 yaml
+3. 同步 `INDEX.md`（人类视图，加一行表格）
+4. `git add` 两份 INDEX.yaml + 两份 INDEX.md，commit
 
 ---
 
@@ -143,7 +167,7 @@ amphion-technical-reports/
 
 ### 必须执行的步骤
 
-1. 先查 `refs/` 是否有 ground truth（用 Grep + Read）
+1. 先查 `egs/<slug>/refs/` 是否有 ground truth（用 Grep + Read；INDEX.yaml 是 PDF 清单的真相源）
 2. 再用 WebSearch / WebFetch 验证 1–2 个独立来源（论文 abstract、官方 GitHub README、官方 blog）
 3. 不确定的事实一律标 `% TODO: verify ...`，不要编造
 4. 数字 / 名字 / 年份必须能对应一个可验证来源；写 placeholder（`?`、`TODO`）也好过写一个没核对过的具体数
@@ -153,7 +177,7 @@ amphion-technical-reports/
 每次修改回复里必须含一段简短「fact check 摘要」，例如：
 
 > Fact check：
-> - LibriSpeech 总时长 960h，来源 refs/librispeech-paper.pdf §3.1，已确认
+> - LibriSpeech 总时长 960h，来源 egs/amphion-asr-2026/refs/datasets/panayotov2015-librispeech.pdf §3.1，已确认
 > - Conformer 论文一作 Anmol Gulati，Interspeech 2020，已确认（arxiv 2005.08100）
 > - Seed-ASR 训练数据规模找不到权威数字，已在 03_data.tex 标 TODO
 
@@ -240,7 +264,7 @@ CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫
 - 某个测试集结果在 refs 里只出现一次，没说是 final 还是 ablation
 - `plan.md` 里某项标"测试进度：无"或"未排查"，但你想拿来做卖点
 - `task_prompts.md` / `model_arch.md` 里出现多个版本，没说哪个是最终采用
-- `egs/<slug>/refs/docs` 里的数字与顶层 `refs/notes/papers` 里同来源的官方数字不一致
+- `egs/<slug>/refs/docs` 里的数字与同一 egs `refs/notes/papers/` 中官方 PDF 的数字不一致
 - 某段描述无法判断是已落地、还是 plan 里的待办（"@xxx 动作：…"）
 - 用户口头没说过、refs 里也没明确背书，但你"觉得是好卖点"的内容
 
@@ -261,7 +285,7 @@ CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫
 
 ### 核心原则
 
-paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照顶层 `refs/notes/papers/` 或外部同类技术报告。`egs/<slug>/refs/docs` 只提供 fact，不提供 form。
+paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照本 egs `refs/notes/papers/` 中的同类技术报告（或外部同类）。`egs/<slug>/refs/docs` 只提供 fact，不提供 form。
 
 不要凭 `egs/<slug>/refs/docs` 内容原创叙述结构 —— 最常见的失败模式是把"项目周报语气"或"中文工作记录直译"带进英文 paper（同时违反规则 4 + 规则 6）。
 
@@ -278,7 +302,7 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 | Contextual ASR | Seed-ASR 热词小节 | 卖点句式 + U-WER / B-WER 分指标 |
 | Target-speaker ASR | 最近的 TS-ASR / 多说话人论文 | 评测协议 + speaker prompt 表述 |
 
-样板源头：先查 `refs/notes/papers/`；找不到再 WebSearch / WebFetch 找该论文的官方 PDF；都找不到就停下问用户，不要"凭印象写"。
+样板源头：先查本 egs `refs/notes/papers/`（用 `INDEX.md` / `INDEX.yaml` 的 usage 字段定位）；找不到再 WebSearch / WebFetch 找该论文的官方 PDF；都找不到就停下问用户，不要"凭印象写"。
 
 ### 工作流（开始写任一新章节前）
 
@@ -290,7 +314,7 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 
 ### 触发：fact-check block 必加一行
 
-> 仿照样板：`<paper key>`（`refs/notes/papers/...`）§X.Y
+> 仿照样板：`<paper key>`（`egs/<slug>/refs/notes/papers/...`）§X.Y
 
 如果没有样板，要明确写"无样板，凭领域常识"，然后先停下来问用户确认是否继续。
 
@@ -317,11 +341,11 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 
 ### 单份报告自包含
 
-每个 `egs/<slug>/` 完全自包含。`main.tex` / `sections` / `figures` / `tables` / `refs` / `ack` 都不应跨 egs `\input{...}` 或读取另一个 egs 的内容。"借鉴另一份报告的某段叙述 / 某张图"不是合法理由 —— 把它抽到公共层（`figures/_palette.tex`、`template/...`、`refs/notes/papers/`）才是。
+每个 `egs/<slug>/` 完全自包含。`main.tex` / `sections` / `figures` / `tables` / `refs` / `ack` 都不应跨 egs `\input{...}` 或读取另一个 egs 的内容。"借鉴另一份报告的某段叙述 / 某张图"不是合法理由 —— 把它抽到公共层（`figures/_palette.tex`、`template/...`、`.cursor/rules/_sources.md`）才是；论文 PDF 这种"领域参考资料"则在两份 egs 各自维护一份 INDEX.yaml entry（PDF 文件可以共存于两份 refs/，用同一 sha256 验证）。
 
 ### 公共层修改流程
 
-修改公共层（`template/*`、`figures/_palette.tex`、`figures/architecture-skeleton.tex`、顶层 `references.bib`、`tools/*`）影响所有 active egs。所有此类修改必须：
+修改公共层（`template/*`、`figures/_palette.tex`、`figures/architecture-skeleton.tex`、顶层 `references.bib`、`tools/*`、`tools/schemas/*`、`.cursor/rules/*`、`egs/_skeleton/*`）影响所有 active egs。所有此类修改必须：
 
 1. 在 `template/CHANGELOG.md` 追加一条 entry，描述"为什么改、改了什么、是否破坏向后兼容"
 2. 编译 `egs/_skeleton` 与所有 active egs（用 `tools/build-all.sh`）；**视觉无回归** 才能 commit

@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Multi-report Boundary Rules
 
-This repo hosts multiple Amphion technical reports as `egs/<slug>/` leaf directories sharing one public layer (`template/` + `figures/_palette.tex` + top-level `references.bib` + `tools/` + `refs/`). These rules tell an agent which layer an edit belongs to and how to amend the shared layer without breaking other reports.
+This repo hosts multiple Amphion technical reports as `egs/<slug>/` leaf directories sharing one public layer (`template/` + `figures/_palette.tex` + top-level `references.bib` + `tools/` + `tools/schemas/` + `.cursor/rules/_sources.md`). Each `egs/<slug>/refs/` is private to its report. These rules tell an agent which layer an edit belongs to and how to amend the shared layer without breaking other reports.
 
 See AGENTS.md rule 8 for the same content in 协作规范 form.
 
@@ -13,7 +13,7 @@ See AGENTS.md rule 8 for the same content in 协作规范 form.
 
 Before editing any `.tex` / `.bib` / figure / config file, identify which of these three layers it lives in:
 
-1. Public capability — `template/`, `figures/_palette.tex`, `figures/architecture-skeleton.tex`, top-level `references.bib`, `tools/`, `.github/workflows/`, top-level `refs/`, `LICENSE`, top-level `README.md`, `AGENTS.md`, `.cursor/rules/`, `egs/_skeleton/`. Changes here affect every active report.
+1. Public capability — `template/`, `figures/_palette.tex`, `figures/architecture-skeleton.tex`, top-level `references.bib`, `tools/` (including `tools/fetch-refs.py`, `tools/schemas/`, `tools/requirements-fetch.txt`), `.github/workflows/`, `LICENSE`, top-level `README.md`, `AGENTS.md`, `.cursor/rules/` (including `.cursor/rules/_sources.md`), `egs/_skeleton/`. Changes here affect every active report.
 2. Single report — anything under a specific `egs/<slug>/` (other than that slug's own `latexmkrc`). Changes here affect exactly one report.
 3. Repo root meta — `latexmkrc`, `.gitignore`, `LICENSE_arxiv-style.txt`. Treat like the public layer.
 

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://amphion.dev/schemas/refs-index.schema.json",
+  "title": "Amphion refs INDEX.yaml",
+  "description": "Schema for egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml — single source of truth for reference PDFs (downloaded via tools/fetch-refs.py).",
+  "type": "object",
+  "required": ["groups", "papers"],
+  "additionalProperties": false,
+  "properties": {
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Lowercase kebab-case identifier; referenced by papers[*].group"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "papers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["file", "url", "title", "group"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "\\.pdf$",
+            "description": "Filename relative to the INDEX.yaml directory; must end in .pdf"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://",
+            "description": "Direct download URL for the PDF"
+          },
+          "sha256": {
+            "type": ["string", "null"],
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Lowercase hex sha256 of the downloaded file; null = will be filled on first download by tools/fetch-refs.py"
+          },
+          "arxiv": {
+            "type": "string",
+            "description": "arXiv identifier (e.g. 2212.04356); informational only"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authors": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM or YYYY-MM-DD"
+          },
+          "venue": {
+            "type": "string",
+            "description": "arXiv | Interspeech | ICASSP | ..."
+          },
+          "group": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Must match an entry in groups[*].id"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*$"
+            }
+          },
+          "usage": {
+            "type": "string",
+            "description": "Why this PDF is in our refs (one or two short sentences)"
+          }
+        }
+      }
+    }
+  }
+}
