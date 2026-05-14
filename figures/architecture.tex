@@ -2,7 +2,7 @@
 \usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{xcolor}
-\usepackage{pifont}
+\usepackage{fontawesome5}
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
 
 % ----------------------------------------------------------------
@@ -23,9 +23,9 @@
 \definecolor{cBound}{HTML}{F2DEDE}
 \definecolor{cBoundB}{HTML}{B8585F}
 
-% Simple LaTeX-native icons (no FontAwesome / emoji dependency)
-\newcommand{\frozenIcon}{\textcolor{cEncB}{\ding{100}}}
-\newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\ding{72}}}
+% Trainability icons: real snowflake / flame from fontawesome5.
+\newcommand{\frozenIcon}{\textcolor{cEncB}{\faSnowflake}}
+\newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\faFire}}
 
 % Compact pictogram of an audio waveform: 15 vertical bars at a
 % pre-defined pseudo-envelope. Width is ~1.7cm, height ~0.45cm.
@@ -86,7 +86,7 @@
   % ====================== LLM (top) ======================
   \node[llmbox] (llm) {%
     \fireIcon~~\textbf{Qwen3-4B-Instruct-2507}\\[1pt]
-    \scriptsize Causal LM \,$\cdot$\, $\sim 4.41$\,B params
+    \scriptsize Causal LM
   };
   \node[outbox, above=0.55cm of llm] (text) {\textbf{Transcript}};
   \draw[flow] (llm.north) -- (text.south);
@@ -123,12 +123,12 @@
   \node[boundbox, below=1.4cm of seqbox.south, anchor=north,
         at={([xshift=\xM]seqbox.south)}] (bound) {%
     \fireIcon~~\textbf{Boundary Prompt}\\
-    \scriptsize $4 \times 2560$ learnable
+    \scriptsize learnable soft prompt
   };
   \node[tokenizer, below=1.4cm of seqbox.south, anchor=north,
         at={([xshift=\xR]seqbox.south)}] (embed) {%
     \textbf{Tokenizer + Embedding}\\
-    \scriptsize Qwen3, vocab $151{,}936$
+    \scriptsize Qwen3
   };
 
   % vertical arrows: each source -> the sequence bottom on its own x
@@ -142,15 +142,14 @@
   % ====================== Audio column (left, downstream) ======
   \node[encoder, below=of proj] (aut) {%
     \frozenIcon~~\textbf{Qwen3-AuT Encoder}\\
-    \scriptsize Whisper-style \,$\cdot$\, $\sim 314$\,M
+    \scriptsize Whisper-style
   };
   \node[encoder, below=of aut] (front) {%
-    \textbf{Log-mel + Conv Sub-sampler}\\
-    \scriptsize $128$-bin, $100$\,Hz $\to \sim 13$\,Hz
+    \textbf{Log-mel + Conv Sub-sampler}
   };
   \node[audio, below=of front, minimum height=1.05cm] (wave) {%
     \WaveformPictogram\\[-1pt]
-    \scriptsize $16$\,kHz waveform
+    \scriptsize raw audio
   };
   \draw[flow] (wave)  -- (front);
   \draw[flow] (front) -- (aut);
