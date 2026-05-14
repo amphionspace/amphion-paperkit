@@ -86,6 +86,13 @@
 \publishdate{2026.05.13}
 \maketitle
 
+% --- Body page header: keep only the model name (xlance.cls injects the
+%     full \title into the body header at \maketitle; we override it here
+%     because the new title is too long to repeat at the top of every page).
+%     The grey separator rule is also disabled for a cleaner look.
+\fancyhead[L]{AmphionASR}
+\renewcommand{\headrulewidth}{0pt}
+
 % --- Teaser: model architecture diagram + ToC -------------------------------
 \begin{figure}[H]
   \centering
