@@ -35,15 +35,19 @@ particularly common and particularly awkward for end-to-end ASR:
 \end{itemize}
 
 % --- This work ---
-We describe \textbf{AmphionASR}, a 4.7\,B-parameter SpeechLLM
-($4.3$\,B distinct after \texttt{lm\_head} tying) that treats both
-capabilities as first-class citizens of the prompt, while remaining
-competitive on standard Mandarin and English ASR benchmarks.
+We describe \textbf{AmphionASR}, an open-source, industrial-grade
+SpeechLLM whose LLM prompt is the single interface for personalised
+Mandarin and English speech recognition: hotword lists,
+target-speaker reference audio, and noisy or overlapping-speaker
+inputs are all consumed as prompt features, while the model remains
+competitive on standard Mandarin and English ASR benchmarks. The
+released v3 checkpoint totals $4.7$\,B parameters ($4.3$\,B distinct
+after \texttt{lm\_head} tying).
 
 Our contributions are:
 
 \begin{itemize}
-  \item \textbf{A 4.7\,B Mandarin--English SpeechLLM recipe.} We pair
+  \item \textbf{An industrial-grade Mandarin--English SpeechLLM recipe.} We pair
         the Qwen3-AuT audio tower (Whisper-style 24-layer Transformer
         at $d{=}1024$, 314\,M parameters) with the
         Qwen3-4B-Instruct-2507 \cite{qwen2025qwen3} LLM through a

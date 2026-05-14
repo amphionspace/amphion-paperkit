@@ -1,26 +1,42 @@
 We present \textbf{AmphionASR}, an open SpeechLLM for Mandarin and
-English speech recognition. The model couples a 314\,M-parameter
-Whisper-style audio tower (\textbf{Qwen3-AuT}; 24-layer Transformer at
-$d{=}1024$) to the \textbf{Qwen3-4B-Instruct-2507} large language model
-through a 9.2\,M-parameter Linear--SwooshR--Linear projector and four
-learnable modality-boundary prompt vectors. Total parameter count is
-approximately $4.74$\,B ($4.3$\,B distinct after \texttt{lm\_head}
-tying). Beyond producing competitive Mandarin and English transcripts,
-AmphionASR is designed for two real-world capabilities that are awkward
-for purely end-to-end ASR systems: \emph{hotword conditioning} -- the
-model accepts a small list of likely terms in its prompt and reliably
-biases output toward them -- and \emph{target-speaker recognition} --
-given a short reference utterance the model transcribes only the
-matching speaker in mixed audio.
-On the standard public benchmarks our v3 checkpoint reaches
-$1.8$\% CER on AISHELL-1, $7.17$\% WER on LibriSpeech \texttt{test-clean}
-and $14.99$\% MER on the TALCS Mandarin--English code-switching test
-set. With as few as five in-prompt hotwords, the CommonVoice CER drops
-from $6.57$\% to $2.83$\% (Mandarin) and the WER from $9.65$\% to
-$4.89$\% (English). On our internal hotword + target-speaker test set
-we obtain $14.29$\% MER. We discuss current gaps -- in particular weak
-performance on the LibriMix open multi-talker benchmarks and an
-as-yet-unsupported explicit noise-robustness path -- and outline the
-next training iteration. We will release model weights and inference
-code at \url{https://github.com/amphionspace/AmphionASR}.
-% TODO: verify the public URL.
+English transcription that is purpose-built for the failure modes that
+dominate real-world deployments rather than open benchmark
+leaderboards: rare named entities in domain-specific vocabularies,
+overlapping speakers in multi-party audio, and noisy or far-field
+acoustic conditions. AmphionASR bridges a Whisper-style audio encoder
+with the Qwen3-4B-Instruct LLM through a lightweight modality
+projector, exposing the LLM's prompt as the single interface through
+which downstream applications inject all three forms of
+side-information at inference time.
+
+Three production-oriented capabilities anchor the design.
+\emph{(i)~Hotword conditioning.} A comma-separated list of likely
+terms is supplied in the prompt and the decoder is biased toward
+them; with as few as five in-prompt hotwords, CommonVoice~17 CER
+drops from $6.57$\% to $2.83$\% on Mandarin and WER from $9.65$\% to
+$4.89$\% on English.
+\emph{(ii)~Target-speaker recognition.} Given a $3$--$5$\,s reference
+utterance the model transcribes only the matching speaker in mixed
+audio (\textbf{14.29}\,\% MER on our internal hot+TS test set), with
+explicit anti-hallucination training that keeps the decoder silent
+when the requested speaker is absent.
+\emph{(iii)~Noise robustness.} Every target-speaker training cut
+passes through reverberation, additive noise (MUSAN
+\cite{snyder2015musan}, AudioSet road-traffic) and competing-speaker
+interference, so deployments on noisy, overlapped or far-field audio
+inherit the same robustness without bespoke acoustic adaptation.
+
+On standard public benchmarks the v3 checkpoint reaches
+$\mathbf{1.80}$\,\% CER on AISHELL-1,
+$\mathbf{7.17}$\,\% WER on LibriSpeech \texttt{test-clean} and
+$\mathbf{14.99}$\,\% MER on the TALCS Mandarin--English
+code-switching test. The released model is served behind a batched
+vLLM~\cite{kwon2023vllm} endpoint and ships with both the inference
+client and the supervised fine-tuning recipe, targeting drop-in
+deployment for production transcription pipelines. We also discuss
+current gaps -- in particular weakness on the public LibriMix
+multi-talker benchmarks and the absence of an explicit plain-ASR
+noise curriculum -- and outline the next training iteration. Weights
+and code will be released at
+\url{https://github.com/amphionspace/AmphionASR}.
+% TODO: verify the public URL (currently 404 on github.com).

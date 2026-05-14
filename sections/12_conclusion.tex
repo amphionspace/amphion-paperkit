@@ -1,15 +1,18 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented AmphionASR, a 4.7\,B-parameter SpeechLLM ($4.3$\,B
-distinct after \texttt{lm\_head} tying) that couples the Qwen3-AuT
-audio tower (24-layer Whisper-style encoder, $d{=}1024$, 314\,M
-parameters) to the Qwen3-4B-Instruct-2507 language model through a
-9.2\,M-parameter Linear--SwooshR--Linear projector and four learnable
-modality-boundary prompt vectors, and trains in three stages --
-audio--text alignment, continue-SFT for Mandarin and English
-transcription, and capability SFT that adds in-prompt hotword
-conditioning and reference-utterance target-speaker recognition. On Mandarin benchmarks the v3 checkpoint
+We presented \textbf{AmphionASR}, an open-source, industrial-grade
+SpeechLLM for personalised Mandarin and English speech recognition.
+The model couples the Qwen3-AuT audio tower (24-layer Whisper-style
+encoder, $d{=}1024$, 314\,M parameters) to the
+Qwen3-4B-Instruct-2507 language model through a 9.2\,M-parameter
+Linear--SwooshR--Linear projector and four learnable
+modality-boundary prompt vectors -- $4.7$\,B parameters in total
+($4.3$\,B distinct after \texttt{lm\_head} tying) -- and is trained
+in three stages: audio--text alignment, continue-SFT for Mandarin
+and English transcription, and capability SFT that adds in-prompt
+hotword conditioning and reference-utterance target-speaker
+recognition. On Mandarin benchmarks the v3 checkpoint
 reaches single-digit CER on most sets, including AISHELL-1 at
 $1.80$\%; on English it covers the standard Librispeech / GigaSpeech /
 MLS / CommonVoice grid; on TALCS Mandarin--English code-switching it
