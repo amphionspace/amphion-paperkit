@@ -32,24 +32,20 @@
 
 ### 风格 preset（已建立，必须复用）
 
-存在于 `figures/architecture.tex` 顶部，新增图请复制该 preamble 起手，不要另起调色板。
-
-调色板与 main.tex 中性灰主题（NeurIPS 风格）保持同源：encoder / adapter / token / boundary 全部走灰阶或极弱色相，LLM 块保留唯一暖色（米橙）作为视觉锚点，让读者一眼锁定主干。
+存在于 `figures/architecture.tex` 顶部，新增图请复制该 preamble 起手，不要另起调色板：
 
 颜色（HEX）：
 
-| 用途 | 底色 | 描边 | 备注 |
-| --- | --- | --- | --- |
-| audio / text 通用 | F4F2EE | 6E6E6E | 米白 + 中灰描边 |
-| encoder | E5E7EB | 4B5563 | 中性灰，不再使用蓝色 |
-| adapter | E4EAE5 | 5F7A65 | 极弱灰绿，仅暗示 fine-tune 性质 |
-| LLM | F4E6D5 | A0763C | 米橙 + 深棕描边，全图唯一暖色锚点 |
-| prompt 框 | F1ECE3 | 8E7A55 | 浅米 + 哑铜色描边 |
-| token cell | ECECEE | 6B6E7A | 中性灰 + 冷板岩描边 |
-| boundary cell | ECE3E0 | 8E5A52 | 偏暖中性 + 哑陶土描边 |
-| frozen 标记 | 8A8A8A | — | 中灰 |
-| trainable 标记 | 4B5563 | — | 深灰 |
-| fine-tune 标记 | 5F7A65 | — | 哑绿 |
+| 用途 | 底色 | 描边 |
+| --- | --- | --- |
+| audio / text 通用 | F2F4F7 | 黑40 |
+| encoder | D9E5F4 | 4A7BB7 |
+| adapter | D9F0DA | 4F9D58 |
+| LLM | FBE3CC | D08A3F |
+| prompt 框 | F7F2E8 | B89464 |
+| frozen 标记 | 8A8A8A | — |
+| trainable 标记 | 2F6FB1 | — |
+| fine-tune 标记 | 2F8E40 | — |
 
 形状与文字：
 

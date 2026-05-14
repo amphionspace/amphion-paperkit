@@ -1,33 +1,10 @@
 % =============================================================================
 % AmphionASR Technical Report
 % Built on the X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429).
-% Theme: custom NeurIPS-style neutral grey (overrides the OpenDFM blue-purple
-%        defaults; see "Custom palette" block below). Logos disabled.
+% Theme: OpenDFM (blue-purple). Logos disabled (see below).
 % =============================================================================
 
 \documentclass[opendfm]{xlance/xlance}
-
-% --- Custom palette: collapse the saturated blue-purple of the OpenDFM theme
-%     onto a near-monochrome neutral grey scale (NeurIPS / arXiv style), with a
-%     subtle cool-slate secondary palette so dual-colour boxes still read.
-%     This overrides themecolor@1..5 and themecolor@@1..5 set by xlance.cls.
-\usepackage{xcolor}
-\makeatletter
-\definecolor{themecolor@1}{HTML}{1A1A1A}   % near-black: title accent
-\definecolor{themecolor@2}{HTML}{333333}   % strong dark grey: abstract / strong
-\definecolor{themecolor@3}{HTML}{6E6E6E}   % medium grey: links, hairlines
-\definecolor{themecolor@4}{HTML}{BFBFBF}   % light grey: soft separators
-\definecolor{themecolor@5}{HTML}{F4F2EE}   % off-white: box bg
-\definecolor{themecolor@@1}{HTML}{1F2A44}  % deep slate: secondary accent
-\definecolor{themecolor@@2}{HTML}{3A4565}
-\definecolor{themecolor@@3}{HTML}{6F7A95}
-\definecolor{themecolor@@4}{HTML}{B6BCCB}
-\definecolor{themecolor@@5}{HTML}{E9EBF0}
-% Re-sync prompt box colours that xlance.cls froze from the original palette.
-\colorlet{boxcolor@bg}{themecolor@5}
-\colorlet{boxcolor@frame}{themecolor@3}
-\colorlet{boxcolor@text}{themecolor@2}
-\makeatother
 
 % --- Logos disabled: redefine firstpage style to suppress the default
 %     X-LANCE / SII / SZLab / OpenDFM header logos. Foot still shows page no.
