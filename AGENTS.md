@@ -175,7 +175,101 @@
 
 ---
 
-## 规则 5：通用约定
+## 规则 5：refs/docs 是原料库，不是论文素材；不清楚要问
+
+### 文档属性识别
+
+`refs/docs/*.md`（`plan.md` / `model_arch.md` / `task_prompts.md` / `train_eval_data.md` 等）是团队内部的实验记录与工作 plan，典型特征：
+
+- 绝对路径（`/ai_sds_wuzz/...`）、conda env、HPC 账号、git 分支
+- 代码类名 / 函数名 / 配置字段
+- 待办与 `@人名` 分配
+- 调试中间结果、占位 TODO、未结案问题、已废弃实验
+
+它们提供事实和数字，但不提供 paper 的句式 / 叙述 / 卖点。把 md 当"原料库"用，不要当成"草稿"用。
+
+### 提炼 vs 照搬
+
+读 `refs/docs` 时只做两件事：
+
+1. 抽事实：hours、参数量、benchmark 数字、阶段时间线、最终采用的 prompt 模板、最终采用的训练配置
+2. 抽卖点：把"目标 / 已完成"翻译成 1–2 句 paper-level claim，例如：
+    - 内部："中文热词测试集 SOTA"  →  claim："we surpass the strongest open contextual ASR baseline on an in-house Mandarin hotword benchmark"
+    - 内部："libri2mix 较差，原因未排查"  →  这不是卖点，可能进 Limitations，先问
+
+不搬路径、不抄类名、不复述调试过程 —— 与规则 4 联动。
+
+### 不清楚要问，不要凭原料硬猜
+
+`refs/docs` 是动态工作记录，常包含 未结案 / 已废弃 / 占位 / 实验失败 的痕迹。任何要进 paper 的 claim，遇到下列情况必须停下来问用户，不要自行裁断：
+
+- 某个测试集结果在 refs 里只出现一次，没说是 final 还是 ablation
+- `plan.md` 里某项标"测试进度：无"或"未排查"，但你想拿来做卖点
+- `task_prompts.md` / `model_arch.md` 里出现多个版本，没说哪个是最终采用
+- `refs/docs` 里的数字与 `refs/notes/papers` 里同来源的官方数字不一致
+- 某段描述无法判断是已落地、还是 plan 里的待办（"@xxx 动作：…"）
+- 用户口头没说过、refs 里也没明确背书，但你"觉得是好卖点"的内容
+
+提问格式（写进回复，而不是直接动笔）：
+
+> 问：`refs/docs/plan.md` 中 libri2mix 较差未排查；这个测试集是否进 headline 表？是否仅在 Limitations 提及？
+
+### 禁止
+
+- 把 `plan.md` 的待办（"@xxx 动作：…"）误读成已完成结果
+- 把 `task_prompts.md` 里的 prompt 调试历史抄进 Methods（只保留最终模板，与规则 4、ASR 域规则联动）
+- 把 `model_arch.md` 里张量级细节 / 类名 / 路径搬进 paper
+- 把 `plan.md` 的"目标 / 动作 / 谁负责"原样翻译成英文段落
+
+---
+
+## 规则 6：写法仿照同类文献，不要凭原料自由发挥
+
+### 核心原则
+
+paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照 `refs/notes/papers/` 或外部同类技术报告。`refs/docs` 只提供 fact，不提供 form。
+
+不要凭 `refs/docs` 内容原创叙述结构 —— 最常见的失败模式是把"项目周报语气"或"中文工作记录直译"带进英文 paper（同时违反规则 4 + 规则 6）。
+
+### 对照表：哪个文献当哪节的样板
+
+| 章节 | 主要参考 | 借鉴什么 |
+| --- | --- | --- |
+| Architecture / Overview | SLAM-ASR、Qwen2-Audio | 三模块叙述（Encoder + Projector + LLM）+ 模块表 |
+| Methods 章节 ordering | Seed-ASR、Step-Audio 2 | Section 安排、热词与目标说话人小节的拆分方式 |
+| Data 章节 | Kimi-Audio、Whisper | 按 source 列表 + per-source hours 表 + 清洗 pipeline 描述 |
+| Prompt / Task design | Qwen-Audio | 任务清单表 + literal prompt template |
+| Experiments 主表 | Seed-ASR、Whisper | Headline 表 + 对比 baseline + ablation 组织 |
+| Robustness | Whisper §3.7 | SNR sweep + 噪声集对比 |
+| Contextual ASR | Seed-ASR 热词小节 | 卖点句式 + U-WER / B-WER 分指标 |
+| Target-speaker ASR | 最近的 TS-ASR / 多说话人论文 | 评测协议 + speaker prompt 表述 |
+
+样板源头：先查 `refs/notes/papers/`；找不到再 WebSearch / WebFetch 找该论文的官方 PDF；都找不到就停下问用户，不要"凭印象写"。
+
+### 工作流（开始写任一新章节前）
+
+1. 找出 1 篇最相近的样板文献，定位到对应章节
+2. 把样板章节的"段落主题树"复述一遍（每段讲什么），这就是本节的骨架
+3. 仿样板的句式 / 表格列名 / 命名约定填空
+4. 用 `refs/docs` 抽到的事实做填充
+5. 通读检查：有没有从 `refs/docs` 直接译过来的句子？有就重写
+
+### 触发：fact-check block 必加一行
+
+> 仿照样板：`<paper key>`（`refs/notes/papers/...`）§X.Y
+
+如果没有样板，要明确写"无样板，凭领域常识"，然后先停下来问用户确认是否继续。
+
+### 不要做的事
+
+- 不看参考文献就开始原创一套叙述
+- 仿写 "翻译化" —— 直接把 `refs/docs` 中文段落英译当 paper 段落
+- 把 `plan.md` 的工作流条目（"目标 / 动作 / 谁负责"）原样译成 paper 句子
+- 仿照过头 —— 直接抄样板原文（reword 但不抄词序、不抄独特短语）
+
+---
+
+## 规则 7：通用约定
 
 - 修改后立即 git commit，commit message 用 conventional commit 前缀：`feat(...)` / `fix(...)` / `chore(...)` / `docs(...)` / `refactor(...)`
 - commit message 主体说明 why，不只 what
