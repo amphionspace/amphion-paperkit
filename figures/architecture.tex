@@ -147,7 +147,9 @@
   \node[encoder, below=of aut] (front) {%
     \textbf{Log-mel + Conv Sub-sampler}
   };
-  \node[audio, below=of front, minimum height=1.05cm] (wave) {%
+  % Waveform: no box, just the pictogram and a small caption.
+  \node[draw=none, fill=none, inner sep=2pt, align=center,
+        font=\sffamily\small, below=of front] (wave) {%
     \WaveformPictogram\\[-1pt]
     \scriptsize raw audio
   };
@@ -162,19 +164,20 @@
   };
   \draw[flow] (prompt) -- (embed);
 
-  % ====================== Bottom legend ================
-  \node[draw=black!35, rounded corners=2.5pt, inner sep=6pt,
-        line width=0.4pt, fill=white,
-        below=1.2cm of wave, anchor=north,
-        at={([xshift=0pt]wave.south -| 0,0)}] (legend) {%
+  % ====================== Compact legend (mid column) =========
+  % Placed in the otherwise empty middle column below the boundary
+  % prompt, in a Step-Audio 2 style vertical list, no border.
+  \node[draw=none, anchor=north, align=left, inner sep=0pt,
+        below=1.6cm of bound.south,
+        at={([xshift=\xM,yshift=-1.6cm]bound.south)}] (legend) {%
     \sffamily\scriptsize
-    \setlength{\tabcolsep}{10pt}%
-    \begin{tabular}{@{}lllll@{}}
-      \frozenIcon~~frozen (Stage 1) &
-      \fireIcon~~trainable &
-      \tikz\node[cellText, minimum width=0.32cm, minimum height=0.32cm]{};~text emb &
-      \tikz\node[cellBound, minimum width=0.32cm, minimum height=0.32cm]{};~boundary emb &
-      \tikz\node[cellAudio, minimum width=0.32cm, minimum height=0.32cm]{};~audio emb \\
+    \renewcommand{\arraystretch}{1.25}%
+    \begin{tabular}{@{}c@{\hspace{6pt}}l@{}}
+      \frozenIcon & frozen (Stage 1)\\
+      \fireIcon   & trainable\\
+      \tikz\node[cellText,  minimum width=0.32cm, minimum height=0.32cm]{}; & text emb\\
+      \tikz\node[cellBound, minimum width=0.32cm, minimum height=0.32cm]{}; & boundary emb\\
+      \tikz\node[cellAudio, minimum width=0.32cm, minimum height=0.32cm]{}; & audio emb\\
     \end{tabular}%
   };
 
