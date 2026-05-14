@@ -3,7 +3,7 @@
 \usepackage{amsmath}
 \usepackage{xcolor}
 \usepackage{pifont}
-\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc, decorations.pathmorphing, patterns}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
 
 % ----------------------------------------------------------------
 % Colour palette -- see AGENTS.md rule 1. Do not introduce new
@@ -27,11 +27,27 @@
 \newcommand{\frozenIcon}{\textcolor{cEncB}{\ding{100}}}
 \newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\ding{72}}}
 
+% Compact pictogram of an audio waveform: 15 vertical bars at a
+% pre-defined pseudo-envelope. Width is ~1.7cm, height ~0.45cm.
+\newcommand{\WaveformPictogram}{%
+  \begin{tikzpicture}[baseline=-0.6ex]
+    \foreach \i/\h in {%
+        0/0.10, 1/0.22, 2/0.16, 3/0.34, 4/0.24,
+        5/0.42, 6/0.30, 7/0.48, 8/0.34, 9/0.40,
+        10/0.22, 11/0.32, 12/0.16, 13/0.24, 14/0.12%
+    }{
+      \pgfmathsetmacro{\xpos}{-0.84 + \i*0.12}
+      \draw[line width=0.85pt, line cap=round, draw=cEncB!90]
+        (\xpos, -\h) -- (\xpos, \h);
+    }
+  \end{tikzpicture}%
+}
+
 \tikzset{
   % --- module shapes ---
   module/.style    ={draw, rounded corners=3pt, align=center,
                      font=\sffamily\small, line width=0.7pt,
-                     minimum width=3.5cm, minimum height=0.95cm},
+                     minimum width=3.6cm, minimum height=1.0cm},
   audio/.style     ={module, fill=cAudio, draw=black!35},
   encoder/.style   ={module, fill=cEnc, draw=cEncB},
   adapter/.style   ={module, fill=cAdp, draw=cAdpB},
@@ -39,7 +55,7 @@
   tokenizer/.style ={module, fill=cTok, draw=cTokB},
   boundbox/.style  ={module, fill=cBound, draw=cBoundB},
   llmbox/.style    ={module, fill=cLLM, draw=cLLMB, line width=0.85pt,
-                     minimum width=11.4cm, minimum height=1.25cm,
+                     minimum width=11.6cm, minimum height=1.3cm,
                      font=\sffamily},
   outbox/.style    ={module, fill=white, draw=black!50,
                      minimum width=2.8cm, minimum height=0.75cm,
@@ -50,44 +66,40 @@
   cellText/.style  ={tokcell, fill=cTok!55, draw=cTokB!75},
   cellBound/.style ={tokcell, fill=cBound, draw=cBoundB},
   cellAudio/.style ={tokcell, fill=cAdp!90, draw=cAdpB},
-  % --- arrows ---
+  % --- arrows (all orthogonal) ---
   flow/.style      ={-Stealth, line width=0.7pt, draw=black!70},
   % --- text ---
-  ratelabel/.style ={font=\sffamily\scriptsize, text=black!55,
+  edgelabel/.style ={font=\sffamily\scriptsize, text=black!55,
                      fill=white, inner sep=1pt},
-  collabel/.style  ={font=\sffamily\scriptsize\itshape, text=black!55},
   legendtxt/.style ={font=\sffamily\scriptsize, text=black!75}
 }
 
 \begin{document}
-\begin{tikzpicture}
+% Global, uniform spacing between every module pair.
+\begin{tikzpicture}[node distance=1.2cm and 0.8cm]
 
-  % --------------------------------------------------------------
-  % three-column grid: column centres on a single x line each, so
-  % every arrow from a source module to the sequence is vertical.
-  % --------------------------------------------------------------
-  \def\xL{-3.9cm}   % left  column = audio path
-  \def\xM{0cm}      % middle column = boundary prompt
-  \def\xR{3.9cm}    % right column = text path
+  % column centres (x offsets) for the three-column grid
+  \def\xL{-3.95cm}   % audio path
+  \def\xM{0cm}       % boundary prompt
+  \def\xR{3.95cm}    % text path
 
-  % ====================== LLM (top horizontal) ======================
-  \node[llmbox] at (0, 6.7) (llm) {%
+  % ====================== LLM (top) ======================
+  \node[llmbox] (llm) {%
     \fireIcon~~\textbf{Qwen3-4B-Instruct-2507}\\[1pt]
     \scriptsize Causal LM \,$\cdot$\, $\sim 4.41$\,B params
   };
-
   \node[outbox, above=0.55cm of llm] (text) {\textbf{Transcript}};
   \draw[flow] (llm.north) -- (text.south);
 
-  % ====================== Merged input sequence (below LLM) ======
+  % ====================== Merged input sequence ==========
   \node[draw=black!50, dashed, rounded corners=2.5pt, line width=0.5pt,
-        minimum width=11.4cm, minimum height=0.85cm,
+        minimum width=11.6cm, minimum height=0.85cm,
         below=0.7cm of llm] (seqbox) {};
   \node[legendtxt, anchor=south west, text=black!55]
         at ([xshift=2pt,yshift=1pt]seqbox.north west)
         {\itshape merged \texttt{inputs\_embeds}};
 
-  % cells inside the sequence: 4 text + 1 bound + 8 audio + 1 bound + 5 text = 19
+  % 19 cells: 4 text, 1 bound, 8 audio, 1 bound, 5 text
   \foreach \i/\style in {%
       0/cellText, 1/cellText, 2/cellText, 3/cellText,
       4/cellBound,
@@ -101,60 +113,61 @@
   }
   \draw[flow] (seqbox.north) -- (llm.south);
 
-  % ====================== Three sources, top row (entries) =======
-  \node[adapter]   at (\xL, 3.8) (proj)  {%
+  % ====================== Three sources (top row) ========
+  % all three sources share the same y, anchored 1.2cm below the seqbox
+  \node[adapter,  below=1.4cm of seqbox.south, anchor=north,
+        at={([xshift=\xL]seqbox.south)}] (proj)  {%
     \fireIcon~~\textbf{MM Projector}\\
     \scriptsize Linear--SwooshR--Linear
   };
-  \node[boundbox]  at (\xM, 3.8) (bound) {%
+  \node[boundbox, below=1.4cm of seqbox.south, anchor=north,
+        at={([xshift=\xM]seqbox.south)}] (bound) {%
     \fireIcon~~\textbf{Boundary Prompt}\\
     \scriptsize $4 \times 2560$ learnable
   };
-  \node[tokenizer] at (\xR, 3.8) (embed) {%
+  \node[tokenizer, below=1.4cm of seqbox.south, anchor=north,
+        at={([xshift=\xR]seqbox.south)}] (embed) {%
     \textbf{Tokenizer + Embedding}\\
     \scriptsize Qwen3, vocab $151{,}936$
   };
 
-  % vertical arrows from each source to the sequence bottom
+  % vertical arrows: each source -> the sequence bottom on its own x
   \draw[flow] (proj.north)  -- ([xshift=\xL]seqbox.south)
-        node[midway, ratelabel, xshift=0pt] {audio embs};
+        node[midway, edgelabel] {audio embs};
   \draw[flow] (bound.north) -- ([xshift=\xM]seqbox.south)
-        node[midway, ratelabel] {boundary embs};
+        node[midway, edgelabel] {boundary embs};
   \draw[flow] (embed.north) -- ([xshift=\xR]seqbox.south)
-        node[midway, ratelabel] {text embs};
+        node[midway, edgelabel] {text embs};
 
-  % ====================== Audio column (left) ====================
-  \node[encoder] at (\xL, 2.0) (aut) {%
+  % ====================== Audio column (left, downstream) ======
+  \node[encoder, below=of proj] (aut) {%
     \frozenIcon~~\textbf{Qwen3-AuT Encoder}\\
     \scriptsize Whisper-style \,$\cdot$\, $\sim 314$\,M
   };
-  \node[encoder] at (\xL, 0.4) (front) {%
+  \node[encoder, below=of aut] (front) {%
     \textbf{Log-mel + Conv Sub-sampler}\\
     \scriptsize $128$-bin, $100$\,Hz $\to \sim 13$\,Hz
   };
-  \node[audio, minimum height=0.7cm] at (\xL, -1.05) (wave) {%
-    \textbf{Audio waveform}\,\,\scriptsize $16$\,kHz
+  \node[audio, below=of front, minimum height=1.05cm] (wave) {%
+    \WaveformPictogram\\[-1pt]
+    \scriptsize $16$\,kHz waveform
   };
-  % small wavy line above the waveform box
-  \begin{scope}[line width=0.55pt, draw=cEncB!85]
-    \draw[decoration={snake, amplitude=2pt, segment length=3pt}, decorate]
-      ([xshift=-1.1cm,yshift=10pt]wave.center) -- ([xshift=1.1cm,yshift=10pt]wave.center);
-  \end{scope}
   \draw[flow] (wave)  -- (front);
   \draw[flow] (front) -- (aut);
   \draw[flow] (aut)   -- (proj);
 
-  % ====================== Text column (right) ====================
-  \node[promptbox] at (\xR, 2.0) (prompt) {%
+  % ====================== Text column (right, downstream) ======
+  \node[promptbox, below=of embed] (prompt) {%
     \textbf{Text prompt}\\
     \scriptsize chat template + speech tokens
   };
   \draw[flow] (prompt) -- (embed);
 
-  % ====================== Bottom legend ==========================
+  % ====================== Bottom legend ================
   \node[draw=black!35, rounded corners=2.5pt, inner sep=6pt,
         line width=0.4pt, fill=white,
-        anchor=north] at ([yshift=-1.4cm]wave.south -| 0,0) (legend) {%
+        below=1.2cm of wave, anchor=north,
+        at={([xshift=0pt]wave.south -| 0,0)}] (legend) {%
     \sffamily\scriptsize
     \setlength{\tabcolsep}{10pt}%
     \begin{tabular}{@{}lllll@{}}
