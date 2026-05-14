@@ -1,0 +1,26 @@
+% Training.
+%
+% Per .cursor/rules/asr-domain.mdc §5:
+%   - Objective stated explicitly with formula on first use.
+%   - Per stage: trainable params, LR schedule, batch size (audio-hours +
+%     tokens), seq length cap, total tokens, total update steps, precision,
+%     optimizer (AdamW betas, weight decay).
+%   - Hardware: GPU/TPU type and count, parallelism strategy, throughput,
+%     wall-clock time.
+%   - If RL / DPO is used: preference data source, pair construction, KL coef.
+
+\section{Training}
+\label{sec:training}
+
+% TODO: objective formula, e.g. token-level cross-entropy on transcript
+% tokens with prompt-token loss masking.
+
+\subsection{Stages}
+\label{subsec:training_stages}
+
+% TODO: per-stage configuration table.
+
+\subsection{Hardware and Throughput}
+\label{subsec:training_hardware}
+
+% TODO: GPUs, parallelism, throughput, wall-clock time.

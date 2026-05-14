@@ -1,0 +1,9 @@
+# latexmk configuration for an egs/<slug>/ leaf report.
+# Working directory at compile time: egs/<slug>/.
+# Add the project root to TEXINPUTS / BIBINPUTS so \documentclass{template/amphion},
+# \usepackage{template/asr-macros}, \bibliography{template/venues,...} all resolve.
+
+$ENV{'TEXINPUTS'} = '../../:' . ($ENV{'TEXINPUTS'} // '');
+$ENV{'BIBINPUTS'} = '../../:' . ($ENV{'BIBINPUTS'} // '');
+
+$pdf_mode = 1;

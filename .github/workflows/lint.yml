@@ -1,0 +1,41 @@
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fact-check-regex:
+    name: AGENTS.md rule 4 — implementation-detail leakage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+      - name: Run fact-check regex against egs/*/sections/
+        run: bash tools/fact-check-regex.sh
+
+  bibliography-link:
+    name: Each egs/<slug>/main.tex declares a bibliography
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify \bibliography{} appears in every active egs main.tex
+        run: |
+          missing=()
+          for d in egs/*/; do
+            slug="$(basename "$d")"
+            case "$slug" in
+              _*) continue ;;
+            esac
+            if [[ -f "$d/main.tex" ]] && ! grep -q '\\bibliography{' "$d/main.tex"; then
+              missing+=("$slug")
+            fi
+          done
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "Missing \\bibliography{...} in: ${missing[*]}" >&2
+            exit 1
+          fi
+          echo "OK: every active egs main.tex declares a bibliography."

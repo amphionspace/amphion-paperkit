@@ -1,0 +1,62 @@
+name: build-reports
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'egs/**'
+      - 'template/**'
+      - 'references.bib'
+      - '.github/workflows/build-reports.yml'
+  pull_request:
+    paths:
+      - 'egs/**'
+      - 'template/**'
+      - 'references.bib'
+      - '.github/workflows/build-reports.yml'
+  workflow_dispatch:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      slugs: ${{ steps.discover.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: discover
+        name: Discover egs/<slug>/ directories with a main.tex
+        run: |
+          slugs=$(ls -1 egs \
+            | grep -v '^_' \
+            | while read slug; do
+                [[ -f "egs/$slug/main.tex" ]] && echo "$slug"
+              done \
+            | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          echo "Discovered: $slugs"
+
+  build:
+    needs: discover
+    if: needs.discover.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.discover.outputs.slugs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build egs/${{ matrix.slug }}/main.tex
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: egs/${{ matrix.slug }}
+          root_file: main.tex
+          latexmk_use_xelatex: false
+          latexmk_shell_escape: false
+          extra_system_packages: |
+            inkscape
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.slug }}-pdf
+          path: egs/${{ matrix.slug }}/main.pdf
+          if-no-files-found: error

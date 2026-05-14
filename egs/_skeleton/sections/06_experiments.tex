@@ -1,0 +1,32 @@
+% Experiments.
+%
+% Per .cursor/rules/asr-domain.mdc §1--§2:
+%   - Never report a single WER without dataset + split + normalisation
+%     pipeline + decoding configuration.
+%   - The same normalisation must be applied to all rows in a table.
+%   - For every baseline number, specify "as reported in [cite]" / "we re-ran"
+%     / "from public leaderboard, retrieved on <date>".
+%   - Required baselines depend on the report's claim; for an English ASR
+%     report Whisper-large-v3 is mandatory.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+\label{subsec:exp_setup}
+
+% TODO: benchmarks used, normalisation pipeline, decoding configuration,
+% baselines + how each baseline number was obtained.
+
+\subsection{Main Results}
+\label{subsec:exp_main}
+
+% TODO: headline table with at least one slice in addition to the average
+% (per-language for multilingual, per-domain for multi-domain, U-WER vs
+% B-WER for contextual ASR, ...).
+
+\subsection{Ablations}
+\label{subsec:exp_ablations}
+
+% TODO: ablation table organised by what each row varies, plus 1-paragraph
+% interpretation.

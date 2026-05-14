@@ -1,0 +1,37 @@
+% =============================================================================
+% Skeleton TikZ figure for Amphion technical-report architecture diagrams.
+% Copy this file to <your-figure>.tex, replace the placeholder modules with
+% your own, and rebuild with: pdflatex -interaction=nonstopmode <your-figure>.tex
+%
+% Per AGENTS.md rule 1, do not introduce a new colour palette; reuse the
+% colours and tikzset defined in figures/_palette.tex.
+% =============================================================================
+
+\documentclass[tikz, border=8pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}     % Palatino-like serif; matches main.tex body
+\usepackage{mathpazo}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
+
+\input{_palette}
+
+\begin{document}
+\begin{tikzpicture}[node distance=1.2cm and 0.8cm]
+
+  % --- placeholder modules: replace with your architecture ------------------
+  \node[encoder]                           (input)   {Input encoder};
+  \node[adapter,  right=of input]          (adapter) {Adapter};
+  \node[llmbox,   right=of adapter,
+        minimum width=4.0cm]               (core)    {\fireIcon~~LLM core};
+  \node[outbox,   right=of core]           (out)     {Output};
+
+  \draw[flow] (input)   -- (adapter);
+  \draw[flow] (adapter) -- (core);
+  \draw[flow] (core)    -- (out);
+
+\end{tikzpicture}
+\end{document}

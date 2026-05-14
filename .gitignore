@@ -42,9 +42,36 @@ __pycache__/
 .venv/
 venv/
 
-# Generated PDF (default: not tracked; use git tag + zip for releases)
+# Generated PDF (default: not tracked; use git tag + zip for releases).
+# Top-level main.pdf is left for backwards-compat during the egs migration;
+# it will be removed once amphion-asr-2026 lands under egs/.
 main.pdf
 main.synctex.gz
+
+# Per-egs build artifacts (PDFs are produced by CI / latexmk; not tracked).
+egs/*/main.pdf
+egs/*/main.synctex.gz
+
+# Per-egs LaTeX intermediate files
+egs/*/*.aux
+egs/*/*.bbl
+egs/*/*.blg
+egs/*/*.fdb_latexmk
+egs/*/*.fls
+egs/*/*.log
+egs/*/*.out
+egs/*/*.toc
+egs/*/*.lof
+egs/*/*.lot
+egs/*/*.synctex.gz
+egs/*/*.synctex(busy)
+egs/*/sections/*.aux
+
+# Standalone figure intermediate files (the *.pdf is checked in for reproducibility)
+figures/*.aux
+figures/*.log
+figures/*.synctex.gz
+figures/*.synctex(busy)
 
 # Reference papers (large PDFs collected for fact-checking; INDEX.md is tracked)
 refs/notes/papers/*.pdf

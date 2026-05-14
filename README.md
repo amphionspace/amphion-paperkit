@@ -1,85 +1,119 @@
-# AmphionASR Technical Report
+# Amphion Technical Reports
 
-LaTeX 工程，基于 [X-LANCE Lab pre-print template](https://github.com/X-LANCE/LaTeX-Template-for-X-LANCE-Lab)（`xlance.cls` v0.2.4-20260429）的 OpenDFM 蓝紫主题。
+Mono-repo for Amphion 公司技术报告。顶层提供公共能力（LaTeX 模板、AI 协作规则、共享参考资料、starter bibliography、helper scripts、CI），所有具体报告住在 `egs/<slug>/` 叶子节点下，结构对齐 [k2-fsa/icefall](https://github.com/k2-fsa/icefall) 的 egs 模式。
 
-## 目录结构
+```mermaid
+graph TD
+    Root[amphion-technical-reports]
+    Root --> Public["公共能力层"]
+    Root --> Egs["egs/ — 报告叶子节点"]
+    Root --> Tools["tools/ — helper scripts"]
+    Root --> CI[".github/workflows — CI"]
 
-```
-.
-├── main.tex                    # 主文件：documentclass + 输入各章节
-├── references.bib              # 我们自己的参考文献
-├── latexmkrc                   # latexmk 配置
-├── xlance/                     # 模板（vendored，不要改动）
-│   ├── xlance.cls              # 文档类，自带主题/字体/promptbox/IEEE 引用
-│   ├── IEEEtran2.bst           # 引用样式
-│   ├── venues.bib              # 模板维护的会议/期刊缩写
-│   └── assets/                 # logo / 图标
-├── sections/
-│   ├── 00_abstract.tex         # 纯文本，被 main.tex 用 \abstract{\input{}} 包装
-│   ├── 01_introduction.tex
-│   ├── 02_related_work.tex
-│   ├── 03_data.tex
-│   ├── 04_model.tex
-│   ├── 05_training.tex
-│   ├── 06_experiments.tex
-│   ├── 07_hotwords.tex
-│   ├── 08_ts_asr.tex
-│   ├── 09_noise_robustness.tex
-│   ├── 10_analysis.tex
-│   ├── 11_limitations_ethics.tex
-│   ├── 12_conclusion.tex
-│   └── A_appendix.tex
-├── figures/
-│   ├── architecture.tex / .pdf  # 架构图（首页 teaser）
-│   └── ...
-├── refs/                        # 参考文档（fact-check 用，由 AGENTS.md 引用）
-└── AGENTS.md                    # AI 协作硬规则
+    Public --> Template["template/  (amphion.cls + asr-macros.sty + IEEEtran2.bst)"]
+    Public --> Agents["AGENTS.md + .cursor/rules/  (AI 协作规则)"]
+    Public --> CommonRefs["refs/  (公共论文 PDF / 数据集 / leaderboards)"]
+    Public --> Figures["figures/  (TikZ palette preset + skeleton)"]
+    Public --> StarterBib["references.bib  (starter cites)"]
+
+    Egs --> Skeleton["egs/_skeleton/  (新报告脚手架)"]
+    Egs --> AsrReport["egs/amphion-asr-2026/  (首份报告，PR 3 迁入)"]
+    Egs --> FutureA["egs/amphion-tts-2026/  (规划中)"]
+    Egs --> FutureB["egs/amphion-omni-2026/  (规划中)"]
 ```
 
-## 本地编译
+## 设计要点
 
-需要 TeX Live 2026（或同等支持 Palatino + tcolorbox 的发行版）。一次性安装：
+| 维度 | 选择 |
+| --- | --- |
+| 仓库形态 | mono-repo + `egs/<slug>/` 叶子节点（icefall 风格） |
+| LaTeX 模板 | `template/amphion.cls`（v0.1，从 X-LANCE pre-print 模板 fork）；新增 amphion 主题（warm ivory + petrol teal）作为默认 |
+| 主题 option | 默认 amphion / `[xlance]` 红 / `[opendfm]` 蓝紫；`[withlogo]` 正交可叠加恢复 logo |
+| 报告隔离 | 每份报告自带 main.tex / sections / figures / refs / ack；不跨 egs `\input` |
+| 模板演进 | 改 `template/amphion.cls` 必须更新 `template/CHANGELOG.md` 并 build 至少 2 个 egs；详见 AGENTS.md 规则 8 |
+| 公共 refs vs 报告 refs | 通用论文 / 数据集 / leaderboards 在顶层 `refs/`；报告内部 plan / model card / 训练日志在 `egs/<slug>/refs/docs/` 与 `egs/<slug>/refs/internal/` |
+
+## 起一份新报告
 
 ```bash
-brew install --cask mactex-no-gui
-# 装完后新开一个 terminal 让 PATH 生效，或手动 source：
-eval "$(/usr/libexec/path_helper)"
+tools/new-report.sh amphion-tts-2026 \
+  --title     "AmphionTTS: ..." \
+  --shortname "AmphionTTS" \
+  --author    "Amphion TTS Team" \
+  --venue     "arXiv" \
+  --maintainers "@user1, @user2"
 ```
 
-编译：
+脚本会从 `egs/_skeleton/` 派生一个新 egs，自动替换 main.tex / REPORT.md / ack/llm-usage.md 中的 `<<NAME>>` 占位符。后续步骤：填 sections / 把内部文档放到 `egs/<slug>/refs/docs/` / 在下面"活跃报告"表中加一行。详见 [egs/README.md](egs/README.md)。
+
+## 编译一份报告
 
 ```bash
-PATH=/Library/TeX/texbin:$PATH latexmk -pdf -interaction=nonstopmode main.tex
+cd egs/<slug>
+PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex
 ```
 
-清理中间文件：
+或一次编所有 active egs：
 
 ```bash
-PATH=/Library/TeX/texbin:$PATH latexmk -c
+tools/build-all.sh
 ```
 
-## 模板要点
+## 活跃报告
 
-- 主题：OpenDFM 蓝紫（`\documentclass[opendfm]{xlance/xlance}`）。去掉 `[opendfm]` 即切回 X-LANCE 红。
-- 首页 logo 已在 `main.tex` 里通过覆盖 `\fancypagestyle{firstpage}` 关掉。
-- 引用风格：IEEE numeric `[1]`（`natbib + xlance/IEEEtran2.bst`）。所有引用一律 `\cite{key}`，不用 `\citep / \citet`。
-- abstract 是一个**命令**（`\abstract{...}`），不是 environment。`sections/00_abstract.tex` 是裸文本。
-- 标题、作者、摘要、metadata 全部在 `main.tex` 的 preamble 里声明，`\maketitle` 之后是架构图 teaser + `\tableofcontents`。
-- 已加载且不要重复 `\usepackage` 的：`amsmath, amssymb, mathtools, booktabs, multirow, subcaption, graphicx, hyperref, cleveref, natbib, listings, tcolorbox, xcolor, microtype, ...`（完整列表见 `xlance/xlance.cls`）。
+| slug | 路径 | 状态 | 维护者 | 投稿目标 | PDF |
+| --- | --- | --- | --- | --- | --- |
+| amphion-asr-2026 | [egs/amphion-asr-2026/](egs/amphion-asr-2026/) (PR 3 迁入) | active | TBD | arXiv | TBD |
+
+每份报告的元数据由其 `egs/<slug>/REPORT.md` 维护；上表是它们的汇总视图。
 
 ## 协作规范
 
-- 全局规则：见 `AGENTS.md`。
-- 细化规则：`.cursor/rules/*.mdc`（paper-writing / latex-engineering / asr-domain / reproducibility）。
-- 内容修改前必须 fact-check 并参照 `refs/`。
+- 全局规则：[AGENTS.md](AGENTS.md)
+- 细化规则：`.cursor/rules/`
+  - paper-writing.mdc — 写作风格、章节结构、anti-hallucination、回复必含 fact-check block
+  - latex-engineering.mdc — LaTeX 工程约定（文件布局、bib key、单位、编译流程）
+  - asr-domain.mdc — WER 上报规范、baseline 选择、数据/模型/训练/鲁棒性的报告项
+  - reproducibility.mdc — 代码/模型/数据 release 标准、model card、ICLR/NeurIPS LLM 披露
+  - multi-report.mdc (PR 4 落地) — 跨 egs 协作 + 模板边界
 
-## Required tlmgr packages
+## 公共参考
 
-完整 TeX Live 2026 已包含。最小集合（如裸装 BasicTeX 需要补）：
+`refs/` 目录由公司维护，所有报告共享：
+
+```
+refs/
+├── datasets/       # 通用数据集 datasheet / paper PDF
+├── notes/
+│   ├── research-references.md   # 全局外部参考目录
+│   └── papers/                  # 公共论文 PDF + INDEX.md
+└── leaderboards/   # ASR / TTS / Audio-LLM leaderboards 截图
+```
+
+## 模板版本
+
+当前版本：`template/amphion.cls` v0.1（参见 [template/CHANGELOG.md](template/CHANGELOG.md)）。
+
+## 本地依赖
+
+需要 TeX Live 2026（或同等支持 Palatino + tcolorbox 的发行版）：
+
+```bash
+brew install --cask mactex-no-gui
+eval "$(/usr/libexec/path_helper)"
+```
+
+最小 tlmgr 包集合（裸装 BasicTeX 时需要补）：
 
 ```
 tlmgr install collection-fontsrecommended tgpagella mathpazo inconsolata \
               tcolorbox nicematrix multirow longtable tabularx adjustbox \
               enumitem cleveref natbib hyperref microtype hyphenat \
-              setspace parskip babel-latin lipsum
+              setspace parskip babel-latin lipsum fontawesome5 url
 ```
+
+## License
+
+- `LICENSE`：MIT，覆盖 amphion 自有内容（template/amphion.cls 的 fork 修改、tools、rules、scaffolding）。
+- `LICENSE_arxiv-style.txt`：原 X-LANCE template 继承的 arxiv-style license。
+- 单份报告可在自己的 `egs/<slug>/` 下声明独立 LICENSE（典型为 CC-BY for arXiv 预印本）。

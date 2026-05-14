@@ -1,0 +1,57 @@
+% =============================================================================
+% Shared TikZ palette + style preset for Amphion technical-report figures.
+% Per AGENTS.md rule 1, every new figure must \input this and reuse the
+% defined colours and tikzset; new colours must be added here (named cXxx)
+% rather than introduced ad-hoc per figure.
+%
+% Palette mirrors the amphion theme (warm ivory + petrol teal):
+%   - cool primary (teal family)  -> encoder / token / input-side modules
+%   - warm secondary (amber/clay) -> LLM / adapter / prompt / boundary
+% so figures read as "cool input -> warm core".
+% =============================================================================
+
+% --- Colours ----------------------------------------------------------------
+\definecolor{cAudio}{HTML}{F5EFE3}     % warm ivory ground
+\definecolor{cEnc}{HTML}{DDE9EC}       % light petrol teal fill
+\definecolor{cEncB}{HTML}{2D8294}      % medium petrol teal border
+\definecolor{cAdp}{HTML}{F0DFC9}       % warm peach fill
+\definecolor{cAdpB}{HTML}{B07849}      % muted clay border
+\definecolor{cLLM}{HTML}{F4E6D5}       % warm cream fill (LLM accent)
+\definecolor{cLLMB}{HTML}{A0763C}      % deep tan border (LLM accent)
+\definecolor{cPrompt}{HTML}{F1ECE3}    % desaturated cream
+\definecolor{cPromptB}{HTML}{8E7A55}   % muted bronze
+\definecolor{cTok}{HTML}{E5EEF0}       % pale teal
+\definecolor{cTokB}{HTML}{5E8090}      % slate teal
+\definecolor{cBound}{HTML}{ECDFD3}     % warm peach
+\definecolor{cBoundB}{HTML}{9C7558}    % terracotta clay
+
+% --- Trainability icons (require fontawesome5) ------------------------------
+\providecommand{\frozenIcon}{\textcolor{cEncB}{\faSnowflake}}
+\providecommand{\fireIcon}{\textcolor{cLLMB!90!red}{\faFire}}
+
+% --- Module / arrow / label styles ------------------------------------------
+\tikzset{
+  module/.style    ={draw, rounded corners=3pt, align=center,
+                     font=\small, line width=0.7pt,
+                     minimum width=3.4cm, minimum height=0.9cm},
+  audio/.style     ={module, fill=cAudio, draw=black!35},
+  encoder/.style   ={module, fill=cEnc, draw=cEncB},
+  adapter/.style   ={module, fill=cAdp, draw=cAdpB},
+  promptbox/.style ={module, fill=cPrompt, draw=cPromptB},
+  tokenizer/.style ={module, fill=cTok, draw=cTokB},
+  boundbox/.style  ={module, fill=cBound, draw=cBoundB},
+  llmbox/.style    ={module, fill=cLLM, draw=cLLMB, line width=0.85pt,
+                     minimum width=11.4cm, minimum height=0.95cm,
+                     font=\normalsize},
+  outbox/.style    ={module, fill=white, draw=black!50,
+                     font=\small},
+  tokcell/.style   ={draw, line width=0.4pt, minimum width=0.42cm,
+                     minimum height=0.42cm, inner sep=0pt},
+  cellText/.style  ={tokcell, fill=cTok!55, draw=cTokB!75},
+  cellBound/.style ={tokcell, fill=cBound, draw=cBoundB},
+  cellAudio/.style ={tokcell, fill=cAdp!90, draw=cAdpB},
+  flow/.style      ={-Stealth, line width=0.7pt, draw=black!70},
+  edgelabel/.style ={font=\scriptsize, text=black!55,
+                     fill=white, inner sep=1pt},
+  legendtxt/.style ={font=\scriptsize, text=black!75}
+}

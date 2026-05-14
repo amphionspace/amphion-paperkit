@@ -1,0 +1,67 @@
+% =============================================================================
+% <<TITLE>> — Amphion technical report
+% Built on the Amphion technical-report template (template/amphion.cls).
+% Default theme = amphion (warm ivory + petrol teal); see template/CHANGELOG.md
+% for available [opendfm] / [xlance] / [withlogo] options.
+%
+% Placeholders use the <<NAME>> form (angle brackets, LaTeX-safe). Run
+% tools/new-report.sh <slug> to substitute them automatically.
+% =============================================================================
+
+\documentclass{template/amphion}
+
+% --- ASR-domain math macros (\wer / \cer / \mer / \hotwerN). Drop if not ASR.
+\usepackage{template/asr-macros}
+
+% --- PDF metadata (theme + page styles owned by template/amphion.cls) -------
+\hypersetup{
+  pdftitle={<<TITLE>>},
+  pdfsubject={<<SUBJECT>>},
+  pdfauthor={<<AUTHOR>>},
+  pdfkeywords={<<KEYWORDS>>},
+}
+
+% --- Title, author, abstract ------------------------------------------------
+\title{<<TITLE>>}
+\author{<<AUTHOR>>}
+\abstract{\input{sections/00_abstract}}
+\metadatainfo{
+  \small\makebox[\linewidth][c]{
+    \href{<<GITHUB-URL>>}{\texttt{GitHub: <<GITHUB-SLUG>>}}
+  }
+}
+
+% =============================================================================
+\begin{document}
+\publishdate{<<DATE>>}
+\maketitle
+
+% --- Body page header: short name (full \title is too long for every page) --
+\fancyhead[L]{<<SHORTNAME>>}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+% --- Body sections ----------------------------------------------------------
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_data}
+\input{sections/04_method}
+\input{sections/05_training}
+\input{sections/06_experiments}
+\input{sections/07_analysis}
+\input{sections/08_limitations_ethics}
+\input{sections/09_conclusion}
+
+% --- Bibliography: report-local cites + venue strings shipped with the
+%     template. Add ../../references to the list below if you want the
+%     project-wide starter cites (top-level references.bib).
+\bibliographystyle{template/IEEEtran2}
+\setcitestyle{numbers}
+\bibliography{template/venues, references}
+
+\appendix
+\input{sections/A_appendix}
+
+\end{document}
