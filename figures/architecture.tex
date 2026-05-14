@@ -11,20 +11,25 @@
 % ----------------------------------------------------------------
 % Colour palette -- see AGENTS.md rule 1. Do not introduce new
 % colours outside this list; new figures must reuse the same names.
+% Matches the main.tex "warm ivory + petrol teal" theme:
+%   - encoder / token   = teal family (cool, primary)
+%   - LLM / adapter / prompt / boundary = warm amber / clay family
+%     (warm, secondary), so the figure reads as cool input -> warm
+%     core, mirroring the prose framing.
 % ----------------------------------------------------------------
-\definecolor{cAudio}{HTML}{F2F4F7}
-\definecolor{cEnc}{HTML}{D9E5F4}
-\definecolor{cEncB}{HTML}{4A7BB7}
-\definecolor{cAdp}{HTML}{D9F0DA}
-\definecolor{cAdpB}{HTML}{4F9D58}
-\definecolor{cLLM}{HTML}{FBE3CC}
-\definecolor{cLLMB}{HTML}{D08A3F}
-\definecolor{cPrompt}{HTML}{F7F2E8}
-\definecolor{cPromptB}{HTML}{B89464}
-\definecolor{cTok}{HTML}{EEE8F4}
-\definecolor{cTokB}{HTML}{6A4DA8}
-\definecolor{cBound}{HTML}{F2DEDE}
-\definecolor{cBoundB}{HTML}{B8585F}
+\definecolor{cAudio}{HTML}{F5EFE3}    % warm ivory ground
+\definecolor{cEnc}{HTML}{DDE9EC}      % light petrol teal fill
+\definecolor{cEncB}{HTML}{2D8294}     % medium petrol teal border
+\definecolor{cAdp}{HTML}{F0DFC9}      % warm peach fill
+\definecolor{cAdpB}{HTML}{B07849}     % muted clay border
+\definecolor{cLLM}{HTML}{F4E6D5}      % warm cream fill (LLM accent)
+\definecolor{cLLMB}{HTML}{A0763C}     % deep tan border (LLM accent)
+\definecolor{cPrompt}{HTML}{F1ECE3}   % desaturated cream
+\definecolor{cPromptB}{HTML}{8E7A55}  % muted bronze
+\definecolor{cTok}{HTML}{E5EEF0}      % pale teal
+\definecolor{cTokB}{HTML}{5E8090}     % slate teal
+\definecolor{cBound}{HTML}{ECDFD3}    % warm peach
+\definecolor{cBoundB}{HTML}{9C7558}   % terracotta clay
 
 % Trainability icons: real snowflake / flame from fontawesome5.
 \newcommand{\frozenIcon}{\textcolor{cEncB}{\faSnowflake}}

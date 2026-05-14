@@ -1,10 +1,37 @@
 % =============================================================================
 % AmphionASR Technical Report
 % Built on the X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429).
-% Theme: OpenDFM (blue-purple). Logos disabled (see below).
+% Theme: custom "warm ivory + petrol teal" palette (overrides the OpenDFM
+%        blue-purple defaults; see "Custom palette" block below). The body
+%        sits on warm ivory; the headline accent is a deep petrol teal; a
+%        warm amber / clay secondary palette drives dual-tone boxes.
+%        Logos disabled (see further below).
 % =============================================================================
 
 \documentclass[opendfm]{xlance/xlance}
+
+% --- Custom palette: warm ivory ground + petrol teal accent + amber/clay
+%     secondary. Overrides themecolor@1..5 and themecolor@@1..5 set by
+%     xlance.cls without touching the template internals.
+\usepackage{xcolor}
+\makeatletter
+% Primary palette: petrol teal accent on warm ivory ground.
+\definecolor{themecolor@1}{HTML}{062C36}   % deepest petrol: title accent
+\definecolor{themecolor@2}{HTML}{0E5A6F}   % petrol teal: abstract / strong
+\definecolor{themecolor@3}{HTML}{2D8294}   % medium teal: links / hairlines
+\definecolor{themecolor@4}{HTML}{9DBEC6}   % light teal: soft separators
+\definecolor{themecolor@5}{HTML}{F5EFE3}   % warm ivory: box bg
+% Secondary palette: warm amber / clay (paired with the teal primary).
+\definecolor{themecolor@@1}{HTML}{5C2B12}  % deep brown: deepest accent
+\definecolor{themecolor@@2}{HTML}{A86232}  % burnt amber: strong accent
+\definecolor{themecolor@@3}{HTML}{C8895C}  % warm clay: medium accent
+\definecolor{themecolor@@4}{HTML}{E8C9A8}  % light peach: soft accent
+\definecolor{themecolor@@5}{HTML}{FBF5EB}  % paper cream: light bg
+% Re-sync prompt box colours that xlance.cls froze from the original palette.
+\colorlet{boxcolor@bg}{themecolor@5}
+\colorlet{boxcolor@frame}{themecolor@3}
+\colorlet{boxcolor@text}{themecolor@2}
+\makeatother
 
 % --- Logos disabled: redefine firstpage style to suppress the default
 %     X-LANCE / SII / SZLab / OpenDFM header logos. Foot still shows page no.

@@ -32,20 +32,24 @@
 
 ### 风格 preset（已建立，必须复用）
 
-存在于 `figures/architecture.tex` 顶部，新增图请复制该 preamble 起手，不要另起调色板：
+存在于 `figures/architecture.tex` 顶部，新增图请复制该 preamble 起手，不要另起调色板。
+
+调色板与 main.tex 的「warm ivory + petrol teal」主题同源：encoder / token 走 teal 冷色族（输入侧），adapter / LLM / prompt / boundary 走 amber / clay 暖色族（核心 + prompt 侧），整张图就有「冷输入 → 暖核心」的方向感。
 
 颜色（HEX）：
 
-| 用途 | 底色 | 描边 |
-| --- | --- | --- |
-| audio / text 通用 | F2F4F7 | 黑40 |
-| encoder | D9E5F4 | 4A7BB7 |
-| adapter | D9F0DA | 4F9D58 |
-| LLM | FBE3CC | D08A3F |
-| prompt 框 | F7F2E8 | B89464 |
-| frozen 标记 | 8A8A8A | — |
-| trainable 标记 | 2F6FB1 | — |
-| fine-tune 标记 | 2F8E40 | — |
+| 用途 | 底色 | 描边 | 备注 |
+| --- | --- | --- | --- |
+| audio / text 通用 | F5EFE3 | 6E6E6E | 暖象牙底 + 中灰描边 |
+| encoder | DDE9EC | 2D8294 | 浅 petrol teal + 中 teal 描边 |
+| token cell | E5EEF0 | 5E8090 | 浅 teal + slate teal 描边 |
+| adapter | F0DFC9 | B07849 | 暖 peach + 哑 clay 描边 |
+| LLM | F4E6D5 | A0763C | 暖 cream + 深 tan 描边，全图唯一暖色锚点 |
+| prompt 框 | F1ECE3 | 8E7A55 | 浅 cream + 哑 bronze 描边 |
+| boundary cell | ECDFD3 | 9C7558 | 暖 peach + 陶土描边 |
+| frozen 标记 | 8A8A8A | — | 中灰 |
+| trainable 标记 | 2D8294 | — | 主 teal |
+| fine-tune 标记 | B07849 | — | clay |
 
 形状与文字：
 
