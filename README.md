@@ -17,7 +17,7 @@ graph TD
     Public --> StarterBib["references.bib  (starter cites)"]
 
     Egs --> Skeleton["egs/_skeleton/  (新报告脚手架)"]
-    Egs --> AsrReport["egs/amphion-asr-2026/  (首份报告，PR 3 迁入)"]
+    Egs --> AsrReport["egs/amphion-asr-2026/  (首份报告)"]
     Egs --> FutureA["egs/amphion-tts-2026/  (规划中)"]
     Egs --> FutureB["egs/amphion-omni-2026/  (规划中)"]
 ```
@@ -63,9 +63,9 @@ tools/build-all.sh
 
 | slug | 路径 | 状态 | 维护者 | 投稿目标 | PDF |
 | --- | --- | --- | --- | --- | --- |
-| amphion-asr-2026 | [egs/amphion-asr-2026/](egs/amphion-asr-2026/) (PR 3 迁入) | active | TBD | arXiv | TBD |
+| amphion-asr-2026 | [egs/amphion-asr-2026/](egs/amphion-asr-2026/) | active | TBD | arXiv | TBD |
 
-每份报告的元数据由其 `egs/<slug>/REPORT.md` 维护；上表是它们的汇总视图。
+每份报告的元数据由其 `egs/<slug>/REPORT.md` 维护；上表是它们的汇总视图。本表新加一行的同时，请在同一 PR 内更新对应报告的 `REPORT.md`，避免汇总视图与单一真相源 drift。
 
 ## 协作规范
 
@@ -75,7 +75,7 @@ tools/build-all.sh
   - latex-engineering.mdc — LaTeX 工程约定（文件布局、bib key、单位、编译流程）
   - asr-domain.mdc — WER 上报规范、baseline 选择、数据/模型/训练/鲁棒性的报告项
   - reproducibility.mdc — 代码/模型/数据 release 标准、model card、ICLR/NeurIPS LLM 披露
-  - multi-report.mdc (PR 4 落地) — 跨 egs 协作 + 模板边界
+  - multi-report.mdc — mono-repo 边界：当前在哪个 egs / 是否要改公共层 / 模板 fork 流程
 
 ## 公共参考
 

@@ -1,0 +1,74 @@
+---
+description: Mono-repo + egs/<slug>/ boundary rules. Determines which layer an edit belongs to and how to amend the shared template safely.
+alwaysApply: true
+---
+
+# Multi-report Boundary Rules
+
+This repo hosts multiple Amphion technical reports as `egs/<slug>/` leaf directories sharing one public layer (`template/` + `figures/_palette.tex` + top-level `references.bib` + `tools/` + `refs/`). These rules tell an agent which layer an edit belongs to and how to amend the shared layer without breaking other reports.
+
+See AGENTS.md rule 8 for the same content in 协作规范 form.
+
+## 1. Locate before editing
+
+Before editing any `.tex` / `.bib` / figure / config file, identify which of these three layers it lives in:
+
+1. Public capability — `template/`, `figures/_palette.tex`, `figures/architecture-skeleton.tex`, top-level `references.bib`, `tools/`, `.github/workflows/`, top-level `refs/`, `LICENSE`, top-level `README.md`, `AGENTS.md`, `.cursor/rules/`, `egs/_skeleton/`. Changes here affect every active report.
+2. Single report — anything under a specific `egs/<slug>/` (other than that slug's own `latexmkrc`). Changes here affect exactly one report.
+3. Repo root meta — `latexmkrc`, `.gitignore`, `LICENSE_arxiv-style.txt`. Treat like the public layer.
+
+Mention which layer in the fact-check block of your reply, e.g. "scope: egs/amphion-asr-2026/ only" or "scope: public (template/amphion.cls)".
+
+## 2. Single-report edits
+
+When working under a specific `egs/<slug>/`:
+
+- Do not `\input{...}` or read files from another `egs/<other-slug>/`. Reports are isolated by design.
+- Do not modify `template/`, `figures/_palette.tex`, top-level `references.bib`, or `tools/` from inside an egs commit. If you find such a need, stop, surface it to the user, and split into a separate PR (see §3).
+- Do not copy any portion of the public layer into the egs (no `egs/<slug>/template/...` shadow). All reports share one public layer.
+- Cite the egs in commit scope: `feat(amphion-asr): ...`, `fix(amphion-tts): ...` — never `feat(template): ...` from inside an egs-only change.
+
+## 3. Public-layer edits
+
+Public-layer changes (template / figures preset / top-level bibliography / tools / CI / skeleton) require:
+
+1. Append a CHANGELOG entry to `template/CHANGELOG.md` describing why and what changed and whether it is backwards compatible. Even non-class-file changes (e.g. `figures/_palette.tex`) are recorded here, since they affect every report's visual output.
+2. Build verification — run `tools/build-all.sh` and confirm every active egs still compiles with no LaTeX warnings. If any egs visually regresses, fix it in the same PR or revert the public change.
+3. Bump `depends_on_template` in every active egs's `REPORT.md` if and only if the change is breaking (renames / deletions / option-default flips that need report-side migration).
+4. Commit scope must be `feat(template): ...` / `chore(common): ...` / `fix(common): ...`, not mixed with an egs slug.
+
+## 4. Starting a new report
+
+Do not handcraft a new `egs/<slug>/`. Use the helper script:
+
+```bash
+tools/new-report.sh <slug> --title "..." --shortname "..." --author "..."
+```
+
+The script copies `egs/_skeleton/` and substitutes `<<NAME>>` placeholders. After running it:
+
+- Edit the new report's `REPORT.md` so its metadata is real (status, venue, maintainers).
+- Add a row to the active-reports table in the top-level `README.md` in the same PR, so the portal stays accurate.
+
+## 5. CHANGELOG hygiene for the template
+
+`template/CHANGELOG.md` follows a manual semver:
+
+- v0.X (current) — pre-1.0; minor bumps signal report-side migration may be needed.
+- v1.0 — declared once the public layer has been used by at least 2 published reports without churn.
+- vX.Y after 1.0 — minor for back-compatible additions; major for breaking renames / removals.
+
+Each entry must list:
+
+- Date in `YYYY-MM-DD`
+- One-paragraph summary of the change
+- Per-egs impact: which active reports needed any source change to keep building.
+
+## 6. Don't mix layers in one commit
+
+If your edit naturally spans both a public-layer change and an egs change, split into two commits (and prefer two PRs):
+
+1. PR A — public-layer change, with `template/CHANGELOG.md` entry and `tools/build-all.sh` verification log in the PR body.
+2. PR B — egs follow-up that consumes the new public capability.
+
+This keeps `git log` searchable per layer and lets reviewers reason about scope.

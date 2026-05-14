@@ -1,11 +1,27 @@
-# AGENTS.md — LLM-ASR Technical Report 协作规范
+# AGENTS.md — Amphion Technical Reports 协作规范
 
 本文件是该工程所有 AI agent（Cursor / Claude Code / Codex / 任意 SDK 客户端）的硬约束。
 人协作者也建议遵守，方便保持工程一致。
 
-工作目录：`~/Documents/llm-asr-report`
-编译命令：`PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex`
+工作目录：`~/Documents/llm-asr-report`（mono-repo 根；具体报告住在 `egs/<slug>/`）
+编译命令：`cd egs/<slug> && PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex`
+一键编全部：`tools/build-all.sh`
 默认沟通语言：中文（代码注释保持英文）
+
+## 仓库形态
+
+mono-repo + icefall 风格 `egs/` 叶子节点。每份报告自包含；公共能力（LaTeX 模板、AI 协作规则、共享参考资料、helper scripts、CI）在顶层。详见顶层 [README.md](README.md) 与 [egs/README.md](egs/README.md)。
+
+```
+amphion-technical-reports/
+├── template/      amphion.cls + asr-macros.sty + IEEEtran2.bst + venues.bib
+├── tools/         new-report.sh / build-all.sh / fact-check-regex.sh
+├── refs/          公共参考（论文 PDF、数据集 datasheet、leaderboards）
+├── figures/       公共 TikZ preset（_palette.tex / architecture-skeleton.tex）
+├── references.bib 顶层 starter cites（仅基础公认文献）
+├── egs/_skeleton/ 新报告脚手架（不要直接编辑作发布内容）
+└── egs/<slug>/    单份报告：main.tex / sections / figures / tables / refs / ack
+```
 
 ## 配套规则集（必须连同本文件一起遵守）
 
@@ -17,6 +33,7 @@
 | .cursor/rules/latex-engineering.mdc | *.tex / *.bib / *.cls / *.sty | 文件布局、bib key、单位、编译流程 |
 | .cursor/rules/asr-domain.mdc | 始终生效 | WER 上报规范、baseline 选择、数据 / 模型 / 训练 / 鲁棒性的报告项 |
 | .cursor/rules/reproducibility.mdc | 始终生效 | 代码 / 模型 / 数据 release 标准、model card、ICLR 2026 LLM 使用披露 |
+| .cursor/rules/multi-report.mdc | 始终生效 | mono-repo 边界：当前在哪个 egs / 是否要改公共层 / 模板 fork 流程 |
 
 调研到的所有外部参考源（论文 / blog / github skill / 评审指南）见 `refs/notes/research-references.md`。
 
@@ -26,13 +43,13 @@
 
 ### 强制要求
 
-- 所有 figure 一律 TikZ 源码：`figures/<name>.tex`（standalone class），输出 `figures/<name>.pdf`，主文档用 `\includegraphics{figures/<name>.pdf}` 引入。
+- 所有 figure 一律 TikZ 源码：`egs/<slug>/figures/<name>.tex`（standalone class），输出 `egs/<slug>/figures/<name>.pdf`，主文档用 `\includegraphics{figures/<name>.pdf}` 引入（路径相对当前 egs 的 main.tex）。
 - 禁止：PowerPoint / Keynote / drawio / Mermaid / Excalidraw 用于最终 paper figure。
 - 数据可视化（loss / WER 曲线、柱状图、热力图）优先 pgfplots；如必须用 matplotlib，输出 PDF 矢量并保持字体 sans serif。
 
 ### 风格 preset（已建立，必须复用）
 
-存在于 `figures/architecture.tex` 顶部，新增图请复制该 preamble 起手，不要另起调色板。
+公共调色板与 tikzset 在顶层 `figures/_palette.tex`；最简起手范本在顶层 `figures/architecture-skeleton.tex`。新增图请 `\input{_palette}` 复用，不要另起调色板（也不要在每张图里复制粘贴整段颜色定义）。
 
 调色板与 main.tex 的「warm ivory + petrol teal」主题同源：encoder / token 走 teal 冷色族（输入侧），adapter / LLM / prompt / boundary 走 amber / clay 暖色族（核心 + prompt 侧），整张图就有「冷输入 → 暖核心」的方向感。
 
@@ -61,25 +78,36 @@
 
 ### 新增图的步骤
 
-1. `cp figures/architecture.tex figures/<new-name>.tex` 起手，删主体 keep preamble
-2. 用现有 `tikzset` 样式（`encoder` / `adapter` / `llm` / `audio` / `prompt`），不要重新定义
-3. 新增颜色一律加入同一调色板段并起 `c<XXX>` 命名（如 `cEval`），避免散落
-4. 编译验证：`pdflatex -interaction=nonstopmode figures/<new-name>.tex`
-5. 在 main 用 `\includegraphics[width=\linewidth]{figures/<new-name>.pdf}` 引入
-6. 重新 `latexmk -pdf main.tex` 检查整体效果
-7. `git add figures/<new-name>.{tex,pdf}` 并 commit
+1. 在当前 egs 下：`cp ../../figures/architecture-skeleton.tex egs/<slug>/figures/<new-name>.tex` 起手
+2. 在新文件 preamble 中保留 `\input{_palette}`（路径会通过 latexmkrc 的 TEXINPUTS 解析到顶层 `figures/_palette.tex`），不要重新定义颜色或样式
+3. 用现有 `tikzset` 样式（`encoder` / `adapter` / `llmbox` / `tokenizer` / `boundbox` / ...），不要重新定义
+4. 新增颜色一律加入顶层 `figures/_palette.tex` 同一调色板段并起 `c<XXX>` 命名（如 `cEval`）；新颜色受顶层公共层管控（与规则 8 联动）
+5. 编译验证：`cd egs/<slug>/figures && pdflatex -interaction=nonstopmode <new-name>.tex`
+6. 在 main 用 `\includegraphics[width=\linewidth]{figures/<new-name>.pdf}` 引入
+7. `cd egs/<slug> && latexmk -pdf main.tex` 检查整体效果
+8. `git add egs/<slug>/figures/<new-name>.{tex,pdf}` 并 commit
 
 ---
 
 ## 规则 2：参考资料在 `refs/`，写内容前必须查阅
 
+### 公共 refs vs 报告 refs
+
+| 路径 | 范围 | 由谁维护 |
+| --- | --- | --- |
+| 顶层 `refs/notes/papers/` | 公共论文 PDF + INDEX | 公司层面 |
+| 顶层 `refs/datasets/` | 通用数据集 datasheet / paper PDF | 公司层面 |
+| 顶层 `refs/leaderboards/` | ASR / TTS / Audio-LLM leaderboards 截图 | 公司层面 |
+| `egs/<slug>/refs/docs/` | 单份报告的内部 plan / model_arch / task_prompts / train_eval_data | 报告维护者 |
+| `egs/<slug>/refs/internal/` | 单份报告的数据统计、内部 model card、训练日志摘要 | 报告维护者 |
+
 ### 工作流
 
-`refs/` 目录由用户陆续填充：论文 PDF、模型 spec、数据集 doc、benchmark 说明、内部数据统计等。
+`refs/` 目录（顶层 + egs 下）由用户陆续填充。
 
 在「写任何一节」或「画任何一张图」前，agent 必须执行：
 
-1. `ls refs/` 查看当前可用参考
+1. `ls refs/` 与 `ls egs/<slug>/refs/` 看当前可用参考
 2. 用文件名 / 标题做 keyword 匹配，识别与本次任务相关的文件
 3. 用 Read / Grep 读取相关文件
 4. 在内容里复用参考的术语、引用其中文献（能定位的话）
@@ -137,7 +165,7 @@
 
 技术报告面向研究读者，不是该 repo 的工程文档。所有 code 层细节必须留在 codebase / model card / 附录脚注，正文只描述"概念 / 算法 / 数据 / 数字"。
 
-### 严禁出现在 sections/*.tex 里
+### 严禁出现在 `egs/<slug>/sections/*.tex` 里
 
 - 文件路径：`src/...py`、`local/...py`、`configs/.../*.yaml`、`configs/.../*.json`、`*.sh`、`*.jsonl.gz`、`*.tar.gz`、绝对路径 `/ai_sds_wuzz/...`、`/data/...`
 - 类名 / 函数名形式：`EscForegroundMix`、`build_hotwords_for_sample`、`compute_silence_metrics`、`SpeakerPool.load_dataset`
@@ -165,21 +193,27 @@
 
 ### 触发：每次写 `*.tex` 后必须自检
 
-写完任意 `sections/*.tex` 后，必须用如下 regex 自查（grep / ripgrep），命中即必须改写：
+写完任意 `egs/<slug>/sections/*.tex` 后，必须运行：
+
+```bash
+tools/fact-check-regex.sh egs/<slug>
+```
+
+它对该 egs 的 `sections/` 跑如下 regex，命中即必须改写：
 
 ```
 \.py|\.sh|\.json|\.yaml|\.jsonl|\.gz|\.tar|src/|local/|configs/|/ai_sds_wuzz/|/data/
 ```
 
-如该 regex 在 `sections/*.tex` 里有 match，本轮 commit 不应通过。
+CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫所有 active egs。脚本退出非 0 即视为本轮 commit 不应通过。
 
 ---
 
-## 规则 5：refs/docs 是原料库，不是论文素材；不清楚要问
+## 规则 5：egs/<slug>/refs/docs 是原料库，不是论文素材；不清楚要问
 
 ### 文档属性识别
 
-`refs/docs/*.md`（`plan.md` / `model_arch.md` / `task_prompts.md` / `train_eval_data.md` 等）是团队内部的实验记录与工作 plan，典型特征：
+`egs/<slug>/refs/docs/*.md`（`plan.md` / `model_arch.md` / `task_prompts.md` / `train_eval_data.md` 等）是该报告团队内部的实验记录与工作 plan，典型特征：
 
 - 绝对路径（`/ai_sds_wuzz/...`）、conda env、HPC 账号、git 分支
 - 代码类名 / 函数名 / 配置字段
@@ -190,7 +224,7 @@
 
 ### 提炼 vs 照搬
 
-读 `refs/docs` 时只做两件事：
+读 `egs/<slug>/refs/docs` 时只做两件事：
 
 1. 抽事实：hours、参数量、benchmark 数字、阶段时间线、最终采用的 prompt 模板、最终采用的训练配置
 2. 抽卖点：把"目标 / 已完成"翻译成 1–2 句 paper-level claim，例如：
@@ -201,18 +235,18 @@
 
 ### 不清楚要问，不要凭原料硬猜
 
-`refs/docs` 是动态工作记录，常包含 未结案 / 已废弃 / 占位 / 实验失败 的痕迹。任何要进 paper 的 claim，遇到下列情况必须停下来问用户，不要自行裁断：
+`egs/<slug>/refs/docs` 是动态工作记录，常包含 未结案 / 已废弃 / 占位 / 实验失败 的痕迹。任何要进 paper 的 claim，遇到下列情况必须停下来问用户，不要自行裁断：
 
 - 某个测试集结果在 refs 里只出现一次，没说是 final 还是 ablation
 - `plan.md` 里某项标"测试进度：无"或"未排查"，但你想拿来做卖点
 - `task_prompts.md` / `model_arch.md` 里出现多个版本，没说哪个是最终采用
-- `refs/docs` 里的数字与 `refs/notes/papers` 里同来源的官方数字不一致
+- `egs/<slug>/refs/docs` 里的数字与顶层 `refs/notes/papers` 里同来源的官方数字不一致
 - 某段描述无法判断是已落地、还是 plan 里的待办（"@xxx 动作：…"）
 - 用户口头没说过、refs 里也没明确背书，但你"觉得是好卖点"的内容
 
 提问格式（写进回复，而不是直接动笔）：
 
-> 问：`refs/docs/plan.md` 中 libri2mix 较差未排查；这个测试集是否进 headline 表？是否仅在 Limitations 提及？
+> 问：`egs/amphion-asr-2026/refs/docs/plan.md` 中 libri2mix 较差未排查；这个测试集是否进 headline 表？是否仅在 Limitations 提及？
 
 ### 禁止
 
@@ -227,9 +261,9 @@
 
 ### 核心原则
 
-paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照 `refs/notes/papers/` 或外部同类技术报告。`refs/docs` 只提供 fact，不提供 form。
+paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照顶层 `refs/notes/papers/` 或外部同类技术报告。`egs/<slug>/refs/docs` 只提供 fact，不提供 form。
 
-不要凭 `refs/docs` 内容原创叙述结构 —— 最常见的失败模式是把"项目周报语气"或"中文工作记录直译"带进英文 paper（同时违反规则 4 + 规则 6）。
+不要凭 `egs/<slug>/refs/docs` 内容原创叙述结构 —— 最常见的失败模式是把"项目周报语气"或"中文工作记录直译"带进英文 paper（同时违反规则 4 + 规则 6）。
 
 ### 对照表：哪个文献当哪节的样板
 
@@ -251,8 +285,8 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 1. 找出 1 篇最相近的样板文献，定位到对应章节
 2. 把样板章节的"段落主题树"复述一遍（每段讲什么），这就是本节的骨架
 3. 仿样板的句式 / 表格列名 / 命名约定填空
-4. 用 `refs/docs` 抽到的事实做填充
-5. 通读检查：有没有从 `refs/docs` 直接译过来的句子？有就重写
+4. 用 `egs/<slug>/refs/docs` 抽到的事实做填充
+5. 通读检查：有没有从 `egs/<slug>/refs/docs` 直接译过来的句子？有就重写
 
 ### 触发：fact-check block 必加一行
 
@@ -263,7 +297,7 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 ### 不要做的事
 
 - 不看参考文献就开始原创一套叙述
-- 仿写 "翻译化" —— 直接把 `refs/docs` 中文段落英译当 paper 段落
+- 仿写 "翻译化" —— 直接把 `egs/<slug>/refs/docs` 中文段落英译当 paper 段落
 - 把 `plan.md` 的工作流条目（"目标 / 动作 / 谁负责"）原样译成 paper 句子
 - 仿照过头 —— 直接抄样板原文（reword 但不抄词序、不抄独特短语）
 
@@ -271,8 +305,43 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 
 ## 规则 7：通用约定
 
-- 修改后立即 git commit，commit message 用 conventional commit 前缀：`feat(...)` / `fix(...)` / `chore(...)` / `docs(...)` / `refactor(...)`
+- 修改后立即 git commit，commit message 用 conventional commit 前缀：`feat(...)` / `fix(...)` / `chore(...)` / `docs(...)` / `refactor(...)`；scope 用最小相关层级（`feat(template): ...` / `feat(amphion-asr): ...` / `chore(common): ...`）
 - commit message 主体说明 why，不只 what
-- 不向 main.pdf 写 git（已在 .gitignore），但 figure PDF 要 commit（用于 reproducibility）
-- 引用一律 `\cite{key}`（IEEE numeric style，xlance.cls 默认），bib key 形式 `<lastname><year><firstword>`，例：`gulati2020conformer`
+- 不向 `egs/<slug>/main.pdf` 写 git（已在 .gitignore），但 figure PDF（`egs/<slug>/figures/<name>.pdf`）要 commit（用于 reproducibility）
+- 引用一律 `\cite{key}`（IEEE numeric style，`template/amphion.cls` 默认），bib key 形式 `<lastname><year><firstword>`，例：`gulati2020conformer`
 - 数字带千位分隔符用 `10{,}000`，单位用 `\,`：`960\,h`、`16\,kHz`
+
+---
+
+## 规则 8：跨 egs 与模板边界
+
+### 单份报告自包含
+
+每个 `egs/<slug>/` 完全自包含。`main.tex` / `sections` / `figures` / `tables` / `refs` / `ack` 都不应跨 egs `\input{...}` 或读取另一个 egs 的内容。"借鉴另一份报告的某段叙述 / 某张图"不是合法理由 —— 把它抽到公共层（`figures/_palette.tex`、`template/...`、`refs/notes/papers/`）才是。
+
+### 公共层修改流程
+
+修改公共层（`template/*`、`figures/_palette.tex`、`figures/architecture-skeleton.tex`、顶层 `references.bib`、`tools/*`）影响所有 active egs。所有此类修改必须：
+
+1. 在 `template/CHANGELOG.md` 追加一条 entry，描述"为什么改、改了什么、是否破坏向后兼容"
+2. 编译 `egs/_skeleton` 与所有 active egs（用 `tools/build-all.sh`）；**视觉无回归** 才能 commit
+3. 如果是破坏性变更（`amphion.cls` 中重命名 / 删除 macro、改 option 默认值），bump `template/CHANGELOG.md` 中的 minor / major 版本号，并在每个受影响 egs 的 `REPORT.md` 的 `depends_on_template` 字段更新到新版本号
+4. commit scope 用 `feat(template): ...` / `chore(common): ...`，不要混入某个 egs 的 commit
+
+### 起一份新报告
+
+不要手工 cp `_skeleton`，用脚本：
+
+```bash
+tools/new-report.sh <slug> --title "..." --shortname "..." --author "..."
+```
+
+它会替换 `<<NAME>>` 占位符并提示后续步骤。
+
+### 在叶子层只能动叶子
+
+agent 在 `egs/<slug>/` 工作时，原则上不要改 `template/` / `figures/_palette.tex` / 顶层 `references.bib` / `tools/`。如果发现公共层确实需要变（比如新增颜色、新增数学宏），停下来与用户确认，单开一个 PR / commit 走规则 8 的流程，不要混进当前报告的 commit。
+
+### 不要在叶子里建公共层副本
+
+不要把 `template/` 或 `figures/_palette.tex` 或顶层 `references.bib` 的副本拷到 `egs/<slug>/` 内自用。所有报告共享同一份公共层，这是 mono-repo 的核心收益。
