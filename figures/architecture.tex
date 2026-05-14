@@ -1,7 +1,7 @@
 \documentclass[tikz, border=8pt]{standalone}
 \usepackage[T1]{fontenc}
-\usepackage{tgheros}        % TeX Gyre Heros (Helvetica replacement)
-\renewcommand{\sfdefault}{qhv}
+\usepackage{tgpagella}     % Palatino-like serif; matches main.tex body
+\usepackage{mathpazo}
 \usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{xcolor}
@@ -49,7 +49,7 @@
 \tikzset{
   % --- module shapes (uniform width x height across the figure) ---
   module/.style    ={draw, rounded corners=3pt, align=center,
-                     font=\sffamily\small, line width=0.7pt,
+                     font=\small, line width=0.7pt,
                      minimum width=3.4cm, minimum height=0.9cm},
   audio/.style     ={module, fill=cAudio, draw=black!35},
   encoder/.style   ={module, fill=cEnc, draw=cEncB},
@@ -59,9 +59,9 @@
   boundbox/.style  ={module, fill=cBound, draw=cBoundB},
   llmbox/.style    ={module, fill=cLLM, draw=cLLMB, line width=0.85pt,
                      minimum width=11.4cm, minimum height=0.95cm,
-                     font=\sffamily},
+                     font=\normalsize},
   outbox/.style    ={module, fill=white, draw=black!50,
-                     font=\sffamily\small},
+                     font=\small},
   % --- token cells ---
   tokcell/.style   ={draw, line width=0.4pt, minimum width=0.42cm,
                      minimum height=0.42cm, inner sep=0pt},
@@ -71,9 +71,9 @@
   % --- arrows (all orthogonal) ---
   flow/.style      ={-Stealth, line width=0.7pt, draw=black!70},
   % --- text ---
-  edgelabel/.style ={font=\sffamily\scriptsize, text=black!55,
+  edgelabel/.style ={font=\scriptsize, text=black!55,
                      fill=white, inner sep=1pt},
-  legendtxt/.style ={font=\sffamily\scriptsize, text=black!75}
+  legendtxt/.style ={font=\scriptsize, text=black!75}
 }
 
 \begin{document}
@@ -87,9 +87,9 @@
 
   % ====================== LLM (top) ======================
   \node[llmbox] (llm) {%
-    \fireIcon~~\textbf{Qwen3-4B-Instruct-2507}%
+    \fireIcon~~Qwen3-4B-Instruct-2507%
   };
-  \node[outbox, above=0.55cm of llm] (text) {\textbf{Transcript}};
+  \node[outbox, above=0.55cm of llm] (text) {Transcript};
   \draw[flow] (llm.north) -- (text.south);
 
   % ====================== Merged input sequence ==========
@@ -118,15 +118,15 @@
   % all three sources share the same y, anchored below the seqbox
   \node[adapter,  below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xL]seqbox.south)}] (proj)  {%
-    \fireIcon~~\textbf{MM Projector}%
+    \fireIcon~~MM Projector%
   };
   \node[boundbox, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xM]seqbox.south)}] (bound) {%
-    \fireIcon~~\textbf{Boundary Prompt}%
+    \fireIcon~~Boundary Prompt%
   };
   \node[tokenizer, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xR]seqbox.south)}] (embed) {%
-    \textbf{Tokenizer + Embedding}%
+    Tokenizer + Embedding%
   };
 
   % vertical arrows: each source -> the sequence bottom on its own x
@@ -139,14 +139,14 @@
 
   % ====================== Audio column (left, downstream) ======
   \node[encoder, below=of proj] (aut) {%
-    \frozenIcon~~\textbf{Qwen3-AuT Encoder}%
+    \frozenIcon~~Qwen3-AuT Encoder%
   };
   \node[encoder, below=of aut] (front) {%
-    \textbf{Log-mel + Conv}%
+    Log-mel + Conv%
   };
   % Waveform: no box, just the pictogram and a small caption.
   \node[draw=none, fill=none, inner sep=2pt, align=center,
-        font=\sffamily\small, below=of front] (wave) {%
+        font=\small, below=of front] (wave) {%
     \WaveformPictogram\\[-1pt]
     \scriptsize raw audio
   };
@@ -156,7 +156,7 @@
 
   % ====================== Text column (right, downstream) ======
   \node[promptbox, below=of embed] (prompt) {%
-    \textbf{Text prompt}%
+    Text prompt%
   };
   \draw[flow] (prompt) -- (embed);
 
@@ -164,7 +164,7 @@
   % Tucked under the text-prompt module, borderless, Step-Audio 2 style.
   \node[draw=none, anchor=north east, align=left, inner sep=0pt,
         at={([xshift=0.1cm,yshift=-0.8cm]prompt.south east)}] (legend) {%
-    \sffamily\scriptsize
+    \scriptsize
     \renewcommand{\arraystretch}{1.25}%
     \begin{tabular}{@{}c@{\hspace{5pt}}l@{}}
       \frozenIcon & frozen\\
