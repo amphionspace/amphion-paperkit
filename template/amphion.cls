@@ -1,7 +1,23 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% LaTeX Style Template for X-LANCE pre-prints
-% Version: 0.2.2
-% Update date: 20260304
+% LaTeX class for Amphion technical reports.
+% Version: 0.1
+% Update date: 20260514
+%
+% Derived from the X-LANCE LaTeX pre-print template (amphion.cls v0.2.2,
+% https://github.com/X-LANCE/LaTeX-Template-for-X-LANCE-Lab). The original
+% template inherits an arxiv-style license; see LICENSE_arxiv-style.txt for
+% the upstream terms. All Amphion modifications are documented in
+% template/CHANGELOG.md, summarised here:
+%   * Added theme C (warm ivory + petrol teal) as the new default theme;
+%     the original X-LANCE red and OpenDFM blue-purple themes remain
+%     available via the [amphion] and [opendfm] options respectively.
+%   * Added [withlogo] option; first-page header logos are off by default
+%     and can be re-enabled via [withlogo].
+%   * Loaded the url package by default to provide \path.
+%   * Set body / firstpage \headrulewidth to 0pt by default.
+%   * Renamed all \amphion@... internal macros and the amphion@base listing
+%     style to \amphion@... / amphion@base for namespace independence.
+%   * Logo asset paths now point to template/assets/logos/...
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % =============================================================================
@@ -9,12 +25,20 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{xlance}[]
+\ProvidesClass{template/amphion}[2026/05/14 v0.1 Amphion technical-report class]
 
 % --- Class options / 文档类选项 ---
-\newif\if@xlance@opendfm
-\@xlance@opendfmfalse
-\DeclareOption{opendfm}{\@xlance@opendfmtrue}
+% Theme options (mutually exclusive). Default = amphion (warm ivory + petrol teal).
+\newif\if@amphion@opendfm
+\@amphion@opendfmfalse
+\DeclareOption{opendfm}{\@amphion@opendfmtrue}
+\newif\if@amphion@xlance
+\@amphion@xlancefalse
+\DeclareOption{xlance}{\@amphion@xlancetrue}
+% Orthogonal option: re-enable upstream first-page header logos. Off by default.
+\newif\if@amphion@withlogo
+\@amphion@withlogofalse
+\DeclareOption{withlogo}{\@amphion@withlogotrue}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions\relax
 
@@ -28,6 +52,7 @@
 \RequirePackage[top=3cm, bottom=3cm, left=3cm, right=3cm, columnsep=0.65cm]{geometry}
 \RequirePackage{microtype}
 \RequirePackage{placeins}
+\RequirePackage{url}
 \RequirePackage{hyphenat}
 \RequirePackage{setspace}
 \RequirePackage{parskip}
@@ -115,9 +140,24 @@
 \definecolor{themeBcolor@4}{HTML}{C1C5F5}
 \definecolor{themeBcolor@5}{HTML}{E3E4F5}
 
+% --- Built-in Theme C: Amphion (warm ivory ground + petrol teal accent) ---
+% Cool primary palette: petrol teal accent on warm ivory ground.
+\definecolor{themeCcolor@1}{HTML}{062C36}    % deepest petrol: title accent
+\definecolor{themeCcolor@2}{HTML}{0E5A6F}    % petrol teal: abstract / strong
+\definecolor{themeCcolor@3}{HTML}{2D8294}    % medium teal: links / hairlines
+\definecolor{themeCcolor@4}{HTML}{9DBEC6}    % light teal: soft separators
+\definecolor{themeCcolor@5}{HTML}{F5EFE3}    % warm ivory: box bg
+% Warm secondary palette: amber / clay (paired with the teal primary).
+\definecolor{themeCcolor@@1}{HTML}{5C2B12}   % deep brown: deepest accent
+\definecolor{themeCcolor@@2}{HTML}{A86232}   % burnt amber: strong accent
+\definecolor{themeCcolor@@3}{HTML}{C8895C}   % warm clay: medium accent
+\definecolor{themeCcolor@@4}{HTML}{E8C9A8}   % light peach: soft accent
+\definecolor{themeCcolor@@5}{HTML}{FBF5EB}   % paper cream: light bg
+
 
 % --- Activate default theme based on class option / 根据文档类选项激活默认主题 ---
-\if@xlance@opendfm
+% Priority: [opendfm] > [xlance] > default (amphion / theme C).
+\if@amphion@opendfm
     \colorlet{themecolor@1}{themeBcolor@1}
     \colorlet{themecolor@2}{themeBcolor@2}
     \colorlet{themecolor@3}{themeBcolor@3}
@@ -129,16 +169,30 @@
     \colorlet{themecolor@@4}{themeAcolor@4}
     \colorlet{themecolor@@5}{themeAcolor@5}
 \else
-    \colorlet{themecolor@1}{themeAcolor@1}
-    \colorlet{themecolor@2}{themeAcolor@2}
-    \colorlet{themecolor@3}{themeAcolor@3}
-    \colorlet{themecolor@4}{themeAcolor@4}
-    \colorlet{themecolor@5}{themeAcolor@5}
-    \colorlet{themecolor@@1}{themeBcolor@1}
-    \colorlet{themecolor@@2}{themeBcolor@2}
-    \colorlet{themecolor@@3}{themeBcolor@3}
-    \colorlet{themecolor@@4}{themeBcolor@4}
-    \colorlet{themecolor@@5}{themeBcolor@5}
+    \if@amphion@xlance
+        \colorlet{themecolor@1}{themeAcolor@1}
+        \colorlet{themecolor@2}{themeAcolor@2}
+        \colorlet{themecolor@3}{themeAcolor@3}
+        \colorlet{themecolor@4}{themeAcolor@4}
+        \colorlet{themecolor@5}{themeAcolor@5}
+        \colorlet{themecolor@@1}{themeBcolor@1}
+        \colorlet{themecolor@@2}{themeBcolor@2}
+        \colorlet{themecolor@@3}{themeBcolor@3}
+        \colorlet{themecolor@@4}{themeBcolor@4}
+        \colorlet{themecolor@@5}{themeBcolor@5}
+    \else
+        % Default: amphion theme (warm ivory + petrol teal)
+        \colorlet{themecolor@1}{themeCcolor@1}
+        \colorlet{themecolor@2}{themeCcolor@2}
+        \colorlet{themecolor@3}{themeCcolor@3}
+        \colorlet{themecolor@4}{themeCcolor@4}
+        \colorlet{themecolor@5}{themeCcolor@5}
+        \colorlet{themecolor@@1}{themeCcolor@@1}
+        \colorlet{themecolor@@2}{themeCcolor@@2}
+        \colorlet{themecolor@@3}{themeCcolor@@3}
+        \colorlet{themecolor@@4}{themeCcolor@@4}
+        \colorlet{themecolor@@5}{themeCcolor@@5}
+    \fi
 \fi
 
 % --- Prompt color management / Prompt 配色管理 --------------------------------
@@ -185,7 +239,7 @@
 \RequirePackage{listings}
 
 % --- Base style (shared by all listing styles) / 基础样式（所有清单共享）---
-\lstdefinestyle{xlance@base}{%
+\lstdefinestyle{amphion@base}{%
     basicstyle=\ttfamily\small,
     backgroundcolor=\color{themecolor@5!50},
     frame=single,
@@ -210,7 +264,7 @@
 
 % --- Python ---
 \lstdefinestyle{python}{%
-    style=xlance@base,
+    style=amphion@base,
     language=Python,
     keywordstyle=\color{themecolor@2}\bfseries,
     keywordstyle=[2]\color{themecolor@@2},
@@ -227,7 +281,7 @@
 
 % --- JSON ---
 \lstdefinestyle{json}{%
-    style=xlance@base,
+    style=amphion@base,
     string=[s]{"}{"},
     stringstyle=\color{themecolor@2},
     comment=[l]{//},
@@ -247,7 +301,7 @@
 
 % --- Bash / Shell ---
 \lstdefinestyle{bash}{%
-    style=xlance@base,
+    style=amphion@base,
     language=bash,
     keywordstyle=\color{themecolor@2}\bfseries,
     stringstyle=\color{themecolor@@2},
@@ -257,7 +311,7 @@
 
 % --- Plain text / Prompt listing style / 纯文本 Prompt 清单样式 ---
 \lstdefinestyle{plain}{%
-    style=xlance@base,
+    style=amphion@base,
     backgroundcolor=\color{boxcolor@bg},
     rulecolor=\color{boxcolor@frame},
     numbers=none,
@@ -360,22 +414,22 @@
 % 使用 \protected\def 定义，以便在 \addtolist 的 \xdef 展开中保留，
 % 仅在排版时执行。
 
-\newif\if@xlance@equalcontrib
-\@xlance@equalcontribfalse
+\newif\if@amphion@equalcontrib
+\@amphion@equalcontribfalse
 
 \protected\def\equalcontribution#1{%
-    \global\@xlance@equalcontribtrue
+    \global\@amphion@equalcontribtrue
     #1\textsuperscript{*}%
 }
 
-\newif\if@xlance@corresponding
-\@xlance@correspondingfalse
-\newcommand{\@xlance@corr@email}{}
+\newif\if@amphion@corresponding
+\@amphion@correspondingfalse
+\newcommand{\@amphion@corr@email}{}
 
 % Usage / 用法: \correspondence{email}{Author Name}
 \protected\def\correspondence#1#2{%
-    \global\@xlance@correspondingtrue
-    \gdef\@xlance@corr@email{#1}%
+    \global\@amphion@correspondingtrue
+    \gdef\@amphion@corr@email{#1}%
     #2\textsuperscript{\dag}%
 }
 
@@ -392,9 +446,9 @@
 % Appendix / 附录
 % =============================================================================
 
-\let\xlance@origappendix\appendix
+\let\amphion@origappendix\appendix
 \renewcommand{\appendix}{%
-    \xlance@origappendix
+    \amphion@origappendix
     \begin{center}
         {\LARGE\bfseries Appendix}
     \end{center}
@@ -405,22 +459,22 @@
 % Publish & Revise Dates / 发布与修订日期
 % =============================================================================
 
-\newcommand\@xlance@publishdate{}
-\newcommand{\publishdate}[1]{\gdef\@xlance@publishdate{#1}}
+\newcommand\@amphion@publishdate{}
+\newcommand{\publishdate}[1]{\gdef\@amphion@publishdate{#1}}
 
-\newcommand\@xlance@revdates{}
+\newcommand\@amphion@revdates{}
 \newcommand{\revisedate}[1]{%
-    \ifdefempty{\@xlance@revdates}%
-    {\gdef\@xlance@revdates{#1}}%
-    {\g@addto@macro\@xlance@revdates{, #1}}%
+    \ifdefempty{\@amphion@revdates}%
+    {\gdef\@amphion@revdates{#1}}%
+    {\g@addto@macro\@amphion@revdates{, #1}}%
 }
 
 % =============================================================================
 % Title Box / 标题框
 % =============================================================================
 
-\newlength{\xlance@headerlogoheight}
-\setlength{\xlance@headerlogoheight}{1.0cm}
+\newlength{\amphion@headerlogoheight}
+\setlength{\amphion@headerlogoheight}{1.0cm}
 
 \newcommand{\mymaketitle}{%
     \tcbset{enhanced}
@@ -457,10 +511,10 @@
         \begin{center}\contributionlist\end{center}
         %
         {\small
-        \if@xlance@equalcontrib\textsuperscript{*}Equal Contribution\fi
-            \if@xlance@corresponding
-            \if@xlance@equalcontrib\hspace{1em}\fi
-            \textsuperscript{\dag}Correspondence to: \texttt{\@xlance@corr@email}%
+        \if@amphion@equalcontrib\textsuperscript{*}Equal Contribution\fi
+            \if@amphion@corresponding
+            \if@amphion@equalcontrib\hspace{1em}\fi
+            \textsuperscript{\dag}Correspondence to: \texttt{\@amphion@corr@email}%
             \fi
             \par}
     }
@@ -477,12 +531,12 @@
     \vskip 0.3cm
     {\small\color{themecolor@2}%
     \setlength{\parskip}{0.05cm}%
-    \ifdefempty{\@xlance@publishdate}{}{%
-        \textbf{Publish Date:} \@xlance@publishdate
+    \ifdefempty{\@amphion@publishdate}{}{%
+        \textbf{Publish Date:} \@amphion@publishdate
     }%
-    \ifdefempty{\@xlance@revdates}{}{%
-        \ifdefempty{\@xlance@publishdate}{}{\par}%
-        \textbf{Revise Date:} \@xlance@revdates
+    \ifdefempty{\@amphion@revdates}{}{%
+        \ifdefempty{\@amphion@publishdate}{}{\par}%
+        \textbf{Revise Date:} \@amphion@revdates
     }%
     }
     \end{tcolorbox}
@@ -507,36 +561,44 @@
 % Page Styles / 页面样式
 % =============================================================================
 
-% --- First page: logos in header, page number at bottom center ---
-% --- 首页：页眉显示 logo，页码居底部中央 ---
+% --- First page: header logos (only if [withlogo]) and page number at bottom ---
+% --- 首页：仅在 [withlogo] 时渲染 logo，页码居底部中央 ---
 \fancypagestyle{firstpage}{%
     \fancyhf{}%
-    \if@xlance@opendfm
-        \fancyhead[L]{%
-            \includegraphics[height=\xlance@headerlogoheight]{xlance/assets/logos/XLANCE.png}%
-            \hspace{0.4cm}%
-            \includegraphics[height=\xlance@headerlogoheight]{xlance/assets/logos/SII.png}%
-            \hspace{0.4cm}%
-            \includegraphics[height=\xlance@headerlogoheight]{xlance/assets/logos/SZLab.png}%
-        }%
-        \fancyhead[R]{%
-            \includegraphics[height=\xlance@headerlogoheight, trim=30 30 30 30, clip]{xlance/assets/logos/OpenDFM.png}%
-        }%
+    \if@amphion@withlogo
+        \if@amphion@opendfm
+            \fancyhead[L]{%
+                \includegraphics[height=\amphion@headerlogoheight]{template/assets/logos/XLANCE.png}%
+                \hspace{0.4cm}%
+                \includegraphics[height=\amphion@headerlogoheight]{template/assets/logos/SII.png}%
+                \hspace{0.4cm}%
+                \includegraphics[height=\amphion@headerlogoheight]{template/assets/logos/SZLab.png}%
+            }%
+            \fancyhead[R]{%
+                \includegraphics[height=\amphion@headerlogoheight, trim=30 30 30 30, clip]{template/assets/logos/OpenDFM.png}%
+            }%
+        \else
+            \fancyhead[L]{%
+                \includegraphics[height=\amphion@headerlogoheight]{template/assets/logos/XLANCE_full.png}%
+            }%
+        \fi
+        \renewcommand{\headrulewidth}{0.4pt}%
     \else
-        \fancyhead[L]{%
-            \includegraphics[height=\xlance@headerlogoheight]{xlance/assets/logos/XLANCE_full.png}%
-        }%
+        \renewcommand{\headrulewidth}{0pt}%
     \fi
     \fancyfoot[C]{\thepage}%
-    \renewcommand{\headrulewidth}{0.4pt}%
 }
 
-% --- Body pages: title in header ---
-% --- 正文页：页眉显示标题 ---
+% --- Body pages: title in header. Rule disabled by default; reinstated under [withlogo]. ---
+% --- 正文页：页眉显示标题。默认无分隔线；[withlogo] 时恢复 0.4pt 分隔线 ---
 \fancypagestyle{body}{%
     \fancyhf{}%
     \fancyfoot[C]{\thepage}%
-    \renewcommand{\headrulewidth}{0.4pt}%
+    \if@amphion@withlogo
+        \renewcommand{\headrulewidth}{0.4pt}%
+    \else
+        \renewcommand{\headrulewidth}{0pt}%
+    \fi
 }
 
 % --- Override \maketitle to set page styles ---
@@ -588,9 +650,9 @@
 
 \newcommand{\eg}{\textit{e.g.,~}}
 \newcommand{\ie}{\textit{i.e.,~}}
-\newcommand{\github}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{xlance/assets/logos/GitHub.png}}\xspace}
-\newcommand{\huggingface}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{xlance/assets/logos/HuggingFace.png}}\xspace}
-\newcommand{\web}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{xlance/assets/logos/Website.png}}\xspace}
+\newcommand{\github}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{template/assets/logos/GitHub.png}}\xspace}
+\newcommand{\huggingface}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{template/assets/logos/HuggingFace.png}}\xspace}
+\newcommand{\web}{\raisebox{-1.5pt}[0pt][0pt]{\includegraphics[height=1.0em]{template/assets/logos/Website.png}}\xspace}
 
 % =============================================================================
 % Global Layout Tweaks / 全局排版微调

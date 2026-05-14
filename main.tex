@@ -1,58 +1,16 @@
 % =============================================================================
 % AmphionASR Technical Report
-% Built on the X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429).
-% Theme: custom "warm ivory + petrol teal" palette (overrides the OpenDFM
-%        blue-purple defaults; see "Custom palette" block below). The body
-%        sits on warm ivory; the headline accent is a deep petrol teal; a
-%        warm amber / clay secondary palette drives dual-tone boxes.
-%        Logos disabled (see further below).
+% Built on the Amphion technical-report template (template/amphion.cls v0.1).
+% Default theme = amphion (warm ivory + petrol teal) inherited from the class;
+% header logos are off by default. See template/CHANGELOG.md for theme options.
 % =============================================================================
 
-\documentclass[opendfm]{xlance/xlance}
+\documentclass{template/amphion}
 
-% --- Custom palette: warm ivory ground + petrol teal accent + amber/clay
-%     secondary. Overrides themecolor@1..5 and themecolor@@1..5 set by
-%     xlance.cls without touching the template internals.
-\usepackage{xcolor}
-\makeatletter
-% Primary palette: petrol teal accent on warm ivory ground.
-\definecolor{themecolor@1}{HTML}{062C36}   % deepest petrol: title accent
-\definecolor{themecolor@2}{HTML}{0E5A6F}   % petrol teal: abstract / strong
-\definecolor{themecolor@3}{HTML}{2D8294}   % medium teal: links / hairlines
-\definecolor{themecolor@4}{HTML}{9DBEC6}   % light teal: soft separators
-\definecolor{themecolor@5}{HTML}{F5EFE3}   % warm ivory: box bg
-% Secondary palette: warm amber / clay (paired with the teal primary).
-\definecolor{themecolor@@1}{HTML}{5C2B12}  % deep brown: deepest accent
-\definecolor{themecolor@@2}{HTML}{A86232}  % burnt amber: strong accent
-\definecolor{themecolor@@3}{HTML}{C8895C}  % warm clay: medium accent
-\definecolor{themecolor@@4}{HTML}{E8C9A8}  % light peach: soft accent
-\definecolor{themecolor@@5}{HTML}{FBF5EB}  % paper cream: light bg
-% Re-sync prompt box colours that xlance.cls froze from the original palette.
-\colorlet{boxcolor@bg}{themecolor@5}
-\colorlet{boxcolor@frame}{themecolor@3}
-\colorlet{boxcolor@text}{themecolor@2}
-\makeatother
+% --- ASR-domain math macros (\wer / \cer / \mer / \hotwerN) ---
+\usepackage{template/asr-macros}
 
-% --- Logos disabled: redefine firstpage style to suppress the default
-%     X-LANCE / SII / SZLab / OpenDFM header logos. Foot still shows page no.
-\usepackage{fancyhdr}
-\fancypagestyle{firstpage}{%
-  \fancyhf{}%
-  \fancyfoot[C]{\thepage}%
-  \renewcommand{\headrulewidth}{0pt}%
-}
-
-% --- url: provides \path for breakable typewriter file paths ---
-\usepackage{url}
-
-% --- Recurring math macros (per .cursor/rules/latex-engineering.mdc) ---
-\newcommand{\wer}{\mathrm{WER}}
-\newcommand{\cer}{\mathrm{CER}}
-\newcommand{\mer}{\mathrm{MER}}
-\newcommand{\hotwerN}[1]{\wer^{\text{hot}}_{#1}}
-
-% --- PDF metadata. Most hypersetup colors are owned by xlance.cls;
-%     we only override the metadata fields here. ---
+% --- PDF metadata (theme + page styles owned by template/amphion.cls) ---
 \hypersetup{
   pdftitle={AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin-English Speech Recognition},
   pdfsubject={cs.CL, cs.SD, eess.AS},
@@ -86,12 +44,10 @@
 \publishdate{2026.05.13}
 \maketitle
 
-% --- Body page header: keep only the model name (xlance.cls injects the
-%     full \title into the body header at \maketitle; we override it here
-%     because the new title is too long to repeat at the top of every page).
-%     The grey separator rule is also disabled for a cleaner look.
+% --- Body page header: amphion.cls injects the full \title into the body
+%     header at \maketitle; we override here with the short name because the
+%     full title is too long to repeat on every page.
 \fancyhead[L]{AmphionASR}
-\renewcommand{\headrulewidth}{0pt}
 
 % --- Teaser: model architecture diagram + ToC -------------------------------
 \begin{figure}[H]
@@ -130,9 +86,9 @@
 \input{sections/12_conclusion}
 
 % --- Bibliography (xlance/IEEEtran2 + venues.bib + our references.bib) ------
-\bibliographystyle{xlance/IEEEtran2}
+\bibliographystyle{template/IEEEtran2}
 \setcitestyle{numbers}
-\bibliography{xlance/venues,references}
+\bibliography{template/venues,references}
 
 \appendix
 \input{sections/A_appendix}
