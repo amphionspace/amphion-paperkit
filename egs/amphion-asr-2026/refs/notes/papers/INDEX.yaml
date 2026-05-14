@@ -1,0 +1,640 @@
+groups:
+- id: speech-llm-end-to-end
+  title: 端到端 Audio LLM / Speech-LLM (直接对标)
+  description: 与本报告 4.3B Qwen3-Audio-style 模型最直接可比；作为 baseline 或 architecture reference。
+- id: classic-asr-baseline
+  title: 经典 ASR baseline / encoder (必引)
+  description: Whisper / Conformer / Paraformer 等强 baseline；几乎所有 audio LLM 的 encoder 都源自此组工作。
+- id: ssl-speech-encoder
+  title: SSL Speech Encoder
+  description: HuBERT / WavLM / BEATs 等自监督 speech encoder。
+- id: llm-based-asr
+  title: LLM-based ASR 范式 (adapter / prompt / 端到端)
+  description: 直接将语音特征接入 LLM 的方法学先驱。
+- id: contextual-biasing
+  title: 热词 / Contextual Biasing (本报告重点章节)
+  description: 上下文偏置 / 热词召回相关工作。
+- id: target-speaker-asr
+  title: Target-Speaker ASR (本报告重点章节)
+  description: 目标说话人 ASR / 说话人条件解码。
+- id: benchmark
+  title: Benchmark / 评测协议
+  description: 公开 benchmark 与挑战赛协议。
+- id: closed-source
+  title: 闭源 / 商用系统
+  description: 商用系统的可下载 PDF（多数在 commercial-systems.md 仅列链接）。
+papers:
+- file: qwenteam2026-qwen3-asr.pdf
+  url: https://arxiv.org/pdf/2601.21337.pdf
+  sha256: a3978e38b7825f22f408992cde49dd2970f2e5a56a454753ba7f380e6be7721e
+  arxiv: '2601.21337'
+  title: Qwen3-ASR Technical Report
+  authors: Alibaba Qwen Team
+  date: 2026-02
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - direct-baseline
+  - architecture-reference
+  usage: '直接竞品（plan 中"对标 Qwen3-ASR-1.7B 抗噪"）；
+
+    架构 / 训练 / 评测协议直接参考。
+
+    '
+- file: qwenteam2025-qwen3-omni.pdf
+  url: https://arxiv.org/pdf/2509.17765.pdf
+  sha256: 4608d7f5d0694dd09a66144dac921797e161331d92b5eef133615bec392ec928
+  arxiv: '2509.17765'
+  title: Qwen3-Omni Technical Report
+  authors: Alibaba Qwen Team
+  date: 2025-09
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - omni
+  - multimodal
+  usage: Thinker-Talker MoE、多模态对齐参考。
+- file: xu2025-qwen25-omni.pdf
+  url: https://arxiv.org/pdf/2503.20215.pdf
+  sha256: 95906505512440a3a32c37b10a6aeeef092c44d60fcfaebfb309950685b7cbf1
+  arxiv: '2503.20215'
+  title: Qwen2.5-Omni Technical Report
+  authors: Alibaba Qwen Team
+  date: 2025-03
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - omni
+  - multimodal
+  usage: TMRoPE / Thinker-Talker 先驱。
+- file: chu2024-qwen2-audio.pdf
+  url: https://arxiv.org/pdf/2407.10759.pdf
+  sha256: 4ddac6d6b779f567efffb06144a4a9030e8524168ca54e504e26c81767758826
+  arxiv: '2407.10759'
+  title: Qwen2-Audio Technical Report
+  authors: Alibaba
+  date: 2024-07
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - adapter-llm
+  - air-bench
+  usage: Adapter + LLM 经典结构、AIR-Bench 评测协议参考。
+- file: chu2023-qwen-audio.pdf
+  url: https://arxiv.org/pdf/2311.07919.pdf
+  sha256: ec2582e1767927a67bc68db1fa9324c3a7839b8d2efa348ac6c76c57f5b44fae
+  arxiv: '2311.07919'
+  title: 'Qwen-Audio: Advancing Universal Audio Understanding'
+  authors: Chu et al.
+  date: 2023-11
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - hierarchical-tag
+  - multitask
+  usage: hierarchical-tag 多任务训练（hotword / 长尾 task 借鉴）。
+- file: kimiteam2025-kimi-audio.pdf
+  url: https://arxiv.org/pdf/2504.18425.pdf
+  sha256: b0242652500385de781a0d36d048425518f679c15042037738a8bb513233ea66
+  arxiv: '2504.18425'
+  title: Kimi-Audio Technical Report
+  authors: Moonshot Kimi Team
+  date: 2025-04
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - tokenizer
+  - parallel-head
+  usage: 12.5Hz 离散 + 连续 dual tokenizer、parallel head 设计。
+- file: bai2024-seed-asr.pdf
+  url: https://arxiv.org/pdf/2407.04675.pdf
+  sha256: 5998b733e7a609bcc890afb052d85506f6e83909f3c45a347b304c18791e81fe
+  arxiv: '2407.04675'
+  title: 'Seed-ASR: Understanding Diverse Speech and Contexts with LLM-based ASR'
+  authors: ByteDance Seed
+  date: 2024-07
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - recipe
+  - training-data
+  usage: 'LLM-based ASR 训练 recipe（SSL→SFT→Context SFT→RL）；
+
+    数据规模披露。
+
+    '
+- file: stepfun2025-step-audio2.pdf
+  url: https://arxiv.org/pdf/2507.16632.pdf
+  sha256: 5c341fd3e499ba9fdc0d6944a3b5cda7d9ee10b6efa3ac8f7e34a389d17197a4
+  arxiv: '2507.16632'
+  title: Step-Audio 2 Technical Report
+  authors: StepFun
+  date: 2025-07
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - industrial-report
+  - rag
+  - tool-use
+  usage: 工业级 audio LLM 报告结构、RAG / tool 调用。
+- file: xiaomi2025-mimo-audio.pdf
+  url: https://arxiv.org/pdf/2512.23808.pdf
+  sha256: 505d27dfbc1461c30b72a806c18775d2482191adc8beb115115d87f0b5e609c9
+  arxiv: '2512.23808'
+  title: 'MiMo-Audio: Audio Language Models are Few-Shot Learners'
+  authors: Xiaomi LLM-Core
+  date: 2025-12
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - pretraining-scale
+  - tokenizer
+  usage: 100M-hour 预训练、tokenizer + patch decoder 设计。
+- file: baichuan2025-baichuan-audio.pdf
+  url: https://arxiv.org/pdf/2502.17239.pdf
+  sha256: 6afe8eff5e7e08603b1cd0759ff69d237568f125f7621687d88707f22353eb85
+  arxiv: '2502.17239'
+  title: 'Baichuan-Audio: End-to-End Speech Interaction'
+  authors: Baichuan
+  date: 2025-02
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - multi-codebook
+  - audio-head
+  usage: 12.5Hz multi-codebook + audio head 设计。
+- file: fu2025-vita15.pdf
+  url: https://arxiv.org/pdf/2501.01957.pdf
+  sha256: b526a53d94167ab1be51ed29d661d9d02869d1c8f36dbfa2432357a645474ebf
+  arxiv: '2501.01957'
+  title: 'VITA-1.5: Towards GPT-4o Level Real-Time Vision and Speech'
+  authors: VITA-MLLM
+  date: 2025-01
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - vision-speech
+  - modality-conflict
+  usage: 三阶段 vision+speech 训练、modality conflict 缓解。
+- file: mistral2025-voxtral.pdf
+  url: https://arxiv.org/pdf/2507.13264.pdf
+  sha256: bde247d95666e9a39582a225f430875d1f7349ff979c4daad3fb7cf39631a879
+  arxiv: '2507.13264'
+  title: Voxtral
+  authors: Mistral AI
+  date: 2025-07
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - whisper-encoder
+  - adapter
+  usage: Whisper-large-v3 encoder + 4× downsample adapter；text capability preservation。
+- file: microsoft2025-phi4-mm.pdf
+  url: https://huggingface.co/microsoft/Phi-4-multimodal-instruct/resolve/main/phi_4_mm.tech_report.02252025.pdf
+  sha256: a5469d9123cbee2b41729db3217cacfeaa96eaf543868caa2eeec7cf2d24547d
+  title: Phi-4-Multimodal Technical Report
+  authors: Microsoft
+  date: 2025-02
+  venue: HF mirror
+  group: speech-llm-end-to-end
+  tags:
+  - mixture-of-loras
+  - speech-lora
+  usage: 'Mixture-of-LoRAs：speech LoRA 460M，避免 catastrophic
+
+    forgetting 的范本。
+
+    '
+- file: abouelenin2025-phi4-mini.pdf
+  url: https://arxiv.org/pdf/2503.01743.pdf
+  sha256: 51edb849958011b97b5aad904deebd9a4ea31d3c5839741d5e52810eaa9b3bcc
+  arxiv: '2503.01743'
+  title: Phi-4-Mini Technical Report
+  authors: Microsoft
+  date: 2025-03
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - text-backbone
+  usage: Phi-4-Mini 文本骨干、与 mm 版本对照。
+- file: openmoss2026-moss-ttsd.pdf
+  url: https://arxiv.org/pdf/2603.19739.pdf
+  sha256: 058e03ec8554ce4e091d4ddbb5baa3c581f9bad4514ef3e3ea516e6b5f8b2b78
+  arxiv: '2603.19739'
+  title: 'MOSS-TTSD: Text to Spoken Dialogue Generation'
+  authors: OpenMOSS
+  date: 2026-03
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - dialogue
+  - delay-pattern
+  usage: Qwen3-8B-base + multi-head delay pattern 长对话生成。
+- file: openmoss2026-moss-audio-tokenizer.pdf
+  url: https://arxiv.org/pdf/2602.10934.pdf
+  sha256: 3d79a9847d6e094a35373018ac944bdb9d9feacbe41b11490387a3e6e8b46bf9
+  arxiv: '2602.10934'
+  title: 'MOSS-Audio-Tokenizer: Scaling Audio Tokenizers'
+  authors: OpenMOSS
+  date: 2026-02
+  venue: arXiv
+  group: speech-llm-end-to-end
+  tags:
+  - tokenizer
+  - pretraining-scale
+  usage: 12.5Hz CAT-tokenizer，3M-hour 预训练。
+- file: radford2022-whisper.pdf
+  url: https://arxiv.org/pdf/2212.04356.pdf
+  sha256: 6337bde031b2f237547a977b022f831169a7e05b4d9047f29501166d83594566
+  arxiv: '2212.04356'
+  title: Robust Speech Recognition via Large-Scale Weak Supervision
+  authors: Radford et al.
+  date: 2022-12
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - must-cite
+  - baseline
+  - weak-supervision
+  usage: Whisper：680k h 弱监督、零样本鲁棒性范本，必为主表 baseline。
+- file: gulati2020-conformer.pdf
+  url: https://arxiv.org/pdf/2005.08100.pdf
+  sha256: 4d53a2d87f7b68b3b5a86d8e4301c5092ae61e260f9c76dab48af34faac9a81f
+  arxiv: '2005.08100'
+  title: 'Conformer: Convolution-augmented Transformer'
+  authors: Gulati et al.
+  date: 2020-05
+  venue: Interspeech 2020
+  group: classic-asr-baseline
+  tags:
+  - encoder
+  - must-cite
+  usage: Conformer encoder 范本，几乎所有 audio LLM 的 encoder 都是它或变体。
+- file: gao2022-paraformer.pdf
+  url: https://arxiv.org/pdf/2206.08317.pdf
+  sha256: 3d74cc84c15602e3480525b0e1fae3fc15344eab4ce4b5cb00c6aa093c1a0097
+  arxiv: '2206.08317'
+  title: 'Paraformer: Fast and Accurate Parallel Transformer'
+  authors: Gao et al.
+  date: 2022-06
+  venue: Interspeech 2022
+  group: classic-asr-baseline
+  tags:
+  - nar
+  - mandarin
+  usage: NAR + glancing LM；中文 ASR baseline / FunASR 旗舰。
+- file: google2023-usm.pdf
+  url: https://arxiv.org/pdf/2303.01037.pdf
+  sha256: 1e8459ecd1b4d8e5ff9d9367934823b39773082503d16aa65beb3825bf4eaf9b
+  arxiv: '2303.01037'
+  title: 'Google USM: Scaling ASR Beyond 100 Languages'
+  authors: Google
+  date: 2023-03
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - multilingual
+  usage: 2B Conformer + RPQ-SSL，多语种 ASR 范本。
+- file: meta2023-seamlessm4t.pdf
+  url: https://arxiv.org/pdf/2308.11596.pdf
+  sha256: d75272376c4d837a4fe734768d4d9773bb6482d998d336c79cff8c8ac2a557ff
+  arxiv: '2308.11596'
+  title: 'SeamlessM4T: Massively Multilingual & Multimodal MT'
+  authors: Meta
+  date: 2023-08
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - multilingual
+  - s2st
+  usage: 100 语种 S2ST/ASR；噪声鲁棒性 / 多语对照。
+- file: nvidia2024-canary.pdf
+  url: https://arxiv.org/pdf/2406.19674.pdf
+  sha256: aa1496f0964230896f54f0fb532c460156f5836cd1c584aed21d4046f9e7097d
+  arxiv: '2406.19674'
+  title: 'Less is More: Accurate Speech Recognition & Translation without Web-Scale Data'
+  authors: NVIDIA
+  date: 2024-06
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - aed
+  - efficient
+  usage: NVIDIA Canary FastConformer-AED，少数据多 SOTA。
+- file: nvidia2025-canary-parakeet-v3.pdf
+  url: https://arxiv.org/pdf/2509.14128.pdf
+  sha256: 6cf2d23d959d0e1ff3f03c53e2dcf1c18f6125823fc698c83d1bfbe2b5d2df09
+  arxiv: '2509.14128'
+  title: Canary-1B-v2 & Parakeet-TDT-0.6B-v3
+  authors: NVIDIA
+  date: 2025-09
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - multilingual
+  - ast
+  usage: 多语种 ASR + AST efficient baseline，open ASR Leaderboard 强 baseline。
+- file: peng2024-owsm-v31.pdf
+  url: https://arxiv.org/pdf/2401.16658.pdf
+  sha256: c5aaccf26786b076ec46b6849c5ce4b84ebde1a52072f9bb4c6f4a0e9ea79dcd
+  arxiv: '2401.16658'
+  title: 'OWSM v3.1: Better and Faster Open Whisper-Style Speech Models'
+  authors: Peng et al.
+  date: 2024-01
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - whisper-reproduction
+  - e-branchformer
+  usage: E-Branchformer 替换 Transformer 编码器；可复现 Whisper。
+- file: funaudio2024-sensevoice.pdf
+  url: https://arxiv.org/pdf/2407.04051.pdf
+  sha256: ad6e8caf510332c50848a7c5681082ac64b9721a4a682acfc1becea71b275a25
+  arxiv: '2407.04051'
+  title: 'FunAudioLLM: SenseVoice + CosyVoice'
+  authors: FunAudioLLM Team
+  date: 2024-07
+  venue: arXiv
+  group: classic-asr-baseline
+  tags:
+  - multitask
+  - emotion
+  - event
+  usage: SenseVoice 多任务 ASR + emotion + event；与 Paraformer 同源。
+- file: hsu2021-hubert.pdf
+  url: https://arxiv.org/pdf/2106.07447.pdf
+  sha256: 3a919c3ede82b15c3c28f648ea8c8ef7417bab533b04f9b2b97a324c9be688d9
+  arxiv: '2106.07447'
+  title: 'HuBERT: Masked Prediction of Hidden Units'
+  authors: Hsu et al.
+  date: 2021-06
+  venue: arXiv
+  group: ssl-speech-encoder
+  tags:
+  - self-supervised
+  usage: HuBERT 经典自监督，SLAM-ASR 主用 encoder。
+- file: chen2021-wavlm.pdf
+  url: https://arxiv.org/pdf/2110.13900.pdf
+  sha256: 0ca8836ebdf8236e610187738217d4c91c5ead13873472e476423f1561e9238e
+  arxiv: '2110.13900'
+  title: 'WavLM: Full Stack Speech Processing SSL'
+  authors: Chen et al.
+  date: 2021-10
+  venue: arXiv
+  group: ssl-speech-encoder
+  tags:
+  - self-supervised
+  - denoising
+  usage: denoising + masked prediction，SUPERB SOTA。
+- file: chen2022-beats.pdf
+  url: https://arxiv.org/pdf/2212.09058.pdf
+  sha256: ca16a4100e27272cb220cf74b81b5ad30179d3a2a7cbd101157ea17ee1bc2bfc
+  arxiv: '2212.09058'
+  title: 'BEATs: Audio Pre-Training with Acoustic Tokenizers'
+  authors: Chen et al.
+  date: 2022-12
+  venue: arXiv
+  group: ssl-speech-encoder
+  tags:
+  - audio-ssl
+  usage: 通用音频 SSL；SALMONN 二路 encoder 之一。
+- file: tang2023-salmonn.pdf
+  url: https://arxiv.org/pdf/2310.13289.pdf
+  sha256: 3b8e3381c203f4c0dd282b7bc03774328ace13c10d0a09ca22842878f6089cd6
+  arxiv: '2310.13289'
+  title: 'SALMONN: Towards Generic Hearing Abilities for LLMs'
+  authors: Tang et al.
+  date: 2023-10
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - q-former
+  - dual-encoder
+  usage: Whisper + BEATs + Q-Former + Vicuna 双路融合。
+- file: ma2024-slam-asr.pdf
+  url: https://arxiv.org/pdf/2402.08846.pdf
+  sha256: 2de4ea64f99265866e5791a3614cd6a30c8a26af32e57c344baa75fa78bae7d1
+  arxiv: '2402.08846'
+  title: An Embarrassingly Simple Approach for LLM with Strong ASR Capacity
+  authors: Ma et al.
+  date: 2024-02
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - linear-projector
+  - simple
+  usage: SLAM-ASR：HuBERT + 单层 linear projector + Vicuna，LibriSpeech test-clean 1.84。
+- file: fang2024-llama-omni.pdf
+  url: https://arxiv.org/pdf/2409.06666.pdf
+  sha256: ccc1b58448a5adc5077958421399ee990bf9bd34875efdb6e1595a2df103845b
+  arxiv: '2409.06666'
+  title: 'LLaMA-Omni: Seamless Speech Interaction'
+  authors: Fang et al.
+  date: 2024-09
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - streaming
+  - latency
+  usage: Llama-3.1-8B + speech adapter + streaming decoder，226 ms latency。
+- file: xie2024-mini-omni.pdf
+  url: https://arxiv.org/pdf/2408.16725.pdf
+  sha256: 535bba816f89d8b9b45601295355b3b95c85988b2e6fcdb6725f058b4669b555
+  arxiv: '2408.16725'
+  title: 'Mini-Omni: Language Models Can Hear, Talk While Thinking in Streaming'
+  authors: Xie et al.
+  date: 2024-08
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - streaming
+  - training-recipe
+  usage: '"Any Model Can Talk" 训练范式。'
+- file: xie2024-mini-omni2.pdf
+  url: https://arxiv.org/pdf/2410.11190.pdf
+  sha256: f09a322c686c448e39323ce0867d6ddb21a68a37f0c90badc3532662b986ccb2
+  arxiv: '2410.11190'
+  title: Mini-Omni2
+  authors: Xie et al.
+  date: 2024-10
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - vision
+  - duplex
+  usage: 加入 vision + duplex。
+- file: zeng2024-glm4-voice.pdf
+  url: https://arxiv.org/pdf/2412.02612.pdf
+  sha256: de2ef75407d916a8377aebba430a2f32c433bc6562099053369a9918bb1234ae
+  arxiv: '2412.02612'
+  title: GLM-4-Voice
+  authors: Zeng et al.
+  date: 2024-12
+  venue: arXiv
+  group: llm-based-asr
+  tags:
+  - low-bitrate-tokenizer
+  usage: 175 bps 单码本 tokenizer、1T token 预训练。
+- file: lakomkin2025-contextual-biasing-rl.pdf
+  url: https://arxiv.org/pdf/2512.21828.pdf
+  sha256: 4fb9fce906e74cd5d9c8432c7f4d42ac7ba098c95de52df25eb9962d33624a76
+  arxiv: '2512.21828'
+  title: Contextual Biasing for LLM-Based ASR with Hotword Retrieval and RL
+  authors: Lakomkin et al.
+  date: 2025-12
+  venue: arXiv
+  group: contextual-biasing
+  tags:
+  - retrieval
+  - grpo
+  - mandarin
+  usage: GLCLAP 检索 + GRPO RL；中文长尾 hotword 强对照。
+- file: yang2024-ctc-assisted-contextual.pdf
+  url: https://arxiv.org/pdf/2411.06437.pdf
+  sha256: ef074a5e271c0144b380c055a420ea852a7f421b88bc08993ff4f0a530cc38f9
+  arxiv: '2411.06437'
+  title: CTC-Assisted LLM-Based Contextual ASR
+  authors: Yang et al.
+  date: 2024-11
+  venue: arXiv
+  group: contextual-biasing
+  tags:
+  - ctc
+  - prompt
+  usage: CTC coarse decode 过滤 hotword 进 prompt；LS test-clean B-WER 3.67。
+- file: sun2025-br-asr.pdf
+  url: https://arxiv.org/pdf/2505.19179.pdf
+  sha256: 0b7f0ecb52772c79131b2764177d0ce5da54e4c1e833136e8bc8cb0fc64310f7
+  arxiv: '2505.19179'
+  title: 'BR-ASR: Bias Retrieval Framework for Contextual Biasing ASR'
+  authors: Sun et al.
+  date: 2025-05
+  venue: arXiv
+  group: contextual-biasing
+  tags:
+  - retrieval
+  - large-scale
+  usage: 200k entry 检索；LS test-clean B-WER 2.8。
+- file: meng2024-sq-whisper.pdf
+  url: https://arxiv.org/pdf/2412.05589.pdf
+  sha256: f243f944c3a78454a0d43946743a3bac21c9f0954fd89379d43cab693e094b57
+  arxiv: '2412.05589'
+  title: 'SQ-Whisper: Speaker-Querying Whisper for TS-ASR'
+  authors: Meng et al.
+  date: 2024-12
+  venue: arXiv
+  group: target-speaker-asr
+  tags:
+  - speaker-query
+  - libri-mix
+  usage: trainable speaker queries；Libri2Mix 14.6%、WSJ0-2Mix 4.4%。
+- file: polok2024-target-speaker-whisper.pdf
+  url: https://arxiv.org/pdf/2409.09543.pdf
+  sha256: 3e8562e86d69cbb383f90679680be6e60b95312fb81f1bfd8b96b42d1efafc04
+  arxiv: '2409.09543'
+  title: Target Speaker ASR with Whisper
+  authors: Polok et al.
+  date: 2024-09
+  venue: arXiv
+  group: target-speaker-asr
+  tags:
+  - diarization
+  - notsofar
+  usage: diarization-conditioned；NOTSOFAR-1 ORC-WER 改善 12.9。
+- file: ma2023-whisper-prompt-tuning-tsasr.pdf
+  url: https://arxiv.org/pdf/2312.08079.pdf
+  sha256: 141b18154f1290b1f4f4fb6841f053f86c2264d74eca066ee9da844e15441f18
+  arxiv: '2312.08079'
+  title: Extending Whisper with Prompt Tuning to Target-Speaker ASR
+  authors: Ma et al.
+  date: 2023-12
+  venue: arXiv
+  group: target-speaker-asr
+  tags:
+  - prompt-tuning
+  - libri-mix
+  usage: prompt-tuning 路线，LibriMix baseline。
+- file: srivastav2025-asr-leaderboard.pdf
+  url: https://arxiv.org/pdf/2510.06961.pdf
+  sha256: 9b60be23eda99d0d2b6ab5b95b60c55df5c3b9bfd2f140e3236112c43c8c54e0
+  arxiv: '2510.06961'
+  title: Open ASR Leaderboard
+  authors: Srivastav et al.
+  date: 2025-10
+  venue: arXiv
+  group: benchmark
+  tags:
+  - leaderboard
+  - normalization
+  - rtfx
+  usage: 60+ 系统 + 10 dataset + RTFx，本报告实验设置 / normalization 参照。
+- file: watanabe2020-chime6.pdf
+  url: https://arxiv.org/pdf/2004.09249.pdf
+  sha256: c702cd407b6124d0e314610ec3baba1fd552ef74f044aadba97e535c3995c997
+  arxiv: '2004.09249'
+  title: 'CHiME-6 Challenge: Tackling Multispeaker Speech Recognition for Unsegmented Recordings'
+  authors: Watanabe et al.
+  date: 2020-04
+  venue: arXiv
+  group: benchmark
+  tags:
+  - meeting
+  - multispeaker
+  usage: 多人 unsegmented 会议 ASR；TS-ASR / diarization baseline。
+- file: cornell2023-chime7.pdf
+  url: https://arxiv.org/pdf/2306.13734.pdf
+  sha256: 4a581794cccf31cbbbc4966dc4e8a5e8ff7df16c04cf48672ef7258d7bdb63dc
+  arxiv: '2306.13734'
+  title: 'CHiME-7 DASR Challenge: Distant Meeting Transcription with Multiple Devices'
+  authors: Cornell et al.
+  date: 2023-06
+  venue: arXiv
+  group: benchmark
+  tags:
+  - distant-asr
+  - meeting
+  usage: 跨 array / 跨场景泛化（CHiME-6 + DiPCo + Mixer 6）。
+- file: cornell2024-chime8.pdf
+  url: https://arxiv.org/pdf/2407.16447.pdf
+  sha256: 3690e7bf83f0cf6339d1119c08c26b8815fb6c7d90ea4dfda64010e4b5c7d354
+  arxiv: '2407.16447'
+  title: CHiME-8 DASR Challenge for Generalizable and Array Agnostic Distant ASR and Diarization
+  authors: Cornell et al.
+  date: 2024-07
+  venue: arXiv
+  group: benchmark
+  tags:
+  - distant-asr
+  - llm-track
+  usage: 加入 NOTSOFAR-1 + LLM-allowed track。
+- file: vinnikov2024-notsofar1.pdf
+  url: https://arxiv.org/pdf/2401.08887.pdf
+  sha256: 3fb6244e40f799ba6c6e3a5e76e32b10898ec7f8a8eb3dd41e2310cf021268bf
+  arxiv: '2401.08887'
+  title: 'NOTSOFAR-1 Challenge: New Datasets, Baseline, and Tasks for Distant Meeting Transcription'
+  authors: Vinnikov et al.
+  date: 2024-01
+  venue: arXiv
+  group: benchmark
+  tags:
+  - meeting
+  - distant-asr
+  - diarization
+  usage: 315 会议 / 1000 h 模拟训练；办公场景 distant ASR + diarization。
+- file: openai2024-gpt4o-systemcard.pdf
+  url: https://arxiv.org/pdf/2410.21276.pdf
+  sha256: 1d7dbfdec9e1f04402165657ae40012da73dbda4e7581f7489738a4df22deb68
+  arxiv: '2410.21276'
+  title: GPT-4o System Card
+  authors: OpenAI
+  date: 2024-10
+  venue: arXiv
+  group: closed-source
+  tags:
+  - omni
+  - audio-safety
+  usage: 'OpenAI omni 模型；包含 gpt-4o-transcribe baseline，
+
+    第 9 节有 audio safety 评测。
+
+    '
