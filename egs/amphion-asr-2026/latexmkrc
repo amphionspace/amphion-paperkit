@@ -1,7 +1,7 @@
-# latexmk configuration for an egs/<slug>/ leaf report.
-# Working directory at compile time: egs/<slug>/.
+# latexmk configuration for egs/amphion-asr-2026/.
+# Working directory at compile time: egs/amphion-asr-2026/.
 # Add the project root to TEXINPUTS / BIBINPUTS so \documentclass{template/amphion},
-# \usepackage{template/asr-macros}, \bibliography{template/venues,...} all resolve.
+# \usepackage{template/asr-macros}, \bibliography{template/venues,...} resolve.
 
 $ENV{'TEXINPUTS'} = '../../:' . ($ENV{'TEXINPUTS'} // '');
 $ENV{'BIBINPUTS'} = '../../:' . ($ENV{'BIBINPUTS'} // '');
