@@ -264,9 +264,7 @@ instruction, the spacing around the hotword value, and whether the
 language hint is rendered as a separate line. The inference client
 must be invoked with the matching style; a mismatch causes the model
 to either repeat hotwords verbatim or skip the language hint, with
-measurable WER damage. In addition to the five tasks defined in the
-released model card, the preprocessor implements a sixth task family
-for environmental sound captioning (\texttt{esc}).
+measurable WER damage.
 
 \begin{table}[t]
   \caption{Task prompt templates. \texttt{\{speech\}} expands to
@@ -287,9 +285,6 @@ for environmental sound captioning (\texttt{esc}).
     \texttt{asr\_zh}        & \texttt{Transcribe ... .\textbackslash nLanguage: Chinese\{speech\}} & \texttt{Transcribe the following Chinese audio:\{speech\}} \\
     \texttt{asr\_hotwords}  & \texttt{Transcribe ... .\textbackslash n[Language: ...]\textbackslash nHotwords:\,hw1,hw2\{speech\}} & \texttt{Hotwords:hw1,hw2\textbackslash nTranscribe the following audio:\{speech\}} \\
     \texttt{ts\_asr}        & \texttt{Given the speaker's voice:\{enroll\}\textbackslash nTranscribe what this speaker says in the following audio.[\textbackslash nLanguage: ...][\textbackslash nHotwords: ...]\{speech\}} & \texttt{Given the speaker's voice:\{enroll\}\textbackslash nTranscribe what this speaker says in the following audio:\{speech\}} \\
-    \texttt{ser}            & \texttt{Classify the emotion of the following audio.\{speech\}}     & \texttt{Classify the emotion of the following audio:\{speech\}} \\
-    \texttt{sec}            & \texttt{Describe the emotion of the following audio.\{speech\}}     & \texttt{Describe the emotion of the following audio:\{speech\}} \\
-    \texttt{esc}            & \texttt{Describe the background acoustic scene only and ignore spoken content.\{speech\}} & \texttt{Describe the background acoustic scene only and ignore spoken content:\{speech\}} \\
     \bottomrule
   \end{tabular}
 \end{table}
