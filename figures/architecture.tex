@@ -44,10 +44,10 @@
 }
 
 \tikzset{
-  % --- module shapes ---
+  % --- module shapes (uniform width x height across the figure) ---
   module/.style    ={draw, rounded corners=3pt, align=center,
                      font=\sffamily\small, line width=0.7pt,
-                     minimum width=3.6cm, minimum height=1.0cm},
+                     minimum width=3.4cm, minimum height=0.9cm},
   audio/.style     ={module, fill=cAudio, draw=black!35},
   encoder/.style   ={module, fill=cEnc, draw=cEncB},
   adapter/.style   ={module, fill=cAdp, draw=cAdpB},
@@ -55,10 +55,9 @@
   tokenizer/.style ={module, fill=cTok, draw=cTokB},
   boundbox/.style  ={module, fill=cBound, draw=cBoundB},
   llmbox/.style    ={module, fill=cLLM, draw=cLLMB, line width=0.85pt,
-                     minimum width=11.6cm, minimum height=1.3cm,
+                     minimum width=11.4cm, minimum height=0.95cm,
                      font=\sffamily},
   outbox/.style    ={module, fill=white, draw=black!50,
-                     minimum width=2.8cm, minimum height=0.75cm,
                      font=\sffamily\small},
   % --- token cells ---
   tokcell/.style   ={draw, line width=0.4pt, minimum width=0.42cm,
@@ -85,8 +84,7 @@
 
   % ====================== LLM (top) ======================
   \node[llmbox] (llm) {%
-    \fireIcon~~\textbf{Qwen3-4B-Instruct-2507}\\[1pt]
-    \scriptsize Causal LM
+    \fireIcon~~\textbf{Qwen3-4B-Instruct-2507}%
   };
   \node[outbox, above=0.55cm of llm] (text) {\textbf{Transcript}};
   \draw[flow] (llm.north) -- (text.south);
@@ -114,21 +112,18 @@
   \draw[flow] (seqbox.north) -- (llm.south);
 
   % ====================== Three sources (top row) ========
-  % all three sources share the same y, anchored 1.2cm below the seqbox
-  \node[adapter,  below=1.4cm of seqbox.south, anchor=north,
+  % all three sources share the same y, anchored below the seqbox
+  \node[adapter,  below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xL]seqbox.south)}] (proj)  {%
-    \fireIcon~~\textbf{MM Projector}\\
-    \scriptsize Linear--SwooshR--Linear
+    \fireIcon~~\textbf{MM Projector}%
   };
-  \node[boundbox, below=1.4cm of seqbox.south, anchor=north,
+  \node[boundbox, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xM]seqbox.south)}] (bound) {%
-    \fireIcon~~\textbf{Boundary Prompt}\\
-    \scriptsize learnable soft prompt
+    \fireIcon~~\textbf{Boundary Prompt}%
   };
-  \node[tokenizer, below=1.4cm of seqbox.south, anchor=north,
+  \node[tokenizer, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xR]seqbox.south)}] (embed) {%
-    \textbf{Tokenizer + Embedding}\\
-    \scriptsize Qwen3
+    \textbf{Tokenizer + Embedding}%
   };
 
   % vertical arrows: each source -> the sequence bottom on its own x
@@ -141,11 +136,10 @@
 
   % ====================== Audio column (left, downstream) ======
   \node[encoder, below=of proj] (aut) {%
-    \frozenIcon~~\textbf{Qwen3-AuT Encoder}\\
-    \scriptsize Whisper-style
+    \frozenIcon~~\textbf{Qwen3-AuT Encoder}%
   };
   \node[encoder, below=of aut] (front) {%
-    \textbf{Log-mel + Conv Sub-sampler}
+    \textbf{Log-mel + Conv}%
   };
   % Waveform: no box, just the pictogram and a small caption.
   \node[draw=none, fill=none, inner sep=2pt, align=center,
@@ -159,25 +153,22 @@
 
   % ====================== Text column (right, downstream) ======
   \node[promptbox, below=of embed] (prompt) {%
-    \textbf{Text prompt}\\
-    \scriptsize chat template + speech tokens
+    \textbf{Text prompt}%
   };
   \draw[flow] (prompt) -- (embed);
 
-  % ====================== Compact legend (mid column) =========
-  % Placed in the otherwise empty middle column below the boundary
-  % prompt, in a Step-Audio 2 style vertical list, no border.
-  \node[draw=none, anchor=north, align=left, inner sep=0pt,
-        below=1.6cm of bound.south,
-        at={([xshift=\xM,yshift=-1.6cm]bound.south)}] (legend) {%
+  % ====================== Legend (bottom-right corner) ========
+  % Tucked under the text-prompt module, borderless, Step-Audio 2 style.
+  \node[draw=none, anchor=north east, align=left, inner sep=0pt,
+        at={([xshift=0.1cm,yshift=-0.8cm]prompt.south east)}] (legend) {%
     \sffamily\scriptsize
     \renewcommand{\arraystretch}{1.25}%
-    \begin{tabular}{@{}c@{\hspace{6pt}}l@{}}
-      \frozenIcon & frozen (Stage 1)\\
+    \begin{tabular}{@{}c@{\hspace{5pt}}l@{}}
+      \frozenIcon & frozen\\
       \fireIcon   & trainable\\
-      \tikz\node[cellText,  minimum width=0.32cm, minimum height=0.32cm]{}; & text emb\\
-      \tikz\node[cellBound, minimum width=0.32cm, minimum height=0.32cm]{}; & boundary emb\\
-      \tikz\node[cellAudio, minimum width=0.32cm, minimum height=0.32cm]{}; & audio emb\\
+      \tikz\node[cellText,  minimum width=0.30cm, minimum height=0.30cm]{}; & text emb\\
+      \tikz\node[cellBound, minimum width=0.30cm, minimum height=0.30cm]{}; & boundary emb\\
+      \tikz\node[cellAudio, minimum width=0.30cm, minimum height=0.30cm]{}; & audio emb\\
     \end{tabular}%
   };
 
