@@ -107,11 +107,10 @@ tlmgr install collection-fontsrecommended tgpagella mathpazo inconsolata \
 参考 PDF 下载（论文 + 数据集 datasheet 不入 git）：
 
 ```bash
-pip install -r tools/requirements-fetch.txt
-python tools/fetch-refs.py egs/<slug>
+uv run tools/fetch-refs.py egs/<slug>
 ```
 
-脚本会按 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 并行下载并 sha256 校验。已存在文件 SKIP；首次下载后把 sha256 回填到 yaml，请 `git diff` 后 commit。
+`tools/fetch-refs.py` 用 PEP 723 inline metadata 声明依赖（PyYAML + jsonschema），通过 [uv](https://docs.astral.sh/uv/) 自动建虚拟环境，不需要手动 `pip install`。脚本会按 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 并行下载并 sha256 校验。已存在文件 SKIP；首次下载后把 sha256 回填到 yaml，请 `git diff` 后 commit。
 
 ## License
 

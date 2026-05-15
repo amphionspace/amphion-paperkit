@@ -64,3 +64,21 @@ class 文件层面的具体变更：
 - 任何 CI / 脚本依赖顶层 `refs/` 路径会失败 —— 当前没有此类依赖。
 
 参考 `egs/amphion-asr-2026/refs/README.md` 与 `tools/fetch-refs.py` 顶部 docstring 看新工作流细节。
+
+---
+
+## v0.3 — 2026-05-15 — fetch-refs 切换到 uv (PEP 723)
+
+`tools/fetch-refs.py` 从"`pip install -r requirements-fetch.txt` + `python ...`" 工作流切到"`uv run ...`"工作流。脚本头部按 PEP 723 inline metadata 声明 PyYAML + jsonscheme 依赖，[uv](https://docs.astral.sh/uv/) 第一次运行时建临时 venv 并缓存。**非破坏性**：脚本本身仍是合法 Python，stock `python tools/fetch-refs.py ...` 在已有 venv 里也能跑。
+
+具体变更：
+
+- `tools/fetch-refs.py` 头部加 `# /// script` PEP 723 块（requires-python>=3.9 + dependencies = PyYAML>=6.0 + jsonschema>=4.0）；shebang 改 `#!/usr/bin/env -S uv run --script`；docstring 中 Usage / Notes 更新到 uv；ImportError 提示改为指向 `uv run`。
+- 删 `tools/requirements-fetch.txt`（替代品就是 PEP 723 块）。
+- `README.md` / `AGENTS.md` 规则 2 / `egs/amphion-asr-2026/refs/README.md` / `egs/_skeleton/refs/README.md` 中所有 `pip install -r tools/requirements-fetch.txt` + `python tools/fetch-refs.py ...` 改为 `uv run tools/fetch-refs.py ...`。
+- `egs/amphion-asr-2026/refs/{notes/papers,datasets}/INDEX.yaml` 顶部注释（之前被首次 sha256 回填的 PyYAML safe_dump 抹掉）手工恢复，改成 uv 版本，并加注释提示 PyYAML 重写会丢注释、本头部为人工 restore。
+- `egs/_skeleton/refs/{notes/papers,datasets}/INDEX.yaml` 头部注释同步改 uv 版本。
+- `.cursor/rules/multi-report.mdc` 公共层文件清单去掉 `tools/requirements-fetch.txt`。
+- 本 entry。
+
+每 egs 影响：仅文档 / 调用方式变化，PDF / sha256 / yaml 结构均不动；不需要 `depends_on_template` bump。

@@ -1,3 +1,14 @@
+# refs/datasets/INDEX.yaml
+#
+# Single source of truth for dataset paper / datasheet PDFs.
+# PDFs are gitignored; download via:
+#
+#     uv run tools/fetch-refs.py egs/amphion-asr-2026
+#
+# (uv reads the PEP 723 inline metadata block in tools/fetch-refs.py.)
+#
+# Schema and conventions: same as refs/notes/papers/INDEX.yaml.
+
 groups:
 - id: chinese-asr
   title: 中文 ASR 数据集

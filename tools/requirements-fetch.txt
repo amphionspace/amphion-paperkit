@@ -1,6 +1,0 @@
-# Dependencies for tools/fetch-refs.py
-# Install once per dev environment:
-#   pip install -r tools/requirements-fetch.txt
-
-PyYAML>=6.0
-jsonschema>=4.0

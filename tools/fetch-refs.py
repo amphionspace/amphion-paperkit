@@ -1,9 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#     "PyYAML>=6.0",
+#     "jsonschema>=4.0",
+# ]
+# ///
 """
 fetch-refs.py — Download reference PDFs declared in INDEX.yaml.
 
 Usage:
-    python tools/fetch-refs.py egs/<slug> [--workers 4] [--force]
+    uv run tools/fetch-refs.py egs/<slug> [--workers 4] [--force]
+
+The script declares its dependencies inline (PEP 723); `uv run` builds an
+ephemeral virtualenv on first invocation and reuses it via uv's cache. No
+manual pip install / requirements file needed.
 
 Behaviour:
     1. Parse egs/<slug>/refs/notes/papers/INDEX.yaml and
@@ -30,14 +41,13 @@ Behaviour:
        commit the yaml changes.
     8. Exit 0 iff Failed == 0 and Mismatch == 0.
 
-Dependencies:
-    pip install -r tools/requirements-fetch.txt
-    (PyYAML>=6.0, jsonschema>=4.0)
-
 Notes:
     - One try per URL (no retry / backoff in this version).
     - No dry-run / offline / lock-file (intentionally minimal).
-    - Run from repo root: `python tools/fetch-refs.py egs/<slug>`.
+    - Run from repo root: `uv run tools/fetch-refs.py egs/<slug>`.
+    - Falls back to `python tools/fetch-refs.py ...` if you already manage a
+      venv with PyYAML + jsonschema; the PEP 723 block is ignored by stock
+      python.
 """
 
 from __future__ import annotations
@@ -56,7 +66,8 @@ try:
     import yaml
 except ImportError:
     sys.stderr.write(
-        "ERROR: PyYAML not installed. Run: pip install -r tools/requirements-fetch.txt\n"
+        "ERROR: PyYAML not installed. Run via uv: `uv run tools/fetch-refs.py ...` "
+        "(uv reads the PEP 723 block and provisions deps automatically).\n"
     )
     sys.exit(2)
 
@@ -64,7 +75,7 @@ try:
     import jsonschema
 except ImportError:
     sys.stderr.write(
-        "ERROR: jsonschema not installed. Run: pip install -r tools/requirements-fetch.txt\n"
+        "ERROR: jsonschema not installed. Run via uv: `uv run tools/fetch-refs.py ...`.\n"
     )
     sys.exit(2)
 

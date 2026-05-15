@@ -111,11 +111,10 @@ amphion-technical-reports/
 
 ### 工作流
 
-首次准备 PDF：
+首次准备 PDF（脚本通过 PEP 723 inline metadata 声明依赖，由 [uv](https://docs.astral.sh/uv/) 自动建虚拟环境）：
 
 ```bash
-pip install -r tools/requirements-fetch.txt
-python tools/fetch-refs.py egs/<slug>
+uv run tools/fetch-refs.py egs/<slug>
 ```
 
 脚本会按 INDEX.yaml 并行下载（默认 4 路）+ sha256 校验 + 失败 / mismatch 报告。后续 sha256 不一致会硬失败（URL 漂移 / 文件损坏的早期信号）。
@@ -146,7 +145,7 @@ python tools/fetch-refs.py egs/<slug>
 ### 加新论文 / 数据集 PDF 的步骤
 
 1. 在 `egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml` 加 entry，`sha256: null` 待回填
-2. 跑 `python tools/fetch-refs.py egs/<slug>`，脚本下载并把 sha256 写回 yaml
+2. 跑 `uv run tools/fetch-refs.py egs/<slug>`，脚本下载并把 sha256 写回 yaml
 3. 同步 `INDEX.md`（人类视图，加一行表格）
 4. `git add` 两份 INDEX.yaml + 两份 INDEX.md，commit
 

@@ -3,8 +3,9 @@
 # Single source of truth for dataset paper / datasheet PDFs.
 # PDFs are gitignored; download via:
 #
-#     pip install -r tools/requirements-fetch.txt
-#     python tools/fetch-refs.py egs/<<NAME>>
+#     uv run tools/fetch-refs.py egs/<<NAME>>
+#
+# (uv reads the PEP 723 inline metadata block in tools/fetch-refs.py.)
 #
 # Schema and conventions: same as refs/notes/papers/INDEX.yaml.
 

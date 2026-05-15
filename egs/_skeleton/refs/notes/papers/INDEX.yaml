@@ -3,8 +3,10 @@
 # Single source of truth for the paper PDFs in this report. PDFs are
 # gitignored; download via:
 #
-#     pip install -r tools/requirements-fetch.txt
-#     python tools/fetch-refs.py egs/<<NAME>>
+#     uv run tools/fetch-refs.py egs/<<NAME>>
+#
+# (uv reads the PEP 723 inline metadata block in tools/fetch-refs.py and
+#  provisions PyYAML + jsonschema automatically — no manual pip install.)
 #
 # Schema: tools/schemas/refs-index.schema.json
 #

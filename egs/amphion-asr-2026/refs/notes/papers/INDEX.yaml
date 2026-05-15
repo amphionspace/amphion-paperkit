@@ -1,3 +1,25 @@
+# refs/notes/papers/INDEX.yaml
+#
+# Single source of truth for the audio LLM / ASR / benchmark paper PDFs that
+# back this report. PDFs are gitignored; download via:
+#
+#     uv run tools/fetch-refs.py egs/amphion-asr-2026
+#
+# (uv reads the PEP 723 inline metadata block in tools/fetch-refs.py and
+#  provisions PyYAML + jsonschema automatically — no manual pip install.)
+#
+# Schema: tools/schemas/refs-index.schema.json
+# - file   : filename relative to this directory; must end in .pdf
+# - url    : direct PDF download URL (arXiv: https://arxiv.org/pdf/<id>.pdf)
+# - sha256 : null on first add; tools/fetch-refs.py fills in after first
+#            download. Once filled, mismatches abort with MISMATCH.
+# - group  : kebab-case id; must match an entry in `groups` below.
+#
+# When adding a new paper: add a `papers` entry (sha256: null), run the fetch
+# script to download + verify, commit the yaml + corresponding INDEX.md sync.
+# (Note: PyYAML strips comments on rewrite — this header is restored manually
+# after the first sha256 backfill.)
+
 groups:
 - id: speech-llm-end-to-end
   title: 端到端 Audio LLM / Speech-LLM (直接对标)

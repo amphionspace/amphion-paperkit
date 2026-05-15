@@ -26,11 +26,10 @@ refs/
 
 ## PDF 下载
 
-PDF 不入 git。首次准备：
+PDF 不入 git。首次准备（推荐用 [uv](https://docs.astral.sh/uv/)，脚本依赖通过 PEP 723 inline metadata 声明，`uv run` 会自动建临时 venv）：
 
 ```bash
-pip install -r ../../tools/requirements-fetch.txt
-python ../../tools/fetch-refs.py egs/amphion-asr-2026
+uv run ../../tools/fetch-refs.py egs/amphion-asr-2026
 ```
 
 行为：
@@ -45,7 +44,7 @@ python ../../tools/fetch-refs.py egs/amphion-asr-2026
 ## 加新论文 / 数据集
 
 1. 编辑对应 `INDEX.yaml`：在 `papers:` 节加一条 entry，`sha256: null` 待回填。
-2. 跑 `python tools/fetch-refs.py egs/amphion-asr-2026`，脚本下载并把 sha256 写回 yaml。
+2. 跑 `uv run tools/fetch-refs.py egs/amphion-asr-2026`，脚本下载并把 sha256 写回 yaml。
 3. 同步 `INDEX.md`：手工加一行表格（同 yaml 元数据）。
 4. `git add` 两份 INDEX.yaml + 两份 INDEX.md，commit。
 

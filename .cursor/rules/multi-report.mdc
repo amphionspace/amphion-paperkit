@@ -13,7 +13,7 @@ See AGENTS.md rule 8 for the same content in 协作规范 form.
 
 Before editing any `.tex` / `.bib` / figure / config file, identify which of these three layers it lives in:
 
-1. Public capability — `template/`, `figures/_palette.tex`, `figures/architecture-skeleton.tex`, top-level `references.bib`, `tools/` (including `tools/fetch-refs.py`, `tools/schemas/`, `tools/requirements-fetch.txt`), `.github/workflows/`, `LICENSE`, top-level `README.md`, `AGENTS.md`, `.cursor/rules/` (including `.cursor/rules/_sources.md`), `egs/_skeleton/`. Changes here affect every active report.
+1. Public capability — `template/`, `figures/_palette.tex`, `figures/architecture-skeleton.tex`, top-level `references.bib`, `tools/` (including `tools/fetch-refs.py` with its PEP 723 inline metadata block and `tools/schemas/`), `.github/workflows/`, `LICENSE`, top-level `README.md`, `AGENTS.md`, `.cursor/rules/` (including `.cursor/rules/_sources.md`), `egs/_skeleton/`. Changes here affect every active report.
 2. Single report — anything under a specific `egs/<slug>/` (other than that slug's own `latexmkrc`). Changes here affect exactly one report.
 3. Repo root meta — `latexmkrc`, `.gitignore`, `LICENSE_arxiv-style.txt`. Treat like the public layer.
 
