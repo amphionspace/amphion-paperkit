@@ -9,7 +9,7 @@
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
 
 % ----------------------------------------------------------------
-% Colour palette -- mirrors figures/_palette.tex (AGENTS.md rule 1).
+% Inline palette -- mirrors figures/_palette.tex (AGENTS.md rule 1).
 % Kept inline so this figure compiles stand-alone from this folder
 % regardless of TEXINPUTS, matching figures/architecture.tex.
 % ----------------------------------------------------------------
@@ -27,69 +27,70 @@
 \definecolor{cBound}{HTML}{ECDFD3}
 \definecolor{cBoundB}{HTML}{9C7558}
 
-\newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\faFire}}
+% ----------------------------------------------------------------
+% Column widths for the four-column row layout.  Tuned so that the
+% bands align flush across all five rows, fit within ~14.5 cm body
+% width, and leave the icon column wide enough for \Huge fontawesome
+% glyphs without clipping.
+% ----------------------------------------------------------------
+\newlength{\colIcon}\setlength{\colIcon}{1.30cm}
+\newlength{\colName}\setlength{\colName}{3.85cm}
+\newlength{\colDesc}\setlength{\colDesc}{5.10cm}
+\newlength{\colPrompt}\setlength{\colPrompt}{3.95cm}
 
 \tikzset{
-  brandstrip/.style ={draw, rounded corners=3pt, align=center,
-                     fill=cLLM, draw=cLLMB, line width=0.85pt,
-                     minimum width=15.4cm, minimum height=0.95cm,
-                     font=\normalsize},
-  capcard/.style   ={draw=cBoundB!70, rounded corners=4pt,
-                     line width=0.7pt, fill=cAudio!55,
-                     minimum width=4.85cm, minimum height=3.3cm,
-                     inner sep=7pt},
+  caprow/.style    ={draw=cBoundB!65, rounded corners=3pt,
+                     line width=0.6pt, fill=cAudio!50,
+                     inner sep=6pt, inner ysep=8pt,
+                     text width=15.0cm,
+                     minimum height=1.05cm},
 }
 
-% --- card-internal helpers (no boxes, just stacked typography) ---
-\newcommand{\bigicon}[1]{{\Huge\color{cLLMB!85!black}#1}}
-\newcommand{\captitle}[1]{{\bfseries\small\color{cLLMB!85!black}#1}}
-\newcommand{\capdesc}[1]{{\scriptsize\color{black!70}#1}}
-\newcommand{\promptline}[1]{%
-  {\scriptsize\ttfamily\color{cAdpB!90!black}\textgreater\textgreater~#1}%
-}
-
-% Body of a capability card -- packed inside a minipage so the inner
-% \\ line breaks do not collide with TikZ's node-level row parser.
-\newcommand{\capbody}[4]{%
-  \begin{minipage}[c]{4.3cm}\centering%
-    \bigicon{#1}\\[6pt]%
-    \captitle{#2}\\[4pt]%
-    \capdesc{#3}\\[7pt]%
-    \promptline{#4}%
+% Body of one capability row -- four side-by-side minipages so the
+% icon / name / description / prompt-key columns line up across
+% every row.  Vertical centering keeps a 2-line description from
+% pushing the icon out of alignment.
+\newcommand{\caprow}[4]{%
+  \begin{minipage}[c]{\colIcon}\centering%
+    {\Huge\color{cLLMB!85!black}#1}%
+  \end{minipage}%
+  \hspace{0.05cm}%
+  \begin{minipage}[c]{\colName}\raggedright%
+    {\bfseries\small\color{cLLMB!85!black}#2}%
+  \end{minipage}%
+  \hspace{0.05cm}%
+  \begin{minipage}[c]{\colDesc}\raggedright%
+    {\footnotesize\color{black!72}#3}%
+  \end{minipage}%
+  \hspace{0.05cm}%
+  \begin{minipage}[c]{\colPrompt}\raggedright%
+    {\scriptsize\ttfamily\color{cAdpB!90!black}\textgreater\textgreater~#4}%
   \end{minipage}%
 }
 
 \begin{document}
-\begin{tikzpicture}[node distance=0.55cm and 0.55cm]
+\begin{tikzpicture}[node distance=0.22cm]
 
-  % AmphionASR brand strip -----------------------------------------
-  \node[brandstrip] (brand) {%
-    \fireIcon~~\textbf{AmphionASR}~---~one LLM prompt, five Mandarin--English ASR capabilities%
-  };
-
-  % Row 1: (i), (ii), (iii) ----------------------------------------
-  \node[capcard, below=0.85cm of brand.south west, anchor=north west] (c1)
-    {\capbody{\faGlobe}{Mandarin--English ASR}
-             {monolingual transcription\\with a language hint}
-             {Language: en | zh}};
-  \node[capcard, right=of c1] (c2)
-    {\capbody{\faRetweet}{Code-switching}
-             {Mandarin and English\\in one utterance}
-             {(no extra prompt)}};
-  \node[capcard, right=of c2] (c3)
-    {\capbody{\faTag}{Hotword Biasing}
-             {rare entities supplied\\through a hotword list}
-             {Hotwords: h1, h2, \ldots}};
-
-  % Row 2: (iv), (v) -- inset to centre under the brand strip ------
-  \node[capcard, below=0.6cm of c1.south, anchor=north west, xshift=2.7cm] (c4)
-    {\capbody{\faUserCheck}{Target Speaker}
-             {select one speaker via\\a 3--5\,s enrollment clip}
-             {Voice: \textless enroll\textgreater}};
-  \node[capcard, right=of c4] (c5)
-    {\capbody{\faVolumeUp}{Noise Robustness}
-             {robust to noise, RIR\\and competing speakers}
-             {(no extra prompt)}};
+  \node[caprow] (r1)
+    {\caprow{\faGlobe}{Mandarin--English ASR}
+            {Monolingual transcription with a language hint.}
+            {Language: en | zh}};
+  \node[caprow, below=of r1] (r2)
+    {\caprow{\faRetweet}{Code-switching}
+            {Mandarin and English mixed within one utterance.}
+            {(no extra prompt)}};
+  \node[caprow, below=of r2] (r3)
+    {\caprow{\faTag}{Hotword biasing}
+            {Rare entities supplied as a prompt-side hotword list.}
+            {Hotwords: h1, h2, \ldots}};
+  \node[caprow, below=of r3] (r4)
+    {\caprow{\faUserCheck}{Target speaker}
+            {3--5\,s enrollment selects one speaker from a mixture.}
+            {Voice: \textless enroll\textgreater}};
+  \node[caprow, below=of r4] (r5)
+    {\caprow{\faVolumeUp}{Noise robustness}
+            {Robust to additive noise, RIR and competing speakers.}
+            {(no extra prompt)}};
 
 \end{tikzpicture}
 \end{document}

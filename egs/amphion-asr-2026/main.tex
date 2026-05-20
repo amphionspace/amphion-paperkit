@@ -54,14 +54,12 @@
   \centering
   \includegraphics[width=\linewidth]{figures/capabilities.pdf}
   \caption{AmphionASR exposes five production-oriented Mandarin--English
-    ASR capabilities through a single LLM prompt. The first row covers
-    monolingual transcription with a language hint, intra-utterance
-    Mandarin--English code-switching, and prompt-driven hotword biasing
-    where rare entities are supplied as a list. The second row covers
-    target-speaker recognition, gated by a 3--5\,s enrollment utterance,
-    and robustness to additive noise, room-impulse-response reverberation
-    and competing-speaker interference. Each card lists the prompt key
-    that activates the capability; quantitative results are reported in
+    ASR capabilities through a single LLM prompt. Each row names one
+    capability, describes its input or selection condition, and shows
+    the prompt key (right column, typewriter font) that activates the
+    capability at inference time; rows without a key inherit the plain
+    transcription prompt and are handled implicitly by the model.
+    Quantitative results are reported in
     Sections~\ref{sec:experiments}--\ref{sec:noise}.}
   \label{fig:teaser}
 \end{figure}
