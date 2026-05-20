@@ -188,6 +188,50 @@ Noise（[09_noise_robustness.tex](../../sections/09_noise_robustness.tex)）：c
 
 `pre-training` / `supervised fine-tuning (SFT)` / `LoRA-adapted`。模块训练态用 `frozen` / `trainable` / `LoRA-adapted`（仿 Phi-4-MM §2.2.1 p.4 三选一标记）。
 
+### 8.5 第三方工具的内部抽象 / API 不出现在正文
+
+paper 正文中描述数据 / 训练 / 评测时，**不要使用第三方工具特定的内部抽象 / class 名 / API 名**。这是 [AGENTS.md 规则 4](../../../AGENTS.md)（不写实现细节）在第三方工具语境下的延伸：工具内部对象命名暴露在正文会让 paper 读起来像 SDK 使用手册，而不是研究报告。
+
+理据：16 篇 corpus 中 Kimi-Audio §3 / Voxtral §3 / Step-Audio 2 §3 描述数据时**没有一篇**写"using X library's Y abstraction"；它们要么直接描述数据规模与构成，要么把工程依赖收敛到 Acknowledgments / 一句话陈述（"we use Lhotse for data preparation"）。把 `recordings / supervisions / cuts` 这类 Lhotse 内部 class 命名当正文术语用，等于把数据章写成了 Lhotse tutorial 章，是典型"不专业"信号。
+
+| 不要写 | 改写成 |
+| --- | --- |
+| Lhotse's recordings / supervisions / cuts abstraction | 不需要解释数据格式；直接描述"the training mixture" |
+| organise data via Lhotse's mux operator | uniform multiplexing across data sources |
+| the synthesised TS-ASR cut set | the synthesised TS-ASR training set |
+| $\sim$3\,M positive cuts | $\sim$3\,M positive examples |
+| supervision-level language tag | per-utterance language tag |
+| shuffling cuts across recordings, supervisions, augmentation pools | shuffling examples across audio corpora, transcript annotations, augmentation pools |
+| Lhotse as the unifying data abstraction | Lhotse for unified data preparation |
+| an (icefall-style) decoder | the offline batch decoder |
+| PyTorch's DataLoader workers | data-loading workers |
+| SpeechBrain's DynamicItemDataset | an on-the-fly augmented dataset |
+| HuggingFace Trainer / Accelerate state-dict | the training framework's checkpoint state |
+| ESPnet's recipe stages | the training recipe |
+
+允许 / 鼓励：
+
+- 在 Related Work / Methods 中**陈述工程栈依赖**（"we rely on Lhotse / Emilia / MUSAN / SLR26 / SLR28"）并 cite —— 这是 paper 标准做法，仿 [02_related_work.tex](../../sections/02_related_work.tex) 现有 "Data infrastructure for SpeechLLMs" 段、Kimi-Audio §6、Voxtral §1
+- 已发表方法 / 系统名（LoRA / ZeRO-2 / GRPO / vLLM / ms-swift / DeepSpeed）—— 这些已落在 [AGENTS.md 规则 4](../../../AGENTS.md) 允许列表，本规则不重复约束
+- 公开数据集 key（LibriSpeech / GigaSpeech / FLEURS）—— 与 AGENTS.md 规则 4 允许列表一致
+- 概念性词如 `pipeline` / `manifest` / `registry` / `harness` —— 它们是通用工程概念词，非特定工具 API 名
+
+判定边界（不确定时的判据）：
+
+1. 该术语是否是某个开源库的 class / function / submodule 命名？（例：Lhotse `CutSet`、Lhotse `mux`、PyTorch `DataLoader`）→ 不要在正文出现
+2. 该术语是否是该工具特有的、文档之外读者难以解析的字眼？（例：`(icefall-style)` 隐含 K2/icefall 的 recipe 结构）→ 不要在正文出现
+3. 该术语是否是领域通用词，多个工具 / 多个工程实现都会用？（例：`mini-batch`、`data loader`、`augmentation pipeline`、`tokenizer`、`encoder`）→ 可以写
+
+### 触发：每次写 `*.tex` 后
+
+写完任何 `sections/*.tex` 后，除了跑 [`tools/fact-check-regex.sh`](../../../tools/fact-check-regex.sh)（[AGENTS.md 规则 4](../../../AGENTS.md) 触发器），还要 grep 第三方工具 class / API 名残留：
+
+```bash
+rg -n "Lhotse's|cut set|cuts abstraction|positive cuts|supervision-level|mux operator|icefall-style|DataLoader workers|DynamicItemDataset|recordings, supervisions" egs/amphion-asr-2026/sections/
+```
+
+命中即需改写。
+
 ## 9. 卖点对照（每条卖点必须给与同类系统的差异化）
 
 公共层 paper-writing.mdc §1 规定 "one ping told as a story"。本报告有三个卖点，每个在 sections 中必须给「与具体同类系统的差异化句」。

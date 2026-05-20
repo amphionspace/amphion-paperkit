@@ -23,7 +23,7 @@ reference utterance the model transcribes only the matching
 speaker in mixed audio (\textbf{13.06}\,\% MER on our internal
 hot+TS test set), with explicit anti-hallucination training that
 keeps the decoder silent when the requested speaker is absent.
-\emph{(iii)~Noise robustness.} Every target-speaker training cut
+\emph{(iii)~Noise robustness.} Every target-speaker training example
 already passes through reverberation, additive noise (MUSAN
 \cite{snyder2015musan}, AudioSet road-traffic) and
 competing-speaker interference; an additional noise-robustness SFT

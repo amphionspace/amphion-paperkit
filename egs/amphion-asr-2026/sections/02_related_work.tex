@@ -65,16 +65,17 @@ report TALCS test-set MER as one of our headline numbers.
 
 \paragraph{Data infrastructure for SpeechLLMs.}
 Building a multi-task SpeechLLM involves shuffling tens of millions of
-heterogeneous cuts across recordings, supervisions, augmentation
-pools and on-the-fly synthesis. We rely on
-Lhotse~\cite{zelasko2021lhotse} as the unifying data abstraction, on
-Emilia~\cite{he2024emilia} (DNSMOS-filtered \cite{reddy2021dnsmos}) as
-our primary in-the-wild Mandarin / English source, on
-MUSAN~\cite{snyder2015musan} for additive noise and music, and on the
-SLR26 / SLR28 RIR releases that accompany the augmentation study of
-\cite{ko2017studyrir} for room-impulse-response convolution. These
-choices match the practice of recent open SpeechLLM releases and let
-us re-use the standard recipes shipped in those projects.
+heterogeneous training examples drawn from diverse audio corpora,
+transcript annotations, augmentation pools and on-the-fly synthesis.
+We rely on Lhotse~\cite{zelasko2021lhotse} for unified data
+preparation, on Emilia~\cite{he2024emilia} (DNSMOS-filtered
+\cite{reddy2021dnsmos}) as our primary in-the-wild Mandarin /
+English source, on MUSAN~\cite{snyder2015musan} for additive noise
+and music, and on the SLR26 / SLR28 RIR releases that accompany the
+augmentation study of \cite{ko2017studyrir} for room-impulse-response
+convolution. These choices match the practice of recent open
+SpeechLLM releases and let us re-use the standard recipes shipped
+in those projects.
 
 \paragraph{Positioning.}
 Compared with general-purpose audio LLMs, AmphionASR is narrower in
