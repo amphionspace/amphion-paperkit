@@ -20,9 +20,14 @@ and maps Arabic numerals to their Mandarin equivalents before CER.
 For TALCS we apply the union of the two normalizers and report MER.
 
 \paragraph{Baselines.}
-We compare against Whisper-large-v3 \cite{radford2023whisper}, the
-open-source Qwen3-ASR-1.7B \cite{qwen2025qwen3asr}, and any prior
-in-house checkpoint where available.
+We compare AmphionASR against Whisper-large-v3
+\cite{radford2023whisper} and the open-source Qwen3-ASR-1.7B
+\cite{qwen2025qwen3asr}. Both baselines will be re-run through the
+normalizers in this section so the numbers in
+Tables~\ref{tab:asr_en}--\ref{tab:asr_cs} are directly comparable;
+until that re-run lands, the baseline columns are reported as
+``?'' and the discussion below refers only to the AmphionASR
+column.
 % TODO: confirm baseline numbers come from "we re-ran" or
 % "as reported in [cite]"; populate the Whisper / Qwen3-ASR-1.7B columns
 % accordingly. Until then those columns are left blank.
@@ -47,12 +52,12 @@ Section~\ref{sec:training}.
     \toprule
     Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR} \\
     \midrule
-    LibriSpeech \texttt{test-clean}   & 2{,}620  & ? & ? & \textbf{7.17} \\
-    LibriSpeech \texttt{test-other}   & 2{,}939  & ? & ? & \textbf{11.25} \\
-    GigaSpeech                        & 19{,}930 & ? & ? & \textbf{21.84} \\
-    MLS English                       & 3{,}769  & ? & ? & \textbf{15.90} \\
-    CommonVoice 17 en                 & 16{,}402 & ? & ? & \textbf{10.12} \\
-    FLEURS en                         & 647      & ? & ? & \textbf{30.47} \\
+    LibriSpeech \texttt{test-clean}   & 2{,}620  & ? & ? & \textbf{1.82} \\
+    LibriSpeech \texttt{test-other}   & 2{,}939  & ? & ? & \textbf{3.78} \\
+    GigaSpeech                        & 19{,}930 & ? & ? & \textbf{9.45} \\
+    MLS English                       & 3{,}769  & ? & ? & \textbf{6.46} \\
+    CommonVoice 17 en                 & 16{,}402 & ? & ? & \textbf{8.14} \\
+    FLEURS en                         & 647      & ? & ? & \textbf{5.53} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -67,16 +72,16 @@ Section~\ref{sec:training}.
     \toprule
     Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR} \\
     \midrule
-    AISHELL-1                          & 7{,}176  & ? & ? & \textbf{1.80} \\
-    AISHELL-2                          & 5{,}000  & ? & ? & \textbf{3.00} \\
-    AISHELL-3                          & 24{,}773 & ? & ? & \textbf{2.58} \\
-    MagicData                          & 24{,}279 & ? & ? & \textbf{4.93} \\
-    KeSpeech                           & 19{,}723 & ? & ? & \textbf{6.72} \\
-    THCHS-30                           & 2{,}495  & ? & ? & \textbf{3.99} \\
-    CommonVoice 17 zh                  & 10{,}647 & ? & ? & \textbf{6.57} \\
-    WenetSpeech test-net               & 24{,}774 & ? & ? & \textbf{10.67} \\
-    WenetSpeech test-meeting           & 8{,}370  & ? & ? & \textbf{10.38} \\
-    FLEURS zh                          & 945      & ? & ? & \textbf{15.99} \\
+    AISHELL-1                          & 7{,}176  & ? & ? & \textbf{1.85} \\
+    AISHELL-2                          & 5{,}000  & ? & ? & \textbf{2.89} \\
+    AISHELL-3                          & 24{,}773 & ? & ? & \textbf{2.72} \\
+    MagicData                          & 24{,}279 & ? & ? & \textbf{2.10} \\
+    KeSpeech                           & 19{,}723 & ? & ? & \textbf{6.45} \\
+    THCHS-30                           & 2{,}495  & ? & ? & \textbf{3.87} \\
+    CommonVoice 17 zh                  & 10{,}647 & ? & ? & \textbf{6.00} \\
+    WenetSpeech test-net               & 24{,}774 & ? & ? & \textbf{5.94} \\
+    WenetSpeech test-meeting           & 8{,}370  & ? & ? & \textbf{6.99} \\
+    FLEURS zh                          & 945      & ? & ? & \textbf{3.38} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -91,16 +96,30 @@ Section~\ref{sec:training}.
     \toprule
     Test set & $n$ & Whisper-large-v3 & Qwen3-ASR-1.7B & \textbf{AmphionASR} \\
     \midrule
-    TALCS test                         & 15{,}000 & ? & ? & \textbf{14.99} \\
+    TALCS test                         & 15{,}000 & ? & ? & \textbf{7.48} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \paragraph{Discussion.}
-% TODO: write 1--2 paragraphs once baseline columns are filled in.
-% Likely talking points:
-%   - Strong Mandarin (single-digit CER on most sets, including
-%     AISHELL-1 at 1.80% which is competitive with the field).
-%   - English is acceptable but FLEURS-en is high (30.47%), which we
-%     return to in Section~\ref{sec:analysis}.
-%   - TALCS at 14.99% MER positions us well on bilingual code-switching.
+On the Mandarin grid AmphionASR reaches single-digit CER on every
+test set. AISHELL-1 at $1.85$\,\% CER is the headline data point on
+read speech, the AISHELL-2/3 and MagicData sets sit at
+$2$--$3$\,\% CER, and the spontaneous WenetSpeech subsets and the
+read-but-broad-domain FLEURS~zh now also fall under $7$\,\% CER
+(WenetSpeech test-net $5.94$\,\%, test-meeting $6.99$\,\%,
+FLEURS~zh $3.38$\,\%). KeSpeech at $6.45$\,\% CER is the worst
+Mandarin point and corresponds to the multi-dialect mixture inside
+that benchmark, which we consider the natural residual.
+% TODO: cite Seed-ASR / Qwen3-ASR FLEURS numbers in this paragraph
+% once we have re-run them on the same normalizer.
+
+On the English grid the model is competitive on the read-speech
+LibriSpeech sets ($1.82 / 3.78$\,\% WER on
+test-clean/test-other), on FLEURS~en ($5.53$\,\% WER), on MLS
+($6.46$\,\% WER) and on CommonVoice~17 ($8.14$\,\% WER), with
+GigaSpeech at $9.45$\,\% WER as the worst English point and
+corresponding to the more spontaneous broadcast / interview domain
+inside that benchmark. On the Mandarin--English code-switching
+TALCS test set we reach $7.48$\,\% MER, summarising a setting in
+which both languages must be produced inside the same utterance.

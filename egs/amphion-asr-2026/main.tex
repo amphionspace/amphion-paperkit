@@ -17,9 +17,9 @@
   pdfauthor={Amphion ASR Team},
   pdfkeywords={Speech Recognition, SpeechLLM, LLM-based ASR,
                Personalised ASR, Industrial-Grade ASR, Production ASR,
-               Hotword Biasing, Contextual Biasing, Target Speaker ASR,
+               Hotword Biasing, Contextual Biasing, Target-Speaker ASR,
                Noise Robustness, Code-switching, Mandarin-English ASR,
-               Qwen3, Qwen3-AuT, Multimodal Boundary Prompt},
+               Qwen3, Modality Boundary Prompt},
 }
 
 % --- Title, author, affiliation, abstract -----------------------------------
@@ -55,13 +55,13 @@
   \includegraphics[width=\linewidth]{figures/architecture.pdf}
   \caption{AmphionASR architecture. The audio branch (left) maps a
     16\,kHz waveform through a Whisper-style log-mel front-end, a
-    convolutional sub-sampler, the Qwen3-AuT 24-layer Transformer
-    encoder, and a Linear--SwooshR--Linear projector to the LLM's
-    2560-dimensional hidden space. The text branch (right) tokenizes
+    convolutional sub-sampler, a 24-layer Whisper-style Transformer
+    encoder and a lightweight modality projector into the LLM's
+    2560-dimensional hidden space. The text branch (right) tokenises
     the chat template and replaces four special boundary tokens with
-    learnable prompt vectors. The two streams meet at a merge step that
-    substitutes the \texttt{<speech>} placeholder with the audio
-    embedding sequence, after which Qwen3-4B-Instruct-2507 performs
+    learnable prompt vectors. The two streams meet at a merge step
+    that substitutes the \texttt{<speech>} placeholder with the
+    audio embedding sequence, after which Qwen3-4B-Instruct performs
     next-token prediction on the assistant span only. See
     Section~\ref{sec:model} for component-level details.}
   \label{fig:teaser}

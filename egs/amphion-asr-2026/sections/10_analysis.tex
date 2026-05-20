@@ -4,83 +4,74 @@
 This section consolidates cross-cutting observations that did not fit
 naturally inside any single capability section.
 
-\subsection{Headline-WER Failure Mode: FLEURS-en}
+\subsection{Worst-Slice WER on the Headline Grid}
 
-Among the English benchmarks in Table~\ref{tab:asr_en}, FLEURS-en
-stands out at $30.47$\% WER -- substantially higher than CommonVoice-en
-($10.12$\%) and the LibriSpeech sets. FLEURS uses prompted-read speech
-of factual sentences across many languages; the gap is consistent with
-two well-known phenomena
-% TODO: verify the breakdown by qualitatively inspecting a sample of
-% FLEURS-en errors before keeping these explanations in the final
-% version.
-\begin{enumerate}
-  \item the English slice of FLEURS contains a high density of named
-        entities (toponyms, agencies) that are rare in our training
-        mix, which would also explain why the hotword path closes most
-        of this gap (see CV17-en hotword results,
-        Section~\ref{sec:hotwords});
-  \item FLEURS reference texts mix punctuation conventions that our
-        normalizer does not fully canonicalise.
-\end{enumerate}
-The next training iteration will (i)~increase coverage of read,
-factual English to address the first effect and (ii)~align the FLEURS
-text-normalization protocol with the Whisper normalizer used by recent
-audio-LLM reports.
+In the English grid of Table~\ref{tab:asr_en} the worst single
+point is GigaSpeech at $9.45$\,\% WER -- a more spontaneous
+broadcast / interview test set than the LibriSpeech / FLEURS /
+CommonVoice rows around it. FLEURS-en, which earlier revisions of
+this report flagged as a $30$\,\%-WER failure mode, now sits at
+$5.53$\,\% WER, aligned with the other read-speech English
+benchmarks. On the Mandarin grid (Table~\ref{tab:asr_zh}) the
+worst point is KeSpeech at $6.45$\,\% CER, corresponding to the
+multi-dialect mixture inside that benchmark. We treat the
+GigaSpeech and KeSpeech rows as the natural residual on read-style
+and dialect-style data respectively rather than as failure modes,
+and reserve a controlled error-type breakdown for the next
+iteration.
 
-\subsection{Hotword Curve: Why Five}
+\subsection{Hotword Curve: Oracle vs.\ Retrieve Operating Points}
 \label{subsec:why-five}
 
-Section~\ref{sec:hotwords} showed that the optimal in-prompt hotword
-count is around five. We attribute this to two competing effects:
-
-\begin{itemize}
-  \item \emph{Recall effect.} Each true-positive hotword in the prompt
-        is, in expectation, an additional rare term the model can
-        ``snap'' to. This effect saturates quickly because the typical
-        utterance contains at most one or two rare entities.
-  \item \emph{False-trigger effect.} Each distractor hotword is a
-        candidate insertion / substitution that the model must
-        \emph{not} commit to. The risk grows roughly linearly with
-        list length.
-\end{itemize}
-
-Below five, the recall effect dominates; above five, the false-trigger
-effect catches up.
-% TODO: support this story with an empirical decomposition into
-% insertion vs. substitution errors per k; the data is in the eval
-% logs but is not yet plotted.
+Section~\ref{sec:hotwords} reports two distinct operating points
+along the prompt-driven hotword axis. In the \emph{oracle prompt}
+protocol (random padding), the prompt-size that minimises CER /
+WER on CommonVoice~17 is around five (Mandarin) or ten (English),
+with a small non-monotonic upturn past those points; the upturn is
+the gap between random padding at evaluation time and hard-negative
+padding during Stage~3 training, but is small enough that a single
+operating point in the $5$--$10$ range covers both languages. In
+the \emph{retrieve client} protocol the operating point is fixed
+by the retriever's own discriminative behaviour: Mandarin saturates
+near Recall@$K \approx 95\%$ from $K = 10$ onwards, and English
+plateaus near Recall@$K \approx 78\%$ at $K = 20$. The
+Mandarin / English asymmetry is the difference between the pinyin
+and content-word matching channels at the same pool size; a
+mechanistic decomposition into recall versus false-trigger
+contributions is not yet available and is left to future work.
 
 \subsection{Libri2Mix vs Internal TS-ASR}
 
-The gap between $14.29$\% MER on the internal target-speaker test and
-$65.83$\% WER on Libri2Mix is the most important open issue in this
-release. Section~\ref{sec:tsasr} narrows the suspect list down to a
-distributional mismatch in overlap fraction, SNR distribution and the
-training-time RIR application rate; the planned ablation -- one
-training epoch with overlap drawn uniformly from $[0.5, 1.0]$, plus
-inference with RIR disabled -- will be the cheapest way to attribute
-the gap before the next training iteration.
+The gap between $13.06$\,\% MER on the internal target-speaker
+test and $66.14$\,\% WER on Libri2Mix is the most important open
+issue in this release. The underlying cause has not been diagnosed
+and a controlled ablation against the LibriMix protocol is on the
+agenda for the next training iteration
+(Section~\ref{sec:limitations}).
 
 \subsection{Inherited Failure Modes}
 
 LLM-based ASR is known to inherit characteristic LLM failure modes
-\cite{radford2023whisper, chu2023qwenaudio}. We have observed (and the
-next release will measure):
+\cite{radford2023whisper, chu2023qwenaudio}; the next release will
+measure how strongly each of the following manifests in
+AmphionASR:
 
 \begin{itemize}
   \item Repetition loops on long silences or stationary noise. The
         noise-only negative branch of the TS-ASR pipeline
-        (Section~\ref{subsec:tsasr-synth}) explicitly trains the model
-        to terminate on silence under the TS prompt; we have not yet
-        confirmed whether the same protection transfers to the
-        plain-ASR prompt without further work
-        (Section~\ref{sec:noise}).
-  \item Language drift on Mandarin--English code-switching, where short
-        English phrases inside a Mandarin utterance can be ``corrected''
-        into Mandarin transcriptions of similar-sounding words;
-  \item Occasional over-bias on supplied hotwords when the audio does
-        not actually contain the term (see
+        (Section~\ref{subsec:tsasr-synth}) explicitly trains the
+        model to terminate on silence under the target-speaker
+        prompt. The v3-NR variant of Section~\ref{subsec:v3nr}
+        extends this exposure to the plain-ASR branch with a
+        controlled noise grid; a per-condition qualitative
+        breakdown of residual repetition-loop behaviour is left to
+        future work.
+  \item Language drift on Mandarin--English code-switching, where
+        short English phrases inside a Mandarin utterance can be
+        ``corrected'' into Mandarin transcriptions of
+        similar-sounding words.
+  \item Occasional over-bias on supplied hotwords when the audio
+        does not actually contain the term (see
         Section~\ref{subsec:why-five}).
 \end{itemize}
 % TODO: include a small qualitative table of one example per failure

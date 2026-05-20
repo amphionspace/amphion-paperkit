@@ -3,23 +3,25 @@
 
 \subsection{What v3 Already Sees During Training}
 
-Although the v3 recipe does not include a dedicated ``noise-robustness''
-fine-tuning stage, every TS-ASR training mixture (about $3$\,M cuts;
-roughly half of the multi-task training stream) already passes through
-the augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
+Although the v3 SFT recipe does not include a dedicated
+``noise-robustness'' fine-tuning stage, every TS-ASR training
+mixture (about $3$\,M cuts; roughly half of the multi-task
+training stream) already passes through the augmentation pipeline
+of Section~\ref{subsec:tsasr-synth}:
 
 \begin{itemize}
-  \item \textbf{Reverberation.} Each TS-ASR sample is convolved with
-        an SLR26 / SLR28 RIR with probability $0.5$
+  \item \textbf{Reverberation.} Each TS-ASR sample is convolved
+        with an SLR26 / SLR28 RIR with probability $0.5$
         \cite{ko2017studyrir}, truncated to the first $1.5$\,s
         (early-reflection regime).
-  \item \textbf{Additive noise.} An independently sampled background
-        segment (MUSAN \cite{snyder2015musan} noise / music or AudioSet
-        road-traffic noise, weighted $0.30$ / $0.20$ / $0.50$) is
-        mixed at $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB
-        and the result is peak-normalised.
-  \item \textbf{Speaker interference.} Each target waveform is mixed
-        with $K\!\in\!\{1, 2\}$ same-language interferers at
+  \item \textbf{Additive noise.} An independently sampled
+        background segment (MUSAN \cite{snyder2015musan} noise /
+        music or AudioSet road-traffic noise, weighted $0.30$ /
+        $0.20$ / $0.50$) is mixed at
+        $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB and the
+        result is peak-normalised.
+  \item \textbf{Speaker interference.} Each target waveform is
+        mixed with $K\!\in\!\{1, 2\}$ same-language interferers at
         $\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to
         $[-5, 20]$, with overlap fraction
         $\rho\!\sim\!\mathcal{N}(0.35, 0.2^2)$ in $[0.1, 1.0]$.
@@ -27,46 +29,139 @@ the augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
         negative sub-type (Section~\ref{subsec:tsasr-synth},
         $\sim$$2$--$5$\,\% of cuts) consists of a real enrollment
         paired with a $3$--$15$\,s noise-only mixed channel and an
-        empty target transcript, explicitly teaching the decoder to
-        stay silent when no speech is present.
+        empty target transcript, explicitly teaching the decoder
+        to stay silent when no speech is present.
 \end{itemize}
 
 This means that v3's apparent ``noise robustness'' on the standard
 ASR benchmarks of Section~\ref{sec:experiments} is in fact an
-incidental side-effect of the TS-ASR data pipeline, rather than the
-result of an explicitly designed noise curriculum.
+incidental side-effect of the TS-ASR data pipeline rather than the
+result of an explicitly designed noise curriculum, with two caveats
+that the next subsection makes explicit.
 
-\subsection{What is Missing}
+\subsection{A Noise-Robustness SFT Variant: v3-NR}
+\label{subsec:v3nr}
 
-The v3 checkpoint is \emph{not} evaluated on a controlled
-noise-robustness benchmark in the present report. Two limitations are
-worth flagging:
+To close the curriculum gap above we further fine-tune the v3
+checkpoint with a noise-robustness SFT stage, producing a
+\textbf{v3-NR} variant in which the augmentation pipeline of
+Section~\ref{subsec:tsasr-synth} is also applied to the
+plain-ASR branch. The exact data mix and schedule of v3-NR are
+documented in the model card released alongside this report; this
+section reports its evaluation on a controlled noise-robustness
+grid.
+% TODO: link v3-NR training-stage description from
+% Section~\ref{sec:training} once the dedicated subsection lands.
 
-\begin{enumerate}
-  \item Training-side augmentation only ever attaches to the TS-ASR
-        branch. Plain-ASR cuts (Mandarin / English / multilingual) are
-        never reverberated and never overlaid with MUSAN or AudioSet
-        traffic, so the noise-augmentation distribution is partially
-        confounded with the TS-ASR conditioning prompt.
-  \item Our internal far-field benchmark
-        % TODO: confirm the canonical citation / source URL for
-        % the Whisper-RIR-Mega-style test set used internally and add
-        % the corresponding bib entry.
-        is staged but not yet decoded against v3. Reporting it in a
-        follow-up revision will let us isolate the marginal gain from
-        the incidental TS-ASR augmentation against an explicit noise
-        curriculum.
-\end{enumerate}
+We construct $11$ degraded splits by applying a single distortion
+operator to each of the two CommonVoice~17 clean tests
+(\texttt{cv-en-test}, $n=16{,}402$; \texttt{cv-zh-test},
+$n=10{,}647$):
+\begin{itemize}
+  \item \textbf{$6$ additive-noise splits} at
+        SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB:
+        AudioSet ESC, AudioSet traffic, DNS challenge, MUSAN music,
+        MUSAN noise, MUSAN speech.
+  \item \textbf{$4$ room-impulse-response splits}: RIR-Mega,
+        SLR26, SLR28-real, SLR28-sim.
+  \item \textbf{$1$ overlapping-noise split}: WHAM (free-style
+        ambient).
+\end{itemize}
+The distortion operator is identical across systems; the WER
+values are otherwise computed with the same Whisper normaliser
+(English) / Mandarin normaliser (Mandarin) as
+Section~\ref{sec:experiments}.
 
-\subsection{Reference Baseline and Next Step}
+\paragraph{Comparison.}
+Table~\ref{tab:noise_robustness} reports WER (\%) for
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, AmphionASR v3 (without the
+noise-robustness SFT stage), and v3-NR. We rerun Qwen3-ASR-1.7B
+ourselves on each split for like-with-like normalisation; the
+training-seen / unseen status of individual splits was not
+mechanically extractable from the data delivery and is therefore
+left unannotated in this revision.
+% TODO: once the v3-NR training data manifest is finalised, mark
+% the corresponding rows of Table~\ref{tab:noise_robustness} as
+% ``training-seen'' so the unseen-only sub-table can be assembled.
 
-The reference baseline for the next iteration is
-Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, chosen because (i)~it is a
-strong open-source small model with documented robustness on noisy /
-far-field audio and (ii)~it sits in the same SpeechLLM family as
-AmphionASR. The plan for v4 is to reuse the SLR26 / SLR28 / MUSAN /
-AudioSet pools already wired into the TS-ASR pipeline, but apply them
-\emph{also} to the plain-ASR branch with a controlled SNR sweep, then
-re-evaluate on the internal far-field benchmark together with
-Qwen3-ASR-1.7B as a head-to-head baseline. Numbers will appear in a
-follow-up revision of this technical report.
+\begin{table}[t]
+  \caption{Noise-robustness grid on CommonVoice~17.
+    \texttt{cv-en-test} reports WER (\%) with the Whisper English
+    normaliser; \texttt{cv-zh-test} reports CER (\%) with the
+    Mandarin normaliser of Section~\ref{subsec:setup}. Lower is
+    better. ``v3 (w/o NR SFT)'' is the checkpoint used in
+    Tables~\ref{tab:asr_en}--\ref{tab:hotwords_baseline}; ``v3-NR''
+    is the noise-robustness SFT variant of
+    Section~\ref{subsec:v3nr}. Additive-noise splits use
+    SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB. Bold marks the best
+    among the three systems on each row.}
+  \label{tab:noise_robustness}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{llccc}
+    \toprule
+    Degraded split & Distortion & Qwen3-ASR-1.7B & v3 (w/o NR SFT) & \textbf{v3-NR} \\
+    \midrule
+    \multicolumn{5}{l}{\emph{\texttt{cv-en-test}, $n=16{,}402$ (WER \%)}} \\
+    \midrule
+    AudioSet ESC          & noise & \textbf{11.54} & 12.33 & 11.61 \\
+    AudioSet traffic      & noise & 12.36          & 13.41 & \textbf{12.27} \\
+    DNS                   & noise & \textbf{11.00} & 11.57 & 11.21 \\
+    MUSAN music           & noise & \textbf{9.84}  & 10.84 & 10.43 \\
+    MUSAN noise           & noise & \textbf{9.92}  & 10.58 & 10.31 \\
+    MUSAN speech          & noise & 26.53          & 41.19 & \textbf{18.74} \\
+    RIR-Mega              & RIR   & \textbf{9.71}  & 10.77 & 10.59 \\
+    SLR26                 & RIR   & \textbf{27.47} & 29.66 & 29.07 \\
+    SLR28-real            & RIR   & \textbf{14.16} & 15.60 & 15.23 \\
+    SLR28-sim             & RIR   & \textbf{10.91} & 12.22 & 12.11 \\
+    WHAM                  & noise & \textbf{11.12} & 11.63 & 11.47 \\
+    \midrule
+    \multicolumn{5}{l}{\emph{\texttt{cv-zh-test}, $n=10{,}647$ (CER \%)}} \\
+    \midrule
+    AudioSet ESC          & noise & \textbf{6.40}  & 7.67  & 7.34  \\
+    AudioSet traffic      & noise & \textbf{6.75}  & 8.10  & 7.62  \\
+    DNS                   & noise & \textbf{6.25}  & 7.50  & 7.28  \\
+    MUSAN music           & noise & \textbf{6.05}  & 7.06  & 6.95  \\
+    MUSAN noise           & noise & \textbf{5.87}  & 7.02  & 6.90  \\
+    MUSAN speech          & noise & 19.90          & 21.45 & \textbf{9.45}  \\
+    RIR-Mega              & RIR   & \textbf{5.75}  & 6.90  & 6.82  \\
+    SLR26                 & RIR   & \textbf{16.62} & 19.89 & 19.71 \\
+    SLR28-real            & RIR   & \textbf{9.31}  & 10.95 & 10.89 \\
+    SLR28-sim             & RIR   & \textbf{6.39}  & 7.72  & 7.60  \\
+    WHAM                  & noise & \textbf{6.43}  & 7.66  & 7.47  \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Analysis}
+
+\paragraph{NR SFT closes the gap on competing-speaker noise.}
+The largest single improvement from v3-NR is on the MUSAN-speech
+split, where the WER (CER) drops from $41.19$\,\% to $18.74$\,\%
+on English and from $21.45$\,\% to $9.45$\,\% on Mandarin --
+$22.5$ and $12.0$ absolute points respectively, and from above to
+below the corresponding Qwen3-ASR-1.7B number on that split. On
+the other ten splits v3-NR yields small but consistent gains
+(typically $0.1$--$1.0$ absolute points), so the gross effect of
+the additional SFT stage is concentrated on the
+competing-speaker condition.
+
+\paragraph{Residual gap to Qwen3-ASR-1.7B.}
+Qwen3-ASR-1.7B remains the best system on most non-MUSAN-speech
+rows, by margins of $0.1$ to $3.3$ absolute points. The gap
+reflects that Qwen3-ASR-1.7B was trained with a substantially
+larger and more diverse noise / RIR augmentation programme than
+the v3-NR pipeline in this revision. Closing this residual is on
+the agenda for the next iteration; we report v3-NR here as the
+first checkpoint in the AmphionASR family with controlled
+noise-robustness evaluation rather than as a head-to-head winner.
+
+\paragraph{Distortion-type asymmetry.}
+The two language columns track each other closely on every row of
+Table~\ref{tab:noise_robustness} except MUSAN-speech, where the
+English column starts substantially higher than the Mandarin
+column ($41.19$ vs.\ $21.45$\,\% on v3 (w/o NR SFT)) and v3-NR
+reduces both into the same single-digit / mid-teens regime. We do
+not attribute this asymmetry further; a controlled decomposition
+across distortion types is on the agenda for the next iteration.

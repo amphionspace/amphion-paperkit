@@ -11,23 +11,57 @@ those reported in Section~\ref{sec:experiments}.
 
 \paragraph{Open multi-talker benchmarks.}
 The v3 target-speaker path is substantially weaker on the public
-LibriMix test sets ($65.83$\% WER on Libri2Mix, $87.06$\% on Libri3Mix)
-than on our internal multi-talker set ($14.29$\% MER). The likely
-causes -- mismatch in overlap-fraction and SNR distribution between
-the synthesiser and the LibriMix mixtures, and a training-time RIR
-application rate that LibriMix does not see -- are documented in
-Section~\ref{sec:tsasr}, but until the next training iteration the
-public multi-talker numbers should be read as a known weakness, not a
-final result.
+LibriMix test sets ($66.14$\,\% WER on Libri2Mix, $86.71$\,\% on
+Libri3Mix) than on our internal multi-talker set
+($13.06$\,\% MER). The underlying cause has not been investigated;
+until the next training iteration the public multi-talker numbers
+should be read as a known weakness, not a final result.
 
-\paragraph{No explicit plain-ASR noise curriculum (yet).}
-The v3 recipe sees substantial noise / RIR / overlap augmentation
-through the TS-ASR branch (Section~\ref{sec:noise}) but never applies
-the same augmentation to the plain-ASR cuts. As a result, our
-``noise robustness'' on the plain-ASR benchmarks of
-Section~\ref{sec:experiments} is incidental, and we do not yet
-benchmark the model against Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on
-a controlled noisy / far-field test set.
+\paragraph{Plain-ASR noise curriculum: incidental in v3, controlled
+in v3-NR.}
+The v3 SFT recipe sees substantial noise / RIR / overlap
+augmentation through the TS-ASR branch
+(Section~\ref{sec:noise}) but does not apply the same augmentation
+to the plain-ASR cuts; the v3-NR variant of
+Section~\ref{subsec:v3nr} closes this gap by extending the same
+augmentation to the plain-ASR branch and is the checkpoint
+reported in Table~\ref{tab:noise_robustness}. Two follow-up items
+remain: (i)~the training-data manifest of v3-NR -- which splits
+were augmentation-seen versus unseen -- is not yet released in a
+machine-readable form, so the unseen-only sub-table of
+Section~\ref{subsec:v3nr} cannot yet be assembled; and
+(ii)~v3-NR still trails Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on
+ten of the twenty-two degraded rows in
+Table~\ref{tab:noise_robustness}, so closing the residual is on
+the agenda rather than declared resolved.
+% TODO: publish the v3-NR training manifest and rerun the
+% Section~\ref{subsec:v3nr} table with training-seen rows marked.
+
+\paragraph{Retrieve operator.}
+The retrieval operator of
+Section~\ref{subsec:retrieve-algorithm} has three known
+boundary-of-applicability assumptions:
+\begin{enumerate}
+  \item The CJK pronunciation channel is keyed on tone-stripped
+        Mandarin pinyin. Cantonese, Min, Hakka and the other
+        Mandarin dialects covered by KeSpeech are not supported by
+        this channel without replacing the pronunciation map; the
+        framework is unchanged but the syllable inventory is
+        Mandarin-only in this release.
+  \item The alphabetic route assumes a content-word / stop-word
+        decomposition that works for Indo-European languages. It
+        has not been validated for agglutinative (Turkish,
+        Finnish) or inflective languages, where the content-word
+        overlap signal may degenerate.
+  \item The text retrieval $r$ acts on the no-hotword coarse
+        decode $\tilde{y}$. If $\tilde{y}$ contains a contiguous
+        drop-out (long missing span) rather than the local
+        substitution errors that the multi-signal score is
+        designed for, $r$ can no longer recover the missing
+        hotword and the operator degenerates to no-hotword ASR
+        (the discriminative-gap check exists precisely to make
+        this degeneration safe rather than catastrophic).
+\end{enumerate}
 
 \paragraph{Inherited LLM failure modes.}
 As discussed in Section~\ref{sec:analysis}, the model can repeat on
@@ -40,6 +74,22 @@ are explicit that AmphionASR shares them.
 The v3 release is offline-batch, served via vLLM. Streaming inference
 and a measured first-token-latency report are out of scope for this
 version.
+
+\paragraph{Code release.}
+We release the model weights and the vLLM-based serving stack that
+produced every inference number in this report; the in-house
+training code is not part of the release. The training pipeline is
+documented end-to-end in Sections~\ref{sec:data}
+and~\ref{sec:training} -- data sources, augmentation, three-stage
+SFT and per-stage hyperparameters -- so that the recipe can be
+reimplemented on top of a public training framework such as
+ms-swift~\cite{msswift}. We adopt this weights-plus-serving release
+scope because the in-house training code is tightly coupled with
+internal data infrastructure and is not redistributable as it
+stands; the scope is consistent with the practice of recent
+SpeechLLM technical reports
+\cite{radford2023whisper, kimiaudio2025, stepaudio22025,
+qwen2025qwen3asr}.
 
 \subsection{Broader Impact}
 

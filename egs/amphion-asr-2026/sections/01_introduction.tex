@@ -15,23 +15,34 @@ Kimi-Audio \cite{kimiaudio2025} and Qwen3-ASR \cite{qwen2025qwen3asr}
 yields a single model that transcribes, understands and follows
 instructions in one pass.
 
-% --- Motivation: real-world capabilities the LLM brings ---
+% --- Motivation: real-world failure modes the LLM addresses ---
 The LLM backbone is more than a stronger language model: its prompt
 interface is a natural place to express the kind of side information
-that real deployments require. Two pieces of side information are
-particularly common and particularly awkward for end-to-end ASR:
+real deployments require, and its training stack is a natural place
+to fold in the acoustic robustness real deployments demand. Three
+failure modes dominate the residual error of an otherwise-strong
+multilingual ASR model:
 
 \begin{itemize}
-  \item \textbf{Hotwords.} Names, jargon, product SKUs, and rare
-        entities that a generic ASR model is unlikely to have memorised.
-        Classical solutions involve external biasing graphs or
-        on-the-fly LM rescoring; an LLM can simply accept the list as
-        text in its prompt.
-  \item \textbf{Target speaker.} In multi-talker audio the user often
-        wants the transcript of \emph{one} known speaker. Source
+  \item \textbf{Rare named entities.} Names, jargon, product SKUs and
+        long-tail terms that a generic ASR model is unlikely to have
+        memorised. Classical solutions involve external biasing
+        graphs or on-the-fly LM rescoring; an LLM can simply accept a
+        list of likely terms as text in its prompt.
+  \item \textbf{Overlapping speakers.} In multi-talker audio the user
+        often wants the transcript of \emph{one} known speaker. Source
         separation followed by ASR is brittle; an end-to-end LLM that
         receives a short reference utterance can be trained to decode
         only the matching speaker.
+  \item \textbf{Noisy and far-field acoustic conditions.}
+        Reverberation, background noise and competing voices are
+        pervasive in real recordings but rare in clean read-speech
+        training sets. Augmentation curricula are the standard
+        remedy; the released v3 checkpoint sees noise / RIR /
+        overlap augmentation as a by-product of the target-speaker
+        training pipeline, and a v3-NR variant extends the same
+        augmentation to the plain-ASR branch as a controlled
+        noise-robustness SFT stage.
 \end{itemize}
 
 % --- This work ---
@@ -42,37 +53,54 @@ target-speaker reference audio, and noisy or overlapping-speaker
 inputs are all consumed as prompt features, while the model remains
 competitive on standard Mandarin and English ASR benchmarks. The
 released v3 checkpoint totals $4.7$\,B parameters ($4.3$\,B distinct
-after \texttt{lm\_head} tying).
+after input--output embedding tying).
 
 Our contributions are:
 
 \begin{itemize}
-  \item \textbf{An industrial-grade Mandarin--English SpeechLLM recipe.} We pair
-        the Qwen3-AuT audio tower (Whisper-style 24-layer Transformer
-        at $d{=}1024$, 314\,M parameters) with the
-        Qwen3-4B-Instruct-2507 \cite{qwen2025qwen3} LLM through a
-        9.2\,M-parameter Linear--SwooshR--Linear projector
-        \cite{yao2024zipformer} and four learnable modality-boundary
-        prompt vectors. On a curated public-plus-internal corpus the
-        model reaches $1.8$\% CER on AISHELL-1, $7.17$\% WER on
-        LibriSpeech \texttt{test-clean} and $14.99$\% MER on the TALCS
-        Mandarin--English code-switching test set \cite{li2022talcs}
-        (Section~\ref{sec:experiments}).
-  \item \textbf{Strong hotword conditioning out of the prompt.} With
-        five in-prompt hotwords the CommonVoice CER drops from $6.57$\%
-        to $2.83$\% (Mandarin) and the WER from $9.65$\% to $4.89$\%
-        (English); we further show diminishing returns beyond five
-        hotwords (Section~\ref{sec:hotwords}).
-  \item \textbf{Target-speaker recognition with reference audio.} A
-        short reference utterance suffices to make the model attend to a
-        single speaker in mixed audio. On our internal hotword + target-speaker
-        test we reach $14.29$\% MER; we report and analyse the
-        substantially weaker numbers on the public LibriMix benchmarks
-        (Section~\ref{sec:tsasr}).
-  \item \textbf{An honest accounting of gaps.} Explicit
-        noise-robustness training is not yet integrated; we describe the
-        target benchmark and planned recipe so that the next release can
-        be measured against this report
+  \item \textbf{An industrial-grade Mandarin--English SpeechLLM
+        recipe.} We couple a Whisper-style 24-layer audio encoder
+        ($\approx\!314$\,M parameters, initialised from the
+        Qwen3-ASR audio tower) with the Qwen3-4B-Instruct
+        \cite{qwen2025qwen3} language model through a lightweight
+        $\approx\!9.2$\,M-parameter modality projector (a two-layer
+        MLP with the SwooshR activation \cite{yao2024zipformer})
+        and four learnable modality-boundary prompts. On a curated
+        public-plus-internal corpus the model reaches $1.85$\,\%
+        CER on AISHELL-1, $1.82$\,\% WER on LibriSpeech
+        \texttt{test-clean} and $7.48$\,\% MER on the TALCS
+        Mandarin--English code-switching test set
+        \cite{li2022talcs} (Section~\ref{sec:experiments}).
+  \item \textbf{Strong oracle-prompt hotword conditioning.} With
+        five in-prompt hotwords the CommonVoice~17 hotword test
+        CER drops from $6.01$\,\% to $2.67$\,\% on Mandarin and
+        the WER from $7.68$\,\% to $4.69$\,\% on English (oracle
+        protocol, random padding;
+        Section~\ref{sec:hotwords}).
+  \item \textbf{A parameter-free hotword retrieval operator.} We
+        further describe a text-space retrieve-then-bias operator
+        that, paired with a matched SFT hard-negative augmentation,
+        scales prompt-driven hotword behaviour to pools of size up
+        to $10^4$. The retriever attains Recall@$K$ above $94\%$
+        on Mandarin from $K=10$ onwards and Recall@$K \approx 78\%$
+        on English at $K=20$
+        (Section~\ref{subsec:retrieve-algorithm}).
+  \item \textbf{Target-speaker recognition with reference audio.}
+        A $3$--$5$\,s reference utterance suffices to make the
+        model attend to a single speaker in mixed audio. On our
+        internal hot+TS test set we reach $13.06$\,\% MER, with
+        explicit anti-hallucination training that keeps the
+        decoder silent when the requested speaker is absent; we
+        report and analyse the substantially weaker numbers on the
+        public LibriMix benchmarks (Section~\ref{sec:tsasr}).
+  \item \textbf{A noise-robustness SFT variant (v3-NR).} The TS-ASR
+        branch already passes through reverberation, additive noise
+        (MUSAN \cite{snyder2015musan} and AudioSet road-traffic)
+        and competing-speaker interference; the v3-NR variant
+        extends the same augmentation to the plain-ASR branch and
+        is the first AmphionASR checkpoint with a controlled
+        noise-robustness evaluation grid against
+        Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
         (Section~\ref{sec:noise}).
 \end{itemize}
 

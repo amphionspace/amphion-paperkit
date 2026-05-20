@@ -92,7 +92,7 @@
 
   % ====================== LLM (top) ======================
   \node[llmbox] (llm) {%
-    \fireIcon~~Qwen3-4B-Instruct-2507%
+    \fireIcon~~Qwen3-4B-Instruct%
   };
   \node[outbox, above=0.55cm of llm] (text) {Transcript};
   \draw[flow] (llm.north) -- (text.south);
@@ -123,7 +123,7 @@
   % all three sources share the same y, anchored below the seqbox
   \node[adapter,  below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xL]seqbox.south)}] (proj)  {%
-    \fireIcon~~MM Projector%
+    \fireIcon~~Modality Projector%
   };
   \node[boundbox, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xM]seqbox.south)}] (bound) {%
@@ -144,7 +144,7 @@
 
   % ====================== Audio column (left, downstream) ======
   \node[encoder, below=of proj] (aut) {%
-    \frozenIcon~~Qwen3-AuT Encoder%
+    \frozenIcon~~Whisper-style Audio Encoder%
   };
   \node[encoder, below=of aut] (front) {%
     Log-mel + Conv%

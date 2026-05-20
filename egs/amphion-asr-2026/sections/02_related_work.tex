@@ -22,17 +22,18 @@ audio LLMs, and is the encoder we use in this work.
 \paragraph{LLM-based and audio-LLM ASR.}
 A growing line of work pairs a speech encoder with a pre-trained LLM
 decoder. Qwen-Audio \cite{chu2023qwenaudio} and
-SALMONN \cite{tang2024salmonn} established the basic recipe -- encoder,
-adapter, frozen-then-fine-tuned LLM. SLAM-ASR \cite{ma2024slamasr}
-sharpens this idea, showing that a single linear projector trained over
-a frozen speech encoder and a frozen LLM is enough to reach competitive
-LibriSpeech numbers. More recent technical reports such as
-Step-Audio~2 \cite{stepaudio22025}, Kimi-Audio \cite{kimiaudio2025}
-and Qwen3-ASR \cite{qwen2025qwen3asr} push the data scale and add
-features such as in-prompt context biasing, multilingual support and
-streaming inference. AmphionASR follows this template but is optimised
+SALMONN \cite{tang2024salmonn} established the basic recipe --
+encoder, projector, frozen-then-fine-tuned LLM. SLAM-ASR
+\cite{ma2024slamasr} sharpens this idea, showing that a single linear
+projector trained over a frozen speech encoder and a frozen LLM is
+enough to reach competitive LibriSpeech numbers. More recent technical
+reports such as Step-Audio~2 \cite{stepaudio22025},
+Kimi-Audio \cite{kimiaudio2025} and Qwen3-ASR
+\cite{qwen2025qwen3asr} push the data scale and add features such as
+in-prompt context biasing, multilingual support and streaming
+inference. AmphionASR follows this template but is optimised
 specifically for transcription quality together with hotword and
-target-speaker capabilities, and is built on Qwen3-4B-Instruct-2507
+target-speaker capabilities, and is built on Qwen3-4B-Instruct
 \cite{qwen2025qwen3} for an explicit cost--quality target.
 
 \paragraph{Hotword / contextual biasing.}

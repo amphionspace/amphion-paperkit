@@ -64,6 +64,21 @@ plan.md 第 4 行已经把"对标 Qwen3-ASR-1.7B 抗噪 + 比 Doubao 强"作为�
 - 热词：CV-EN/ZH hotwords；
 - 多语：FLEURS。
 
+## 6.1 阿里 FunAudioLLM Fun-ASR-Nano-2512（hotword 评测 baseline）
+
+| 项 | 内容 |
+| --- | --- |
+| 模型 | Fun-ASR-Nano-2512（800 M 参数，end-to-end real-time ASR） |
+| 发布方 | 阿里 FunAudioLLM 团队 |
+| 发布日期 | 2025-12-15 |
+| HuggingFace | https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512 |
+| Demo Space | https://huggingface.co/spaces/FunAudioLLM/Fun-ASR-Nano |
+| Tech blog | https://www.stable-learn.com/en/fun-asr-tech-guide/ |
+| 语种 / 方言 | 31 语种 + 7 中文主要方言（吴语、粤语、闽南、客家、赣、湘、晋）+ 26 地区口音 |
+| 上游 | FunAudioLLM 系列；与 Paraformer / SenseVoice 同源（参见 `papers/funaudio2024-sensevoice.pdf`） |
+| 本报告引用 | §7.3.3 Hotword baseline 对比表（CommonVoice EN/ZH oracle prompt + retrieve client 模式）；retrieved on 2026-05-20 |
+| 报告里如何写 | "Fun-ASR-Nano-2512 \citep{funasrnano} (FunAudioLLM, December 2025; 800\,M parameters; retrieved 2026-05-20)" |
+
 ## 7. 报告章节里如何"诚实写商用 baseline"
 
 参考 ICLR 2026 ReviewerGuide + asr-domain.mdc，必须满足：

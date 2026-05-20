@@ -25,10 +25,10 @@ We evaluate target-speaker recognition (TS-ASR) on three test sets:
         mixtures ($9{,}000$ cuts).
 \end{itemize}
 
-The prompt template is the Swift-style TS-ASR entry of
-Table~\ref{tab:tasks}: a 3--5\,s enrollment audio segment is supplied
-as the first audio content item, the mixed audio as the second, and
-the instruction ``\textit{Given the speaker's voice} \{\textit{enroll}\}
+The prompt template is the TS-ASR entry of Table~\ref{tab:tasks}: a
+$3$--$5$\,s enrollment audio segment is supplied as the first audio
+content item, the mixed audio as the second, and the instruction
+``\textit{Given the speaker's voice} \{\textit{enroll}\}
 \textit{transcribe what this speaker says in the following audio.}''
 ties them together. We report MER on the internal set (mixed
 Mandarin--English vocabulary) and WER on LibriMix; for the negative
@@ -47,9 +47,9 @@ rate) to verify that anti-hallucination training is taking effect.
     \toprule
     Test set & $n$ & Metric & \textbf{AmphionASR} \\
     \midrule
-    Internal hot+TS test            & 6{,}227 & MER (\%) & \textbf{14.29} \\
-    Libri2Mix \texttt{test}         & 6{,}000 & WER (\%) & 65.83 \\
-    Libri3Mix \texttt{test}         & 9{,}000 & WER (\%) & 87.06 \\
+    Internal hot+TS test            & 6{,}227 & MER (\%) & \textbf{13.06} \\
+    Libri2Mix \texttt{test}         & 6{,}000 & WER (\%) & 66.14 \\
+    Libri3Mix \texttt{test}         & 9{,}000 & WER (\%) & 86.71 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -57,44 +57,27 @@ rate) to verify that anti-hallucination training is taking effect.
 \subsection{Analysis}
 
 \paragraph{Strong on the in-domain set.}
-$14.29$\% MER on the internal hot+TS set indicates that when the model
-sees mixtures whose acoustic conditions and reference-utterance pipeline
-match the training distribution, the prompt-based target-speaker path
-works as intended.
+On the internal hot+TS set, where the mixing protocol and the
+reference-utterance pipeline match the training synthesiser, the
+model reaches $13.06$\,\% MER.
 
 \paragraph{Substantial gap on LibriMix.}
-LibriMix numbers are much weaker -- $65.83$\% WER on Libri2Mix and
-$87.06$\% on Libri3Mix. The training synthesiser already includes
-LibriSpeech speakers (Table~\ref{tab:tsasr_sources}) so a pure
-speaker-coverage hypothesis is unlikely. The remaining suspects are
-distributional rather than identity-based:
-\begin{enumerate}
-  \item LibriMix uses min / mix-both mixtures with a near-uniform
-        overlap fraction, whereas our synthesiser truncates each
-        interferer to a target-conditional overlap
-        $\rho\!\sim\!\mathcal{N}(0.35, 0.2^2)$ clipped to $[0.1, 1.0]$
-        (Section~\ref{subsec:tsasr-synth}); the upper tail of LibriMix
-        overlaps is therefore under-represented at training time.
-  \item LibriMix samples interferers with no SNR control on top of
-        the WHAM! noise, whereas our pipeline draws SNR from
-        $\mathcal{N}(5, 7^2)$\,dB clipped to $[-5, 20]$.
-  \item The released checkpoint applies RIR augmentation with
-        probability $0.5$ during training, whereas LibriMix audio is
-        anechoic; the model therefore encounters slightly more
-        reverberation at training time than at evaluation.
-\end{enumerate}
-We treat this gap as a known issue and call it out explicitly in
-Section~\ref{sec:limitations}.
-% TODO: confirm with a quick controlled ablation -- (a) re-train one
-% epoch with overlap drawn uniformly from [0.5, 1.0] and (b) evaluate
-% with RIR off at inference -- to attribute the gap to (1)/(3) versus
-% (2).
+LibriMix numbers are much weaker -- $66.14$\,\% WER on Libri2Mix
+and $86.71$\,\% on Libri3Mix. The training synthesiser already
+includes LibriSpeech speakers (Table~\ref{tab:tsasr_sources}), so
+this is not a pure speaker-coverage issue; the underlying cause
+has not yet been diagnosed. We treat the gap as a known weakness
+of the v3 release and call it out explicitly in
+Section~\ref{sec:limitations}; a controlled diagnostic is on the
+agenda for the next training iteration.
+% TODO: run a controlled ablation against the LibriMix protocol to
+% attribute the gap.
 
 \paragraph{Hotwords + target speaker (combined).}
-The released checkpoint supports both hotword and target-speaker
-prompting simultaneously: in the Swift template
-(Table~\ref{tab:tasks}, TS-ASR row), a hotword line is appended after
-the speaker instruction, so the model jointly conditions on the
+The released checkpoint supports hotword and target-speaker
+prompting simultaneously: in the TS-ASR template
+(Table~\ref{tab:tasks}), a hotword line is appended after the
+speaker instruction, so the model jointly conditions on the
 enrollment audio and the in-prompt biasing list. A dedicated combined
 benchmark (TS-ASR with $k$ hotwords supplied) is in preparation and
 will appear in a future revision.

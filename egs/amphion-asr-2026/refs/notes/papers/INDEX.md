@@ -3,7 +3,7 @@
 This is a human-readable view derived from [`INDEX.yaml`](INDEX.yaml).
 `INDEX.yaml` is the single source of truth; PDFs are gitignored and downloaded by `tools/fetch-refs.py`.
 
-Total entries: 46 across 8 groups.
+Total entries: 47 across 8 groups.
 
 ## 1. 端到端 Audio LLM / Speech-LLM (直接对标) (16)
 
@@ -67,7 +67,7 @@ HuBERT / WavLM / BEATs 等自监督 speech encoder。
 | [xie2024-mini-omni2.pdf](https://arxiv.org/pdf/2410.11190.pdf) | Mini-Omni2 | 2024-10 | 加入 vision + duplex。 |
 | [zeng2024-glm4-voice.pdf](https://arxiv.org/pdf/2412.02612.pdf) | GLM-4-Voice | 2024-12 | 175 bps 单码本 tokenizer、1T token 预训练。 |
 
-## 5. 热词 / Contextual Biasing (本报告重点章节) (3)
+## 5. 热词 / Contextual Biasing (本报告重点章节) (4)
 
 上下文偏置 / 热词召回相关工作。
 
@@ -76,6 +76,7 @@ HuBERT / WavLM / BEATs 等自监督 speech encoder。
 | [lakomkin2025-contextual-biasing-rl.pdf](https://arxiv.org/pdf/2512.21828.pdf) | Contextual Biasing for LLM-Based ASR with Hotword Retrieval and RL | 2025-12 | GLCLAP 检索 + GRPO RL；中文长尾 hotword 强对照。 |
 | [yang2024-ctc-assisted-contextual.pdf](https://arxiv.org/pdf/2411.06437.pdf) | CTC-Assisted LLM-Based Contextual ASR | 2024-11 | CTC coarse decode 过滤 hotword 进 prompt；LS test-clean B-WER 3.67。 |
 | [sun2025-br-asr.pdf](https://arxiv.org/pdf/2505.19179.pdf) | BR-ASR: Bias Retrieval Framework for Contextual Biasing ASR | 2025-05 | 200k entry 检索；LS test-clean B-WER 2.8。 |
+| [min2024-speechrag.pdf](https://arxiv.org/pdf/2412.16500.pdf) | Speech Retrieval-Augmented Generation without Automatic Speech Recognition | 2024-12 | audio-space speech retriever（speech adapter + frozen text retriever，distillation loss）；作为本工作 text-space retrieve 的对照路线，§7.2.2 显式 cite。 |
 
 ## 6. Target-Speaker ASR (本报告重点章节) (3)
 

@@ -15,47 +15,49 @@ target-speaker training cuts.
 \subsection{Public ASR Sources}
 \label{subsec:asr-sources}
 
-Table~\ref{tab:data_asr} lists the 22 public ASR corpora that feed
-the ASR-zh, ASR-en and code-switching streams. ``Cap.'' is the
-per-source utterance cap applied before mixing; ``$r$'' is the
-repeat factor (most sources are sampled once, see
-Section~\ref{subsec:mixing}). A separate dataset registry handles
-the multilingual long tail.
+Table~\ref{tab:data_asr} lists the public ASR corpora that feed the
+Mandarin, English and code-switching streams. ``Cap.'' is the
+per-source utterance cap applied before mixing; ``$r$'' is the repeat
+factor (most sources are sampled once; see
+Section~\ref{subsec:mixing}). The multilingual long tail is routed
+through a separate registry that exposes the same per-source cap and
+repeat-factor knobs across languages.
 
 \begin{table}[t]
-  \caption{Public ASR sources used for SFT. ``Cap.'' = utterance-level
-    cap (``--'' = no cap). Multilingual sources are routed through the
-    dataset registry and not enumerated here.}
+  \caption{Public ASR sources used for supervised fine-tuning.
+    ``Cap.'' is the per-source utterance cap before mixing (``--'' =
+    no cap); ``$r$'' is the repeat factor.
+    Multilingual sources are routed through the registry described in
+    the text and not enumerated here.}
   \label{tab:data_asr}
   \centering
   \small
   \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{p{2.6cm}p{6.0cm}lrr}
+  \begin{tabular}{p{7.8cm}lrr}
     \toprule
-    Key & Source & Lang. & Cap. & $r$ \\
+    Source & Lang. & Cap. & $r$ \\
     \midrule
-    librispeech         & LibriSpeech \cite{panayotov2015librispeech}                     & en       & --   & 1 \\
-    mls                 & MLS English \cite{pratap2020mls}                                & en       & 500\,k & 1 \\
-    common\_voice\_en   & CommonVoice 17 EN (cleaned) \cite{ardila2020commonvoice}        & en       & 500\,k & 1 \\
-    gigaspeech          & GigaSpeech XL \cite{chen2021gigaspeech}                         & en       & 1\,M & 1 \\
-    singaporean         & National Speech Corpus (Singapore EN)                           & en       & --   & 1 \\
-    singapore\_english  & Hugging Face singapore\_english                                 & en       & --   & 1 \\
-    aishell             & AISHELL-1 \cite{bu2017aishell}                                  & zh       & --   & 1 \\
-    aishell2            & AISHELL-2 \cite{du2018aishell2}                                 & zh       & 500\,k & 1 \\
-    aishell3            & AISHELL-3 \cite{shi2021aishell3}                                & zh       & --   & 1 \\
-    magicdata           & MagicData Mandarin \cite{magicdata}                             & zh       & --   & 1 \\
-    aidatatang          & aidatatang\_200zh                                               & zh       & --   & 1 \\
-    primewords          & Primewords Chinese 100h                                         & zh       & --   & 1 \\
-    thchs30             & THCHS-30 \cite{wang2015thchs30}                                 & zh       & --   & 1 \\
-    common\_voice\_zh   & CommonVoice 17 ZH-CN \cite{ardila2020commonvoice}               & zh       & --   & 1 \\
-    wenetspeech         & WenetSpeech \cite{zhang2022wenetspeech}                         & zh       & 1\,M & 1 \\
-    wenetspeech4tts     & WenetSpeech4TTS                                                 & zh       & 500\,k & 1 \\
-    emilia\_zh          & Emilia ZH (DNSMOS-filtered) \cite{he2024emilia, reddy2021dnsmos} & zh      & 500\,k & 1 \\
-    kespeech            & KeSpeech \cite{tang2021kespeech}                                & zh (8 dial.) & 500\,k & 1 \\
-    talcs               & TALCS Mandarin--English code-switch \cite{li2022talcs}          & zh--en   & --   & 1 \\
-    fleurs              & FLEURS (zh, en)                                                 & multi    & --   & 1 \\
-    \emph{multilingual} & dataset registry: 10 langs $\times$ \{fleurs, common\_voice, yodas, mls, emilia\}
-                                                                                          & multi    & per-lang & 1 \\
+    LibriSpeech \cite{panayotov2015librispeech}                                     & en       & --   & 1 \\
+    MLS English \cite{pratap2020mls}                                                & en       & 500\,k & 1 \\
+    CommonVoice 17 EN (cleaned) \cite{ardila2020commonvoice}                        & en       & 500\,k & 1 \\
+    GigaSpeech XL \cite{chen2021gigaspeech}                                         & en       & 1\,M & 1 \\
+    National Speech Corpus (Singapore EN)                                           & en       & --   & 1 \\
+    Singapore English (community release)                                           & en       & --   & 1 \\
+    AISHELL-1 \cite{bu2017aishell}                                                  & zh       & --   & 1 \\
+    AISHELL-2 \cite{du2018aishell2}                                                 & zh       & 500\,k & 1 \\
+    AISHELL-3 \cite{shi2021aishell3}                                                & zh       & --   & 1 \\
+    MagicData Mandarin \cite{magicdata}                                             & zh       & --   & 1 \\
+    aidatatang\_200zh                                                                & zh       & --   & 1 \\
+    Primewords Chinese 100h                                                          & zh       & --   & 1 \\
+    THCHS-30 \cite{wang2015thchs30}                                                 & zh       & --   & 1 \\
+    CommonVoice 17 ZH-CN \cite{ardila2020commonvoice}                               & zh       & --   & 1 \\
+    WenetSpeech \cite{zhang2022wenetspeech}                                         & zh       & 1\,M & 1 \\
+    WenetSpeech4TTS                                                                 & zh       & 500\,k & 1 \\
+    Emilia ZH (DNSMOS-filtered) \cite{he2024emilia, reddy2021dnsmos}                & zh       & 500\,k & 1 \\
+    KeSpeech \cite{tang2021kespeech}                                                & zh (8 dial.) & 500\,k & 1 \\
+    TALCS Mandarin--English code-switch \cite{li2022talcs}                          & zh--en   & --   & 1 \\
+    FLEURS (zh, en)                                                                 & multi    & --   & 1 \\
+    \emph{Multilingual registry} (10 langs $\times$ \{FLEURS, CommonVoice, YODAS, MLS, Emilia\}) & multi    & per-lang & 1 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -93,12 +95,12 @@ acceptance flag shipped with each split.
     \toprule
     Split & Underlying audio & Use & $r$ \\
     \midrule
-    aidatatang hotwords    & aidatatang\_200zh & train & 3 \\
-    magicdata hotwords     & MagicData         & train & 2 \\
-    gigaspeech hotwords    & GigaSpeech XL     & train (cap 1\,M) & 1 \\
+    aidatatang\_200zh hotwords & aidatatang\_200zh   & train              & 3 \\
+    MagicData hotwords         & MagicData Mandarin  & train              & 2 \\
+    GigaSpeech hotwords        & GigaSpeech XL       & train (cap 1\,M)   & 1 \\
     \midrule
-    CV ZH hotwords         & CommonVoice ZH test & test (QA-filtered) & -- \\
-    CV EN hotwords         & CommonVoice EN test & test (QA-filtered) & -- \\
+    CommonVoice 17 ZH hotwords & CommonVoice ZH test & test (QA-filtered) & -- \\
+    CommonVoice 17 EN hotwords & CommonVoice EN test & test (QA-filtered) & -- \\
     \bottomrule
   \end{tabular}
 \end{table}

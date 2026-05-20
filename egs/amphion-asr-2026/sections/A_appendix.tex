@@ -1,14 +1,32 @@
-\section{Prompt Templates}
+\section{Prompt Templates (Expanded)}
 \label{app:prompts}
 
-\begin{lstlisting}[style=plain, caption={Contextual ASR prompt with a hot-word list.}]
-<|system|>
-You are a careful speech transcriber. Use the following list of likely
-proper nouns when they fit the audio: {hotwords}.
-<|audio|>
-<|user|>
-Transcribe the audio verbatim.
-<|assistant|>
+The five task templates of Table~\ref{tab:tasks} are reproduced here
+in their fully rendered form for unambiguous reproduction. The
+\verb|<speech>| placeholder marks the position in the input
+embedding stream where the merge step substitutes the projected
+audio embedding sequence (Section~\ref{subsec:merge}); the
+\verb|<start_speech>| and \verb|<end_speech>| tokens are emitted by
+the chat template around every audio content item.
+
+\begin{lstlisting}[style=plain, caption={Plain ASR prompt (no language hint, no hotwords).}]
+Transcribe the following audio.<start_speech><speech><end_speech>
+\end{lstlisting}
+
+\begin{lstlisting}[style=plain, caption={Mandarin or English ASR with a language hint.}]
+Transcribe the following audio.
+Language: English<start_speech><speech><end_speech>
+\end{lstlisting}
+
+\begin{lstlisting}[style=plain, caption={Hotword-conditioned ASR; the language hint is optional.}]
+Transcribe the following audio.
+Language: Chinese
+Hotwords: hw1, hw2, hw3<start_speech><speech><end_speech>
+\end{lstlisting}
+
+\begin{lstlisting}[style=plain, caption={Target-speaker ASR. The enrollment block precedes the mixed audio; the language and hotword lines are optional and follow the same convention as Hotword ASR.}]
+Given the speaker's voice:<start_speech><speech><end_speech>
+Transcribe what this speaker says in the following audio.<start_speech><speech><end_speech>
 \end{lstlisting}
 
 \section{Additional Results}
@@ -20,4 +38,93 @@ Transcribe the audio verbatim.
 \section{Data Examples}
 \label{app:data_examples}
 
-% TODO: A handful of sanitized (audio_id, transcript) examples per source.
+% TODO: A handful of sanitised (audio identifier, transcript) examples per source.
+
+\section{Retrieve Operator Constants}
+\label{app:retrieve-constants}
+
+Table~\ref{tab:retrieve_constants} lists the numerical constants of
+the retrieval operator described in
+Section~\ref{subsec:retrieve-algorithm}. The values are constrained
+structurally by the channel-precision argument in
+Equation~\eqref{eq:retrieve-score}: the threshold $\tau$ is chosen
+so that any candidate supported only by low-precision channels has
+a maximum attainable score below $\tau$ while a single
+high-precision channel suffices to clear it. Specific values were
+selected empirically and are reported here for reproducibility
+rather than as ablated optima.
+
+\begin{table}[ht]
+  \caption{Retrieve operator constants for
+    Section~\ref{subsec:retrieve-algorithm}.
+    Channel notation: \texttt{sub} = exact substring;
+    \texttt{py} = tone-stripped pinyin sliding window;
+    \texttt{ovl} = character-set overlap;
+    \texttt{jac} = bigram Jaccard;
+    \texttt{wovl} = content-word overlap;
+    \texttt{subsim} = best substring similarity under edit distance;
+    \texttt{lcs} = longest-common-subsequence ratio.}
+  \label{tab:retrieve_constants}
+  \centering
+  \small
+  \begin{tabular}{llc}
+    \toprule
+    Route & Item & Value \\
+    \midrule
+    \multirow{6}{*}{CJK}
+       & weight $w_{\texttt{sub}}$            & $2.0$ \\
+       & weight $w_{\texttt{py}}$             & $1.5$ \\
+       & weight $w_{\texttt{ovl}}$            & $0.5$ \\
+       & weight $w_{\texttt{jac}}$            & $0.3$ \\
+       & acceptance threshold $\tau$          & $1.0$ \\
+       & CJK character ratio split            & $\ge 30\%$ characters CJK \\
+    \midrule
+    \multirow{8}{*}{Alphabetic}
+       & weight $w_{\texttt{sub}}$            & $3.0$ \\
+       & weight $w_{\texttt{wovl}}$           & $2.0$ \\
+       & weight $w_{\texttt{subsim}}$         & $1.5$ \\
+       & weight $w_{\texttt{lcs}}$            & $0.5$ \\
+       & short-word penalty $\mathrm{pen}(|h|\!\le\!3 / \le\!4 / \le\!5)$ & $0.35 / 0.20 / 0.10$ \\
+       & default subsim / lcs thresholds       & $0.65 / 0.60$ \\
+       & length-5 fallback thresholds          & $0.75 / 0.70$ \\
+       & multi-word strict thresholds          & $\mathrm{subsim}\ge 0.80,\ \mathrm{lcs}\ge 0.75$ \\
+    \midrule
+    Either & discriminative-gap factor       & $\mathrm{top1}/\mathrm{top10} \ge 1.30$ \\
+    \midrule
+    \multirow{2}{*}{Training augmentation}
+       & ground-truth-miss probability $p_\mathrm{miss}$ & $0.12$ \\
+       & hotword-line drop probability $p_\mathrm{drop}$ & $0.20$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{GRPO Hyperparameters}
+\label{app:grpo-hparams}
+
+Table~\ref{tab:grpo_hparams} lists the hyperparameters of the GRPO
+recipe of Section~\ref{subsec:grpo}.
+
+\begin{table}[ht]
+  \caption{GRPO hyperparameters for
+    Section~\ref{subsec:grpo}. Equation references point to the
+    relevant terms in Section~\ref{subsec:grpo}.}
+  \label{tab:grpo_hparams}
+  \centering
+  \small
+  \begin{tabular}{lc}
+    \toprule
+    Item & Value \\
+    \midrule
+    Group size $G$ (Eq.~\ref{eq:grpo-advantage})       & $16$ \\
+    Sampling temperature                                & $0.6$ \\
+    PPO clip $\varepsilon$ (Eq.~\ref{eq:grpo-objective}) & $0.2$ \\
+    KL coefficient $\beta$ (Eq.~\ref{eq:grpo-objective}) & $1\!\times\!10^{-3}$ \\
+    Peak learning rate                                  & $1\!\times\!10^{-6}$ \\
+    Epochs                                              & $1$ \\
+    Per-device prompt batch                             & $8$ \\
+    Gradient accumulation                               & $2$ \\
+    ASR-accuracy reward weight $w_\mathrm{asr}$ (Eq.~\ref{eq:reward-total})   & $1.0$ \\
+    Hotword-match reward weight $w_\mathrm{hw}$ (Eq.~\ref{eq:reward-total})   & $0.3$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}

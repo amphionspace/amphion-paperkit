@@ -3,27 +3,43 @@
 
 We presented \textbf{AmphionASR}, an open-source, industrial-grade
 SpeechLLM for personalised Mandarin and English speech recognition.
-The model couples the Qwen3-AuT audio tower (24-layer Whisper-style
-encoder, $d{=}1024$, 314\,M parameters) to the
-Qwen3-4B-Instruct-2507 language model through a 9.2\,M-parameter
-Linear--SwooshR--Linear projector and four learnable
-modality-boundary prompt vectors -- $4.7$\,B parameters in total
-($4.3$\,B distinct after \texttt{lm\_head} tying) -- and is trained
-in three stages: audio--text alignment, continue-SFT for Mandarin
-and English transcription, and capability SFT that adds in-prompt
+The model couples a Whisper-style 24-layer audio encoder
+($\approx\!314$\,M parameters, initialised from the Qwen3-ASR audio
+tower) to the Qwen3-4B-Instruct language model through a
+lightweight modality projector and four learnable modality-boundary
+prompts -- $\approx\!4.7$\,B parameters in total ($\approx\!4.3$\,B
+distinct after input--output embedding tying) -- and is trained in
+three stages: audio--text alignment, continue-SFT for Mandarin and
+English transcription, and capability SFT that adds in-prompt
 hotword conditioning and reference-utterance target-speaker
-recognition. On Mandarin benchmarks the v3 checkpoint
-reaches single-digit CER on most sets, including AISHELL-1 at
-$1.80$\%; on English it covers the standard Librispeech / GigaSpeech /
-MLS / CommonVoice grid; on TALCS Mandarin--English code-switching it
-reaches $14.99$\% MER; and with as few as five in-prompt hotwords the
-CommonVoice CER and WER drop by roughly half.
+recognition. On Mandarin benchmarks the v3 checkpoint reaches
+single-digit CER on every reported set, with AISHELL-1 at
+$1.85$\,\% as the headline data point. On English it covers the
+standard LibriSpeech, GigaSpeech, MLS, CommonVoice and FLEURS
+grid, with LibriSpeech \texttt{test-clean} at $1.82$\,\% WER. On
+TALCS Mandarin--English code-switching it reaches $7.48$\,\% MER.
+With as few as five in-prompt hotwords on the CommonVoice~17
+hotword splits, CER and WER drop by roughly half (oracle prompt).
+A parameter-free text-space retrieval operator
+(Section~\ref{subsec:retrieve-algorithm}) extends this prompt-driven
+hotword behaviour to deployment-scale pools by reducing the
+prompt to a per-utterance top-$K$ subset of a pool of size up to
+$10^4$. A noise-robustness SFT variant (v3-NR;
+Section~\ref{subsec:v3nr}) is the first AmphionASR checkpoint with
+a controlled noise-robustness evaluation alongside the standard
+benchmarks.
 
-What still needs to be solved -- and is the explicit subject of the
-next release -- is closing the gap on the public multi-talker LibriMix
-benchmarks, training a noise-robust variant that competes with
-Qwen3-ASR-1.7B on far-field / reverberant audio, and upgrading the
-inference path with a measured streaming mode. We will release model
-weights, inference code, and the eval scripts that produced every
-number in this report at
-\url{https://github.com/amphionspace/AmphionASR} % TODO: verify URL.
+What still needs to be solved -- and is the explicit subject of
+the next release -- is closing the gap on the public multi-talker
+LibriMix benchmarks, narrowing the residual gap to
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} on the non-MUSAN-speech
+rows of Table~\ref{tab:noise_robustness}, documenting the v3-NR
+training pipeline alongside the v3 SFT recipe, and upgrading the
+inference path with a measured streaming mode. We will release
+model weights and the vLLM-based serving stack at
+\url{https://github.com/amphionspace/AmphionASR}; the training
+pipeline is documented in
+Sections~\ref{sec:data}--\ref{sec:training} but the training code
+itself is not part of this release
+(Section~\ref{sec:limitations}).
+% TODO: verify the public URL (currently 404 on github.com).

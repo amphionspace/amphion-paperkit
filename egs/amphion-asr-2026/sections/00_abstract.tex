@@ -3,8 +3,8 @@ English transcription that is purpose-built for the failure modes that
 dominate real-world deployments rather than open benchmark
 leaderboards: rare named entities in domain-specific vocabularies,
 overlapping speakers in multi-party audio, and noisy or far-field
-acoustic conditions. AmphionASR bridges a Whisper-style audio encoder
-with the Qwen3-4B-Instruct LLM through a lightweight modality
+acoustic conditions. AmphionASR couples a Whisper-style audio encoder
+with a 4\,B-parameter pre-trained LLM through a lightweight modality
 projector, exposing the LLM's prompt as the single interface through
 which downstream applications inject all three forms of
 side-information at inference time.
@@ -12,31 +12,38 @@ side-information at inference time.
 Three production-oriented capabilities anchor the design.
 \emph{(i)~Hotword conditioning.} A comma-separated list of likely
 terms is supplied in the prompt and the decoder is biased toward
-them; with as few as five in-prompt hotwords, CommonVoice~17 CER
-drops from $6.57$\% to $2.83$\% on Mandarin and WER from $9.65$\% to
-$4.89$\% on English.
-\emph{(ii)~Target-speaker recognition.} Given a $3$--$5$\,s reference
-utterance the model transcribes only the matching speaker in mixed
-audio (\textbf{14.29}\,\% MER on our internal hot+TS test set), with
-explicit anti-hallucination training that keeps the decoder silent
-when the requested speaker is absent.
+them; with as few as five in-prompt hotwords, the CommonVoice~17
+hotword test CER drops from $6.01$\% to $2.67$\% on Mandarin and
+the WER from $7.68$\% to $4.69$\% on English (oracle prompt,
+random padding). For deployment-scale pools we further describe a
+parameter-free text-space retrieve-then-bias operator that
+attains Recall@$K$ above $94\%$ on Mandarin from $K=10$ onwards.
+\emph{(ii)~Target-speaker recognition.} Given a $3$--$5$\,s
+reference utterance the model transcribes only the matching
+speaker in mixed audio (\textbf{13.06}\,\% MER on our internal
+hot+TS test set), with explicit anti-hallucination training that
+keeps the decoder silent when the requested speaker is absent.
 \emph{(iii)~Noise robustness.} Every target-speaker training cut
-passes through reverberation, additive noise (MUSAN
-\cite{snyder2015musan}, AudioSet road-traffic) and competing-speaker
-interference, so deployments on noisy, overlapped or far-field audio
-inherit the same robustness without bespoke acoustic adaptation.
+already passes through reverberation, additive noise (MUSAN
+\cite{snyder2015musan}, AudioSet road-traffic) and
+competing-speaker interference; a v3-NR variant extends the same
+augmentation to the plain-ASR branch and is the first AmphionASR
+checkpoint with a controlled noise-robustness evaluation grid.
 
 On standard public benchmarks the v3 checkpoint reaches
-$\mathbf{1.80}$\,\% CER on AISHELL-1,
-$\mathbf{7.17}$\,\% WER on LibriSpeech \texttt{test-clean} and
-$\mathbf{14.99}$\,\% MER on the TALCS Mandarin--English
-code-switching test. The released model is served behind a batched
-vLLM~\cite{kwon2023vllm} endpoint and ships with both the inference
-client and the supervised fine-tuning recipe, targeting drop-in
-deployment for production transcription pipelines. We also discuss
-current gaps -- in particular weakness on the public LibriMix
-multi-talker benchmarks and the absence of an explicit plain-ASR
-noise curriculum -- and outline the next training iteration. Weights
-and code will be released at
-\url{https://github.com/amphionspace/AmphionASR}.
+$\mathbf{1.85}$\,\% CER on AISHELL-1,
+$\mathbf{1.82}$\,\% WER on LibriSpeech \texttt{test-clean} and
+$\mathbf{7.48}$\,\% MER on the TALCS Mandarin--English
+code-switching test. The released model is served behind a
+batched vLLM~\cite{kwon2023vllm} endpoint and ships with the
+inference client and the serving stack, targeting drop-in
+deployment for production transcription pipelines. We also
+discuss current gaps -- in particular weakness on the public
+LibriMix multi-talker benchmarks and the residual gap to
+Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on most non-MUSAN-speech
+rows of the v3-NR noise grid -- and outline the next training
+iteration. Model weights and the vLLM-based serving stack will be
+released at \url{https://github.com/amphionspace/AmphionASR}; the
+training code is not part of this release
+(Section~\ref{sec:limitations}).
 % TODO: verify the public URL (currently 404 on github.com).
