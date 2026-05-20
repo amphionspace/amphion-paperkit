@@ -27,132 +27,69 @@
 \definecolor{cBound}{HTML}{ECDFD3}
 \definecolor{cBoundB}{HTML}{9C7558}
 
-\newcommand{\frozenIcon}{\textcolor{cEncB}{\faSnowflake}}
 \newcommand{\fireIcon}{\textcolor{cLLMB!90!red}{\faFire}}
 
-% Clean waveform: 15 vertical bars at a fixed pseudo envelope.
-\newcommand{\WaveformPictogram}{%
-  \begin{tikzpicture}[baseline=-0.6ex]
-    \foreach \i/\h in {%
-        0/0.10, 1/0.22, 2/0.16, 3/0.34, 4/0.24,
-        5/0.42, 6/0.30, 7/0.48, 8/0.34, 9/0.40,
-        10/0.22, 11/0.32, 12/0.16, 13/0.24, 14/0.12%
-    }{
-      \pgfmathsetmacro{\xpos}{-0.84 + \i*0.12}
-      \draw[line width=0.85pt, line cap=round, draw=cEncB!90]
-        (\xpos, -\h) -- (\xpos, \h);
-    }
-  \end{tikzpicture}%
-}
-
-% Two-channel pictogram: short enrollment (peach, top) + mixture (teal, bottom).
-\newcommand{\DualWaveformPictogram}{%
-  \begin{tikzpicture}[baseline=-0.6ex]
-    \node[font=\scriptsize, text=cAdpB] at (-1.30, 0.25) {enroll};
-    \foreach \i/\h in {0/0.06, 1/0.14, 2/0.10, 3/0.16, 4/0.08, 5/0.12, 6/0.18, 7/0.10}{
-      \pgfmathsetmacro{\xpos}{-0.55 + \i*0.10}
-      \draw[line width=0.75pt, line cap=round, draw=cAdpB!85]
-        (\xpos, 0.25-\h) -- (\xpos, 0.25+\h);
-    }
-    \node[font=\scriptsize, text=cEncB] at (-1.30, -0.30) {mix};
-    \foreach \i/\h in {%
-        0/0.08, 1/0.20, 2/0.14, 3/0.28, 4/0.18,
-        5/0.32, 6/0.24, 7/0.36, 8/0.26, 9/0.30,
-        10/0.16, 11/0.24, 12/0.14, 13/0.20, 14/0.10%
-    }{
-      \pgfmathsetmacro{\xpos}{-0.55 + \i*0.10}
-      \draw[line width=0.80pt, line cap=round, draw=cEncB!90]
-        (\xpos, -0.30-\h*0.7) -- (\xpos, -0.30+\h*0.7);
-    }
-  \end{tikzpicture}%
-}
-
-% Noisy pictogram: low-amplitude speckle behind a foreground waveform.
-\newcommand{\NoisyWaveformPictogram}{%
-  \begin{tikzpicture}[baseline=-0.6ex]
-    \foreach \i/\h in {%
-        0/0.18, 1/0.32, 2/0.24, 3/0.20, 4/0.30,
-        5/0.28, 6/0.34, 7/0.40, 8/0.26, 9/0.32,
-        10/0.36, 11/0.22, 12/0.30, 13/0.34, 14/0.24,
-        15/0.20, 16/0.28, 17/0.22%
-    }{
-      \pgfmathsetmacro{\xpos}{-0.96 + \i*0.11}
-      \draw[line width=0.55pt, line cap=round, draw=cBoundB!55, opacity=0.55]
-        (\xpos, -\h) -- (\xpos, \h);
-    }
-    \foreach \i/\h in {%
-        0/0.10, 1/0.22, 2/0.16, 3/0.34, 4/0.24,
-        5/0.42, 6/0.30, 7/0.48, 8/0.34, 9/0.40,
-        10/0.22, 11/0.32, 12/0.16, 13/0.24, 14/0.12%
-    }{
-      \pgfmathsetmacro{\xpos}{-0.84 + \i*0.12}
-      \draw[line width=0.85pt, line cap=round, draw=cEncB!95]
-        (\xpos, -\h) -- (\xpos, \h);
-    }
-  \end{tikzpicture}%
-}
-
 \tikzset{
-  llmbox/.style    ={draw, rounded corners=3pt, align=center,
+  brandstrip/.style ={draw, rounded corners=3pt, align=center,
                      fill=cLLM, draw=cLLMB, line width=0.85pt,
                      minimum width=15.4cm, minimum height=0.95cm,
                      font=\normalsize},
-  capcard/.style   ={draw=cBoundB!70, rounded corners=4pt, align=center,
+  capcard/.style   ={draw=cBoundB!70, rounded corners=4pt,
                      line width=0.7pt, fill=cAudio!55,
-                     minimum width=4.7cm, minimum height=3.5cm,
-                     inner sep=4pt},
+                     minimum width=4.85cm, minimum height=3.3cm,
+                     inner sep=7pt},
 }
 
-\newcommand{\metricbefore}[1]{{\scriptsize\color{black!45}#1}}
-\newcommand{\metricafter}[1]{{\scriptsize\color{cEncB}\bfseries #1}}
-\newcommand{\arr}{{\scriptsize\color{black!60}\,$\to$\,}}
-\newcommand{\promptkey}[1]{{\scriptsize\ttfamily\color{cAdpB!85!black}#1}}
-\newcommand{\cardtitle}[2]{{\bfseries\footnotesize\color{cLLMB!85!black}#1~~#2}}
+% --- card-internal helpers (no boxes, just stacked typography) ---
+\newcommand{\bigicon}[1]{{\Huge\color{cLLMB!85!black}#1}}
+\newcommand{\captitle}[1]{{\bfseries\small\color{cLLMB!85!black}#1}}
+\newcommand{\capdesc}[1]{{\scriptsize\color{black!70}#1}}
+\newcommand{\promptline}[1]{%
+  {\scriptsize\ttfamily\color{cAdpB!90!black}\textgreater\textgreater~#1}%
+}
+
+% Body of a capability card -- packed inside a minipage so the inner
+% \\ line breaks do not collide with TikZ's node-level row parser.
+\newcommand{\capbody}[4]{%
+  \begin{minipage}[c]{4.3cm}\centering%
+    \bigicon{#1}\\[6pt]%
+    \captitle{#2}\\[4pt]%
+    \capdesc{#3}\\[7pt]%
+    \promptline{#4}%
+  \end{minipage}%
+}
 
 \begin{document}
 \begin{tikzpicture}[node distance=0.55cm and 0.55cm]
 
   % AmphionASR brand strip -----------------------------------------
-  \node[llmbox] (brand) {%
+  \node[brandstrip] (brand) {%
     \fireIcon~~\textbf{AmphionASR}~---~one LLM prompt, five Mandarin--English ASR capabilities%
   };
 
   % Row 1: (i), (ii), (iii) ----------------------------------------
-  \node[capcard, below=1.0cm of brand.south west, anchor=north west] (c1) {%
-    \cardtitle{\faGlobe}{Mandarin--English ASR}\\[3pt]
-    \WaveformPictogram\\[3pt]
-    \promptkey{Language: en | zh}\\[6pt]
-    \metricbefore{AISHELL-1:}~\metricafter{1.85\,\% CER}\\
-    \metricbefore{LibriSpeech tc:}~\metricafter{1.82\,\% WER}%
-  };
-  \node[capcard, right=of c1] (c2) {%
-    \cardtitle{\faRetweet}{Code-switching}\\[3pt]
-    \WaveformPictogram\\[3pt]
-    \promptkey{(zh + en in one utterance)}\\[6pt]
-    \metricbefore{TALCS test:}~\metricafter{7.48\,\% MER}%
-  };
-  \node[capcard, right=of c2] (c3) {%
-    \cardtitle{\faTag}{Hotword Biasing}\\[3pt]
-    \WaveformPictogram\\[3pt]
-    \promptkey{Hotwords: AmphionASR, vLLM, \ldots}\\[6pt]
-    \metricbefore{CV17 zh:}~\metricbefore{6.01}\arr\metricafter{2.67\,\% CER}\\
-    {\scriptsize\color{black!45}($k{=}5$ oracle hotwords)}%
-  };
+  \node[capcard, below=0.85cm of brand.south west, anchor=north west] (c1)
+    {\capbody{\faGlobe}{Mandarin--English ASR}
+             {monolingual transcription\\with a language hint}
+             {Language: en | zh}};
+  \node[capcard, right=of c1] (c2)
+    {\capbody{\faRetweet}{Code-switching}
+             {Mandarin and English\\in one utterance}
+             {(no extra prompt)}};
+  \node[capcard, right=of c2] (c3)
+    {\capbody{\faTag}{Hotword Biasing}
+             {rare entities supplied\\through a hotword list}
+             {Hotwords: h1, h2, \ldots}};
 
   % Row 2: (iv), (v) -- inset to centre under the brand strip ------
-  \node[capcard, below=0.55cm of c1.south, anchor=north west, xshift=2.625cm] (c4) {%
-    \cardtitle{\faUserCheck}{Target Speaker}\\[3pt]
-    \DualWaveformPictogram\\[3pt]
-    \promptkey{Given the speaker's voice <enroll>}\\[6pt]
-    \metricbefore{Internal hot+TS:}~\metricafter{13.06\,\% MER}\\
-    {\scriptsize\color{black!45}(3--5\,s enrollment)}%
-  };
-  \node[capcard, right=of c4] (c5) {%
-    \cardtitle{\faVolumeUp}{Noise Robustness}\\[3pt]
-    \NoisyWaveformPictogram\\[3pt]
-    \promptkey{+ MUSAN-speech overlap}\\[6pt]
-    \metricbefore{CV17 zh, NR-SFT:}~\metricbefore{21.45}\arr\metricafter{9.45\,\% CER}%
-  };
+  \node[capcard, below=0.6cm of c1.south, anchor=north west, xshift=2.7cm] (c4)
+    {\capbody{\faUserCheck}{Target Speaker}
+             {select one speaker via\\a 3--5\,s enrollment clip}
+             {Voice: \textless enroll\textgreater}};
+  \node[capcard, right=of c4] (c5)
+    {\capbody{\faVolumeUp}{Noise Robustness}
+             {robust to noise, RIR\\and competing speakers}
+             {(no extra prompt)}};
 
 \end{tikzpicture}
 \end{document}

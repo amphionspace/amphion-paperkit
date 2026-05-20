@@ -55,20 +55,14 @@
   \includegraphics[width=\linewidth]{figures/capabilities.pdf}
   \caption{AmphionASR exposes five production-oriented Mandarin--English
     ASR capabilities through a single LLM prompt. The first row covers
-    the baseline multilingual setting, mixed-language code-switching and
-    prompt-driven hotword biasing; the second row covers target-speaker
-    recognition (selected with a 3--5\,s enrollment utterance) and
-    additive-noise / room-impulse-response / competing-speaker
-    robustness. Numbers shown are the released checkpoint's reported
-    results -- AISHELL-1 ($1.85$\,\% CER) and LibriSpeech
-    \texttt{test-clean} ($1.82$\,\% WER) for plain ASR, TALCS
-    ($7.48$\,\% MER) for code-switching, CommonVoice~17 Mandarin
-    ($6.01 \to 2.67$\,\% CER with $k\!=\!5$ oracle hotwords) for
-    hotword biasing, the internal hot+TS test set
-    ($13.06$\,\% MER) for target-speaker recognition, and the
-    CommonVoice~17 Mandarin MUSAN-speech split
-    ($21.45 \to 9.45$\,\% CER after the noise-robustness SFT stage)
-    for noise robustness.}
+    monolingual transcription with a language hint, intra-utterance
+    Mandarin--English code-switching, and prompt-driven hotword biasing
+    where rare entities are supplied as a list. The second row covers
+    target-speaker recognition, gated by a 3--5\,s enrollment utterance,
+    and robustness to additive noise, room-impulse-response reverberation
+    and competing-speaker interference. Each card lists the prompt key
+    that activates the capability; quantitative results are reported in
+    Sections~\ref{sec:experiments}--\ref{sec:noise}.}
   \label{fig:teaser}
 \end{figure}
 
