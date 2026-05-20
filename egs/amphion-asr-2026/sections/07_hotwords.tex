@@ -50,6 +50,29 @@ by the training augmentation in Section~\ref{subsec:hotword-pool}.
 \subsection{Retrieve Algorithm}
 \label{subsec:retrieve-algorithm}
 
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/retrieve.pdf}
+  \caption{Retrieve-then-bias paradigm
+    (Eq.~\eqref{eq:retrieve-decompose}). Left: AmphionASR is
+    invoked twice -- a no-hotword coarse pass $g(x)$ produces a
+    coarse transcript $\tilde{y}$ that a parameter-free text
+    retriever $r(\cdot)$ maps to the top-$K$ subset of a hotword
+    pool $\mathcal{H}$ of size $\sim\!10^4$; a discriminative-gap
+    check (alphabetic route only) drops the list back to the empty
+    set when no candidate dominates; and a with-hotword fine pass
+    $f(x, \mathcal{H}')$ produces the final transcript with the
+    retrieved hotwords inserted as a single \texttt{Hotwords:}
+    prompt line. Right (dashed, contrast only): the audio-space
+    alternative of Min et al.~\cite{min2024speechrag} skips $g$ by
+    learning a speech adapter that maps the waveform directly into
+    a frozen text retriever; AmphionASR does not adopt this route
+    because it requires an additional audio-to-text alignment
+    network and hotword--utterance supervision that our training
+    data does not provide.}
+  \label{fig:retrieve}
+\end{figure}
+
 \paragraph{Problem formalisation.}
 Let the global hotword pool be $\mathcal{H} = \{h_1, \dots, h_N\}$
 with $N$ up to $10^3$--$10^4$ in deployment. The naive decoder
@@ -72,7 +95,7 @@ downstream WER.
 
 \paragraph{Two-stage retrieve-then-bias paradigm.}
 We decompose $\mathcal{R}$ into a coarse decoder, a text retriever
-and a fine decoder,
+and a fine decoder (\Cref{fig:retrieve}, left panel),
 \begin{equation}
   \mathcal{R}(x, \mathcal{H})
    = r\!\left(g(x),\, \mathcal{H}\right),\qquad
@@ -89,9 +112,10 @@ into text space: a hotword $h$ that is actually spoken in $x$
 leaves a same-pronunciation or same-character footprint along the
 best acoustic path, which $\tilde{y}$ exposes. Audio-space
 alternatives such as the speech retriever of
-Min et al.~\cite{min2024speechrag} require an additional
-audio-to-text alignment network and hotword-utterance pair
-supervision that our training data does not provide; CTC-assisted
+Min et al.~\cite{min2024speechrag} (\Cref{fig:retrieve}, right
+panel) require an additional audio-to-text alignment network and
+hotword--utterance pair supervision that our training data does
+not provide; CTC-assisted
 contextual ASR~\cite{yang2024ctc} uses a CTC auxiliary head as $g$
 to provide $\tilde{y}$. Our $g$ is the no-hotword pass of the same
 LLM-based decoder used for $f$, which keeps the upstream stack

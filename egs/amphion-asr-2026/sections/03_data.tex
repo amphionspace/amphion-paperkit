@@ -162,10 +162,31 @@ the major ASR streams in size.
 \subsection{TS-ASR Synthesis}
 \label{subsec:tsasr-synth}
 
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/tsasr-pipeline.pdf}
+  \caption{Offline TS-ASR synthesiser. From a target speaker
+    $s_\text{tgt}$ the pipeline draws two different recordings --
+    one becomes the $3$--$5\,$s enrollment, the other becomes the
+    target waveform. Cross-source interferer sampling adds
+    $K\!\in\!\{1,2\}$ competing speakers under
+    Eq.~\eqref{eq:mixspeakers}, after which an RIR is applied with
+    probability $0.5$ (truncated to $1.5\,$s) and an additive noise
+    segment from the MUSAN / AudioSet pool is mixed at
+    $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0,25)\,$dB. Five to ten
+    percent of every shard takes the dashed anti-hallucination
+    branch: a real enrollment is paired with either a noise-only or
+    distractor-only mixture and an empty target transcript, so the
+    decoder learns to remain silent when the requested speaker is
+    absent.}
+  \label{fig:tsasr-pipeline}
+\end{figure}
+
 The target-speaker training data is produced by an offline
-synthesiser. Given 16 single-speaker source manifests (10 Mandarin +
-6 English; Table~\ref{tab:tsasr_sources}), each output sample contains
-a target waveform mixed with $K$ interferers, an enrollment utterance
+synthesiser (\Cref{fig:tsasr-pipeline}). Given 16 single-speaker
+source manifests (10 Mandarin + 6 English;
+Table~\ref{tab:tsasr_sources}), each output sample contains a
+target waveform mixed with $K$ interferers, an enrollment utterance
 from the same speaker but \emph{a different recording}, and the
 target's transcript:
 
