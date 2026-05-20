@@ -1,0 +1,98 @@
+---
+description: 本报告所有评测数字以 refs/docs/data.xlsx 为唯一真相源；所有数字都来自同一个 AmphionASR 模型；过往历史数字一律作废。
+alwaysApply: true
+---
+
+# 评测数据真相源 (Single Source of Truth)
+
+> 仅作用于 `egs/amphion-asr-2026/`。与公共层 [AGENTS.md 规则 5](../../../AGENTS.md) 与 [paper-writing.mdc §5](../../../.cursor/rules/paper-writing.mdc) 协同；当本规则与历史 `sections/*.tex`、`refs/docs/*.md`、过往会话中的数字冲突时，**以本规则为准**。
+
+## 1. 唯一真相源
+
+本报告 AmphionASR 自身的所有评测数字必须严格来自 [`refs/docs/data.xlsx`](../../refs/docs/data.xlsx)。该文件含四个 sheet：
+
+| Sheet | 形状 | 结构要点 | 覆盖章节 |
+| --- | --- | --- | --- |
+| ASR | 18×4，行 1 为 header `(Dataset, Dataset, n, WER %)` | 17 个 dataset 行（en headline 6 + zh headline 10 + cs talcs 1）；Mandarin 数据集的 `WER %` 列在 paper 中作为 CER% 报告 | §6 Experiments 三主表（[tab:asr_en / tab:asr_zh / tab:asr_cs](../../sections/06_experiments.tex)） |
+| ASR-hotwords | 41×13，含 4 个 block × 各自的 header row | block 划分：行 1 `v2（random）` / 行 12 `v2（retrieve）` / 行 22 `fun-asr-nano（random）` / 行 33 `fun-asr-nano（retrieve）`；每 block 内 `commonvoice_zh_hotwords` + `commonvoice_en_hotwords` × K∈{0,5,10,15,20}（retrieve block 无 K=0）；retrieve block 列宽 13，random block 列宽 11；指标列 `KER %` / `SACC %` / `B-WER %` / `U-WER %` / `PRR %` / `PF1 %` / `WER %`，retrieve block 多 `Recall@K %` / `PrRR %` | §7 Hotword Conditioning 三张表（[tab:hotwords_oracle / tab:hotwords_retrieve / tab:hotwords_baseline](../../sections/07_hotwords.tex)） |
+| TS-ASR | 3×3，**无 header**（直接从数据起） | 三行分别是 `(ts_hw_test, 6227, 13.06)` / `(libri2mix, 6000, 66.14)` / `(libri3mix, 9000, 86.71)`；列含义为 `dataset / n / 指标值 %`。**指标随数据集不同**：`ts_hw_test` 报 MER%，`libri2mix` / `libri3mix` 报 WER%（与 paper §8 表对齐：内部 hot+TS 是混合 Mandarin–English 词表，用 MER；LibriMix 是纯英文，用 WER） | §8 Target-Speaker 主表（[tab:tsasr](../../sections/08_ts_asr.tex)） |
+| Noise-Robust | 68×20（行 14 之后全空，预留扩展）；行 2 为 header | 行 1 是中文标题说明；行 2 header 关键列：`speech_dataset` / `n` / `degraded_dataset` / `distortion types` / `qwen3-asr-1.7b` / `amphion-4.3b(w/o NR SFT)` / `amphion-4.3b(w/ NR SFT)` / `amphion-4.3b-(w/ NR SFT，encoder w/ lora)`；speech_dataset 行 3 起 `cv-en-test, n=16402`（11 splits 到行 13），行 15 起 `cv-zh-test, n=10647`（11 splits 到行 25）；第 8 列 `amphion-4.3b-(w/ NR SFT，encoder w/ lora)` 当前全空，引入前需在本规则补一行说明 | §9 Noise Robustness 主表（[tab:noise_robustness](../../sections/09_noise_robustness.tex)） |
+
+外部 baseline（Whisper-large-v3、Qwen3-ASR-1.7B 在 §6 / §7 三主表的 baseline 列、SQ-Whisper、BR-ASR、CTC-Assisted、Lakomkin 等）的数字仍按 [paper-writing.mdc §5 lookup order](../../../.cursor/rules/paper-writing.mdc) 走（refs/notes/papers → WebFetch / WebSearch），与本规则互补、不冲突。`fun-asr-nano` 的 hotword 数字虽落在 `ASR-hotwords` sheet 中，但来自外部商用模型评测、属于第三方 baseline；其单纯的 ASR 数字仍按外部 baseline lookup 流程获取。
+
+## 2. 单一模型口径
+
+`data.xlsx` 中所有 AmphionASR 相关列对应**同一个开源 AmphionASR 模型**。具体绑定：
+
+| `data.xlsx` 列名（sheet → column） | paper 中的口径 | 性质 |
+| --- | --- | --- |
+| `ASR` / `TS-ASR` sheet 的 `WER %` 列 | `AmphionASR`（[§6 tab:asr_en/zh/cs](../../sections/06_experiments.tex)、[§8 tab:tsasr](../../sections/08_ts_asr.tex)） | 开源版本，唯一发布产物 |
+| `ASR-hotwords` sheet 中 `v2（random）` / `v2（retrieve）` 两个 block | `AmphionASR`（[§7 tab:hotwords_oracle / tab:hotwords_retrieve](../../sections/07_hotwords.tex)） | 同上 |
+| `ASR-hotwords` sheet 中 `fun-asr-nano（random）` / `fun-asr-nano（retrieve）` 两个 block | `fun-asr-nano`（[§7 tab:hotwords_baseline](../../sections/07_hotwords.tex)） | 第三方商用 baseline，非本模型 |
+| `Noise-Robust` sheet 列 `amphion-4.3b(w/o NR SFT)` | `AmphionASR (no NR SFT)`（[§9 tab:noise_robustness](../../sections/09_noise_robustness.tex)） | 内部 ablation checkpoint，不开源 |
+| `Noise-Robust` sheet 列 `amphion-4.3b(w/ NR SFT)` | `AmphionASR`（§9 同表） | 与上面"开源版本"指同一模型 |
+| `Noise-Robust` sheet 列 `amphion-4.3b-(w/ NR SFT，encoder w/ lora)` | 引入时另立列名并在本规则补充一行；当前留空，不进 paper | 引入前留空 |
+
+**禁止**在 paper 中再出现任何指代历史迭代的版本号自指字样（已在 commit `d8da927` 清理；`git show d8da927` 可复盘）：
+
+- `v3 checkpoint` / `v3 release` / `v3 SFT recipe` / `AmphionASR v3`
+- `v3-NR variant` / `v3-NR` / `v4`
+- 任何 `\label{subsec:v3nr}` 之类的 anchor
+
+例外保留：`Whisper-large-v3` / `Qwen3-ASR-1.7B` / `Whisper-large-v2` 等是第三方产品名。
+
+## 3. 过往历史数据作废
+
+下列来源的旧数字一律作废，**不得**作为 paper 内事实依据：
+
+1. 早期 `sections/*.tex` 历史 commit 中已被 commit `c300d29` 覆盖的数字（例：`7.17` LibriSpeech test-clean、`14.99` TALCS、`14.29` MER hot+TS、`65.83`/`87.06` LibriMix、`6.57`/`2.83` hotword CV17 zh、`9.65`/`4.89` hotword CV17 en、`30.47` FLEURS-en；`git show c300d29` 可复盘当时的 diff）
+2. `refs/docs/plan.md`、`refs/docs/model_arch.md`、`refs/docs/train_eval_data.md`、`refs/docs/task_prompts.md` 等内部工作文档中的任意数字 —— 这些是工作记录，不是 paper 真相源（见 [AGENTS.md 规则 5](../../../AGENTS.md)）。若与 `data.xlsx` 不一致，以 `data.xlsx` 为准
+3. 过往会话（agent 历史 transcript）中曾经被引用过的本模型自家数字
+4. README / blog / 任何 model card 草稿中尚未对齐到 `data.xlsx` 的 AmphionASR 数字
+
+若在内部交流中需要引用历史数字（例如复盘"为什么过去 LibriMix 67%、现在 66.14%"），明确加上"历史值，已被 `data.xlsx` 取代"的注明，不要让历史值流回 paper 出口。
+
+## 4. 冲突处理
+
+当 `refs/docs/`、过往 `sections/*.tex`、内部记忆三者之一与 `data.xlsx` 出现数字冲突：
+
+1. 优先采纳 `data.xlsx` 的值
+2. 用 `tools/fact-check-regex.sh egs/amphion-asr-2026` 扫一遍 paper，确认无规则 4（无实现细节）违规
+3. 若旧值仍残留在某行（例如 abstract / conclusion 头条），用 grep 定位后统一替换
+4. 在 reply 的 fact-check block 列出"旧值 → 新值"映射、来源 sheet 与 dataset+列名锚点（见 §5）
+
+## 5. 引用要求
+
+每次涉及表格 / 数字修改的 reply，fact-check block 必须显式列出：
+
+- 来源 sheet 名（`ASR` / `ASR-hotwords` / `TS-ASR` / `Noise-Robust`）
+- 来源锚点：优先用 (dataset 名 + 列名 + 数值) 三元组（行号会随 sheet 扩展漂移；用 dataset+列名 作为稳定锚点）
+- 与 [paper-writing.mdc §6](../../../.cursor/rules/paper-writing.mdc) 的 fact-check 要求一致；本规则只是细化 AmphionASR 自家数字的引用粒度
+
+例（用 dataset+列名 锚点；行号仅作辅助）：
+
+> Fact check:
+> - AISHELL-1 1.85 % CER → `refs/docs/data.xlsx` `ASR` sheet, `Dataset=aishell, n=7176, WER %=1.85`（行 8），已确认
+> - LibriSpeech test-clean 1.82 % WER → `ASR` sheet, `Dataset=librispeech_test_clean, n=2620, WER %=1.82`（行 2），已确认
+> - TS-ASR ts_hw_test 13.06 % MER → `TS-ASR` sheet, row 1（**无 header**），`(ts_hw_test, 6227, 13.06)`，paper §8 报 MER%，已确认
+> - TS-ASR libri2mix 66.14 % WER → `TS-ASR` sheet, row 2，`(libri2mix, 6000, 66.14)`，paper §8 报 WER%（纯英文），已确认
+> - MUSAN-speech 改善 → `Noise-Robust` sheet, `degraded_dataset=noise_musan_speech`，列 `amphion-4.3b(w/o NR SFT)` vs `amphion-4.3b(w/ NR SFT)`：en 41.19 → 18.74（行 8）、zh 21.45 → 9.45（行 20），已确认
+> - Hotword CV17-zh K=10 retrieve WER → `ASR-hotwords` sheet, `v2（retrieve）` block, `commonvoice_zh_hotwords, Top-K=10, WER %=3.61`（行 14），已确认
+
+## 6. 更新流程
+
+`data.xlsx` 一旦更新（用户交付新版本），按以下顺序执行：
+
+1. 先用 `python3 -c "import openpyxl; ..."` 或同等手段读全部 sheet，**不要**只读某一 sheet
+2. 与当前 `sections/*.tex` 的所有表格逐项对比，输出"旧值 → 新值"映射表给用户确认
+3. **不允许**保留"旧数字 + 新数字混合"的中间提交；要么完整对齐到新 `data.xlsx`，要么不动
+4. 修完所有 `sections/*.tex` 后跑 `latexmk -pdf main.tex` + `pdftotext` / `pypdf` 扫描，确认旧值在 PDF 中出现次数为 0
+5. 同步更新 abstract / introduction / conclusion 中的 headline 数字（这是 reviewer 最先读的位置，最容易遗漏）
+6. fact-check block 列出更新的"旧值 → 新值"映射
+
+## 7. 与其它规则的关系
+
+- 与 [AGENTS.md 规则 3](../../../AGENTS.md)（fact check）联动：本规则把 fact check 的"自家数字"行的来源精确到 `data.xlsx` sheet + dataset 名 + 列名（见 §5）
+- 与 [AGENTS.md 规则 5](../../../AGENTS.md)（refs/docs 是原料库，不清楚要问）联动：refs/docs/*.md 中的数字不是真相源；唯一真相源是 `data.xlsx`
+- 与 [AGENTS.md 规则 9](../../../AGENTS.md)（不自作聪明）联动：`data.xlsx` 中的反常数字（例如 fun-asr-nano retrieve Recall@K ≈ 0%）按规则 9 一笔带过，不要补 mechanism
+- 与 [writing-style.mdc §10](writing-style.mdc) 联动：§10.1 列出的 14 项已 cover 外部事实仍按"refs/notes/papers + WebFetch"走；本规则仅约束 AmphionASR 自家数字
