@@ -12,8 +12,11 @@ distinct after input--output embedding tying) -- and is trained in
 three stages: audio--text alignment, continue-SFT for Mandarin and
 English transcription, and capability SFT that adds in-prompt
 hotword conditioning and reference-utterance target-speaker
-recognition. On Mandarin benchmarks the v3 checkpoint reaches
-single-digit CER on every reported set, with AISHELL-1 at
+recognition. The released AmphionASR checkpoint additionally
+completes a noise-robustness SFT stage that extends the
+augmentation pipeline to the plain-ASR branch
+(Section~\ref{subsec:nrsft}). On Mandarin benchmarks AmphionASR
+reaches single-digit CER on every reported set, with AISHELL-1 at
 $1.85$\,\% as the headline data point. On English it covers the
 standard LibriSpeech, GigaSpeech, MLS, CommonVoice and FLEURS
 grid, with LibriSpeech \texttt{test-clean} at $1.82$\,\% WER. On
@@ -24,18 +27,18 @@ A parameter-free text-space retrieval operator
 (Section~\ref{subsec:retrieve-algorithm}) extends this prompt-driven
 hotword behaviour to deployment-scale pools by reducing the
 prompt to a per-utterance top-$K$ subset of a pool of size up to
-$10^4$. A noise-robustness SFT variant (v3-NR;
-Section~\ref{subsec:v3nr}) is the first AmphionASR checkpoint with
-a controlled noise-robustness evaluation alongside the standard
+$10^4$. The noise-robustness SFT stage above gives AmphionASR its
+first controlled noise-robustness evaluation alongside the standard
 benchmarks.
 
 What still needs to be solved -- and is the explicit subject of
 the next release -- is closing the gap on the public multi-talker
 LibriMix benchmarks, narrowing the residual gap to
 Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} on the non-MUSAN-speech
-rows of Table~\ref{tab:noise_robustness}, documenting the v3-NR
-training pipeline alongside the v3 SFT recipe, and upgrading the
-inference path with a measured streaming mode. We will release
+rows of Table~\ref{tab:noise_robustness}, publishing the
+noise-robustness SFT training manifest alongside the rest of the
+SFT recipe, and upgrading the inference path with a measured
+streaming mode. We will release
 model weights and the vLLM-based serving stack at
 \url{https://github.com/amphionspace/AmphionASR}; the training
 pipeline is documented in

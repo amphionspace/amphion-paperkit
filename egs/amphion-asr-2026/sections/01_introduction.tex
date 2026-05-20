@@ -38,11 +38,11 @@ multilingual ASR model:
         Reverberation, background noise and competing voices are
         pervasive in real recordings but rare in clean read-speech
         training sets. Augmentation curricula are the standard
-        remedy; the released v3 checkpoint sees noise / RIR /
-        overlap augmentation as a by-product of the target-speaker
-        training pipeline, and a v3-NR variant extends the same
-        augmentation to the plain-ASR branch as a controlled
-        noise-robustness SFT stage.
+        remedy; the released AmphionASR checkpoint inherits noise
+        / RIR / overlap augmentation as a by-product of the
+        target-speaker training pipeline, and additionally
+        completes a noise-robustness SFT stage that extends the
+        same augmentation to the plain-ASR branch.
 \end{itemize}
 
 % --- This work ---
@@ -52,8 +52,8 @@ Mandarin and English speech recognition: hotword lists,
 target-speaker reference audio, and noisy or overlapping-speaker
 inputs are all consumed as prompt features, while the model remains
 competitive on standard Mandarin and English ASR benchmarks. The
-released v3 checkpoint totals $4.7$\,B parameters ($4.3$\,B distinct
-after input--output embedding tying).
+released AmphionASR checkpoint totals $4.7$\,B parameters
+($4.3$\,B distinct after input--output embedding tying).
 
 Our contributions are:
 
@@ -93,13 +93,13 @@ Our contributions are:
         decoder silent when the requested speaker is absent; we
         report and analyse the substantially weaker numbers on the
         public LibriMix benchmarks (Section~\ref{sec:tsasr}).
-  \item \textbf{A noise-robustness SFT variant (v3-NR).} The TS-ASR
-        branch already passes through reverberation, additive noise
+  \item \textbf{A noise-robustness SFT stage.} The TS-ASR branch
+        already passes through reverberation, additive noise
         (MUSAN \cite{snyder2015musan} and AudioSet road-traffic)
-        and competing-speaker interference; the v3-NR variant
-        extends the same augmentation to the plain-ASR branch and
-        is the first AmphionASR checkpoint with a controlled
-        noise-robustness evaluation grid against
+        and competing-speaker interference; an additional
+        noise-robustness SFT stage extends the same augmentation
+        to the plain-ASR branch and gives AmphionASR its first
+        controlled noise-robustness evaluation grid against
         Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
         (Section~\ref{sec:noise}).
 \end{itemize}

@@ -4,38 +4,38 @@
 \subsection{Limitations}
 
 \paragraph{Scope.}
-AmphionASR v3 is optimised for Mandarin and English, with a small
-amount of Mandarin--English code-switching data. We do not claim broad
-multilingual coverage and we do not benchmark on languages outside
-those reported in Section~\ref{sec:experiments}.
+AmphionASR is optimised for Mandarin and English, with a small
+amount of Mandarin--English code-switching data. We do not claim
+broad multilingual coverage and we do not benchmark on languages
+outside those reported in Section~\ref{sec:experiments}.
 
 \paragraph{Open multi-talker benchmarks.}
-The v3 target-speaker path is substantially weaker on the public
+The target-speaker path is substantially weaker on the public
 LibriMix test sets ($66.14$\,\% WER on Libri2Mix, $86.71$\,\% on
 Libri3Mix) than on our internal multi-talker set
 ($13.06$\,\% MER). The underlying cause has not been investigated;
 until the next training iteration the public multi-talker numbers
 should be read as a known weakness, not a final result.
 
-\paragraph{Plain-ASR noise curriculum: incidental in v3, controlled
-in v3-NR.}
-The v3 SFT recipe sees substantial noise / RIR / overlap
-augmentation through the TS-ASR branch
-(Section~\ref{sec:noise}) but does not apply the same augmentation
-to the plain-ASR cuts; the v3-NR variant of
-Section~\ref{subsec:v3nr} closes this gap by extending the same
-augmentation to the plain-ASR branch and is the checkpoint
-reported in Table~\ref{tab:noise_robustness}. Two follow-up items
-remain: (i)~the training-data manifest of v3-NR -- which splits
-were augmentation-seen versus unseen -- is not yet released in a
-machine-readable form, so the unseen-only sub-table of
-Section~\ref{subsec:v3nr} cannot yet be assembled; and
-(ii)~v3-NR still trails Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on
-ten of the twenty-two degraded rows in
-Table~\ref{tab:noise_robustness}, so closing the residual is on
-the agenda rather than declared resolved.
-% TODO: publish the v3-NR training manifest and rerun the
-% Section~\ref{subsec:v3nr} table with training-seen rows marked.
+\paragraph{Plain-ASR noise curriculum.}
+Stages~1--3 of the SFT recipe see substantial noise / RIR /
+overlap augmentation through the TS-ASR branch
+(Section~\ref{sec:noise}) but do not apply the same augmentation
+to the plain-ASR cuts; the noise-robustness SFT stage of
+Section~\ref{subsec:nrsft} closes this gap by extending the same
+augmentation to the plain-ASR branch and produces the released
+checkpoint reported in Table~\ref{tab:noise_robustness}. Two
+follow-up items remain: (i)~the training-data manifest of the
+noise-robustness SFT stage -- which splits were augmentation-seen
+versus unseen -- is not yet released in a machine-readable form,
+so the unseen-only sub-table of Section~\ref{subsec:nrsft} cannot
+yet be assembled; and (ii)~the released AmphionASR still trails
+Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on ten of the twenty-two
+degraded rows in Table~\ref{tab:noise_robustness}, so closing the
+residual is on the agenda rather than declared resolved.
+% TODO: publish the noise-robustness SFT training manifest and
+% rerun the Section~\ref{subsec:nrsft} table with training-seen
+% rows marked.
 
 \paragraph{Retrieve operator.}
 The retrieval operator of
@@ -71,7 +71,7 @@ spoken. These are well-known characteristics of LLM-based ASR and we
 are explicit that AmphionASR shares them.
 
 \paragraph{Latency and streaming.}
-The v3 release is offline-batch, served via vLLM. Streaming inference
+The release is offline-batch, served via vLLM. Streaming inference
 and a measured first-token-latency report are out of scope for this
 version.
 

@@ -26,11 +26,12 @@ keeps the decoder silent when the requested speaker is absent.
 \emph{(iii)~Noise robustness.} Every target-speaker training cut
 already passes through reverberation, additive noise (MUSAN
 \cite{snyder2015musan}, AudioSet road-traffic) and
-competing-speaker interference; a v3-NR variant extends the same
-augmentation to the plain-ASR branch and is the first AmphionASR
-checkpoint with a controlled noise-robustness evaluation grid.
+competing-speaker interference; an additional noise-robustness SFT
+stage extends the same augmentation to the plain-ASR branch and
+gives AmphionASR its first controlled noise-robustness evaluation
+grid.
 
-On standard public benchmarks the v3 checkpoint reaches
+On standard public benchmarks AmphionASR reaches
 $\mathbf{1.85}$\,\% CER on AISHELL-1,
 $\mathbf{1.82}$\,\% WER on LibriSpeech \texttt{test-clean} and
 $\mathbf{7.48}$\,\% MER on the TALCS Mandarin--English
@@ -41,8 +42,8 @@ deployment for production transcription pipelines. We also
 discuss current gaps -- in particular weakness on the public
 LibriMix multi-talker benchmarks and the residual gap to
 Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on most non-MUSAN-speech
-rows of the v3-NR noise grid -- and outline the next training
-iteration. Model weights and the vLLM-based serving stack will be
+rows of the noise-robustness grid -- and outline the next
+training iteration. Model weights and the vLLM-based serving stack will be
 released at \url{https://github.com/amphionspace/AmphionASR}; the
 training code is not part of this release
 (Section~\ref{sec:limitations}).

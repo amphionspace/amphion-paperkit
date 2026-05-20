@@ -3,9 +3,9 @@
 
 \subsection{Stages}
 
-The released v3 checkpoint is the output of a three-stage supervised
-fine-tuning (SFT) recipe. Each stage progressively unlocks more of
-the model and adds more demanding tasks:
+The released AmphionASR checkpoint is the output of a multi-stage
+supervised fine-tuning (SFT) recipe. Each stage progressively
+unlocks more of the model and adds more demanding tasks:
 
 \begin{enumerate}
   \item \textbf{Stage~1 -- Audio--Text Alignment.}
@@ -35,11 +35,13 @@ the model and adds more demanding tasks:
         from Stage~2 unless noted.
 \end{enumerate}
 
-The version suffix v3 indicates the third released iteration of
-Stage~3; earlier iterations are referred to in
-Section~\ref{sec:analysis} only when relevant to the ablation
-discussion.
-% TODO: drop the v1/v2 sentence if no v1/v2 numbers are eventually reported.
+After Stages~1--3 the released checkpoint additionally goes through
+a noise-robustness SFT stage (Section~\ref{subsec:nrsft}) that
+extends the augmentation pipeline of
+Section~\ref{subsec:tsasr-synth} to the plain-ASR branch. The
+ablation column of Table~\ref{tab:noise_robustness} reports an
+internal pre-noise-robustness checkpoint that is not part of the
+release.
 
 \subsection{Objective}
 
@@ -62,9 +64,9 @@ projector is trained purely through the LLM gradient.
 
 \subsection{Optimisation}
 
-Table~\ref{tab:hparams} summarises the per-stage hyperparameters used
-to produce the v3 checkpoint; entries marked \texttt{?} are still
-pending the published training log.
+Table~\ref{tab:hparams} summarises the per-stage hyperparameters of
+the SFT recipe; entries marked \texttt{?} are still pending the
+published training log.
 
 \begin{table}[t]
   \caption{Per-stage SFT hyperparameters. The effective global batch
@@ -105,9 +107,9 @@ unstable in this setup and was not used.
 \subsection{Infrastructure}
 
 Training is run on the internal H800 cluster.
-% TODO: confirm GPU count (default config implies $\geq 4$ GPUs from the
-% effective batch size 16 \times 4 \times N_\text{gpu}; record the actual
-% N_\text{gpu} and total wall-clock time for the v3 checkpoint).
+% TODO: confirm GPU count (default config implies $\geq 4$ GPUs from
+% the effective batch size 16 \times 4 \times N_\text{gpu}; record
+% the actual N_\text{gpu} and total wall-clock time).
 The training framework is ms-swift~\cite{msswift}; inference and
 evaluation throughput rely on vLLM~\cite{kwon2023vllm} as a batched
 HTTP service (Section~\ref{subsec:inference}).

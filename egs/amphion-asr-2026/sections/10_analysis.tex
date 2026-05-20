@@ -61,11 +61,11 @@ AmphionASR:
         noise-only negative branch of the TS-ASR pipeline
         (Section~\ref{subsec:tsasr-synth}) explicitly trains the
         model to terminate on silence under the target-speaker
-        prompt. The v3-NR variant of Section~\ref{subsec:v3nr}
-        extends this exposure to the plain-ASR branch with a
-        controlled noise grid; a per-condition qualitative
-        breakdown of residual repetition-loop behaviour is left to
-        future work.
+        prompt. The noise-robustness SFT stage of
+        Section~\ref{subsec:nrsft} extends this exposure to the
+        plain-ASR branch with a controlled noise grid; a
+        per-condition qualitative breakdown of residual
+        repetition-loop behaviour is left to future work.
   \item Language drift on Mandarin--English code-switching, where
         short English phrases inside a Mandarin utterance can be
         ``corrected'' into Mandarin transcriptions of

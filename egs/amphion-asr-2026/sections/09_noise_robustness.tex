@@ -1,13 +1,13 @@
 \section{Noise Robustness}
 \label{sec:noise}
 
-\subsection{What v3 Already Sees During Training}
+\subsection{What the SFT Pipeline Already Sees}
 
-Although the v3 SFT recipe does not include a dedicated
-``noise-robustness'' fine-tuning stage, every TS-ASR training
-mixture (about $3$\,M cuts; roughly half of the multi-task
-training stream) already passes through the augmentation pipeline
-of Section~\ref{subsec:tsasr-synth}:
+Stages~1--3 of the SFT recipe (Section~\ref{sec:training}) do not
+include a dedicated ``noise-robustness'' fine-tuning stage, but
+every TS-ASR training mixture (about $3$\,M cuts; roughly half of
+the multi-task training stream) already passes through the
+augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
 
 \begin{itemize}
   \item \textbf{Reverberation.} Each TS-ASR sample is convolved
@@ -33,25 +33,26 @@ of Section~\ref{subsec:tsasr-synth}:
         to stay silent when no speech is present.
 \end{itemize}
 
-This means that v3's apparent ``noise robustness'' on the standard
-ASR benchmarks of Section~\ref{sec:experiments} is in fact an
-incidental side-effect of the TS-ASR data pipeline rather than the
-result of an explicitly designed noise curriculum, with two caveats
-that the next subsection makes explicit.
+This means that any apparent ``noise robustness'' on the standard
+ASR benchmarks of Section~\ref{sec:experiments} from
+Stages~1--3 alone would be an incidental side-effect of the
+TS-ASR data pipeline rather than the result of an explicitly
+designed noise curriculum, with two caveats that the next
+subsection makes explicit.
 
-\subsection{A Noise-Robustness SFT Variant: v3-NR}
-\label{subsec:v3nr}
+\subsection{Noise-Robustness SFT Stage}
+\label{subsec:nrsft}
 
-To close the curriculum gap above we further fine-tune the v3
-checkpoint with a noise-robustness SFT stage, producing a
-\textbf{v3-NR} variant in which the augmentation pipeline of
-Section~\ref{subsec:tsasr-synth} is also applied to the
-plain-ASR branch. The exact data mix and schedule of v3-NR are
-documented in the model card released alongside this report; this
-section reports its evaluation on a controlled noise-robustness
-grid.
-% TODO: link v3-NR training-stage description from
-% Section~\ref{sec:training} once the dedicated subsection lands.
+The released AmphionASR checkpoint extends Stage~3 with a
+\emph{noise-robustness SFT} stage in which the augmentation
+pipeline of Section~\ref{subsec:tsasr-synth} is also applied to
+the plain-ASR branch. The exact data mix and schedule of this
+stage are documented in the model card released alongside this
+report; this section reports its evaluation on a controlled
+noise-robustness grid against the pre-noise-robustness checkpoint
+as an ablation.
+% TODO: link the dedicated noise-robustness SFT stage description
+% from Section~\ref{sec:training} once that subsection lands.
 
 We construct $11$ degraded splits by applying a single distortion
 operator to each of the two CommonVoice~17 clean tests
@@ -74,34 +75,39 @@ Section~\ref{sec:experiments}.
 
 \paragraph{Comparison.}
 Table~\ref{tab:noise_robustness} reports WER (\%) for
-Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, AmphionASR v3 (without the
-noise-robustness SFT stage), and v3-NR. We rerun Qwen3-ASR-1.7B
-ourselves on each split for like-with-like normalisation; the
-training-seen / unseen status of individual splits was not
-mechanically extractable from the data delivery and is therefore
-left unannotated in this revision.
-% TODO: once the v3-NR training data manifest is finalised, mark
-% the corresponding rows of Table~\ref{tab:noise_robustness} as
-% ``training-seen'' so the unseen-only sub-table can be assembled.
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, an internal
+pre-noise-robustness ablation checkpoint
+(``AmphionASR (no NR SFT)'') and the released
+\textbf{AmphionASR}. The pre-noise-robustness column is an
+ablation and not part of the open release. We rerun
+Qwen3-ASR-1.7B ourselves on each split for like-with-like
+normalisation; the training-seen / unseen status of individual
+splits was not mechanically extractable from the data delivery and
+is therefore left unannotated in this revision.
+% TODO: once the noise-robustness SFT training manifest is
+% finalised, mark the corresponding rows of
+% Table~\ref{tab:noise_robustness} as ``training-seen'' so the
+% unseen-only sub-table can be assembled.
 
 \begin{table}[t]
   \caption{Noise-robustness grid on CommonVoice~17.
     \texttt{cv-en-test} reports WER (\%) with the Whisper English
     normaliser; \texttt{cv-zh-test} reports CER (\%) with the
     Mandarin normaliser of Section~\ref{subsec:setup}. Lower is
-    better. ``v3 (w/o NR SFT)'' is the checkpoint used in
-    Tables~\ref{tab:asr_en}--\ref{tab:hotwords_baseline}; ``v3-NR''
-    is the noise-robustness SFT variant of
-    Section~\ref{subsec:v3nr}. Additive-noise splits use
-    SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB. Bold marks the best
-    among the three systems on each row.}
+    better. ``AmphionASR (no NR SFT)'' is an internal ablation
+    checkpoint taken before the noise-robustness SFT stage of
+    Section~\ref{subsec:nrsft} and not part of the open release;
+    ``\textbf{AmphionASR}'' is the released checkpoint that
+    completes the noise-robustness SFT stage. Additive-noise
+    splits use SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB. Bold marks
+    the best among the three systems on each row.}
   \label{tab:noise_robustness}
   \centering
   \small
   \setlength{\tabcolsep}{4.5pt}
   \begin{tabular}{llccc}
     \toprule
-    Degraded split & Distortion & Qwen3-ASR-1.7B & v3 (w/o NR SFT) & \textbf{v3-NR} \\
+    Degraded split & Distortion & Qwen3-ASR-1.7B & AmphionASR (no NR SFT) & \textbf{AmphionASR} \\
     \midrule
     \multicolumn{5}{l}{\emph{\texttt{cv-en-test}, $n=16{,}402$ (WER \%)}} \\
     \midrule
@@ -137,14 +143,15 @@ left unannotated in this revision.
 \subsection{Analysis}
 
 \paragraph{NR SFT closes the gap on competing-speaker noise.}
-The largest single improvement from v3-NR is on the MUSAN-speech
-split, where the WER (CER) drops from $41.19$\,\% to $18.74$\,\%
-on English and from $21.45$\,\% to $9.45$\,\% on Mandarin --
-$22.5$ and $12.0$ absolute points respectively, and from above to
-below the corresponding Qwen3-ASR-1.7B number on that split. On
-the other ten splits v3-NR yields small but consistent gains
-(typically $0.1$--$1.0$ absolute points), so the gross effect of
-the additional SFT stage is concentrated on the
+The largest single improvement from the noise-robustness SFT
+stage is on the MUSAN-speech split, where the WER (CER) drops
+from $41.19$\,\% to $18.74$\,\% on English and from $21.45$\,\%
+to $9.45$\,\% on Mandarin -- $22.5$ and $12.0$ absolute points
+respectively, and from above to below the corresponding
+Qwen3-ASR-1.7B number on that split. On the other ten splits
+AmphionASR yields small but consistent gains over the no-NR-SFT
+ablation (typically $0.1$--$1.0$ absolute points), so the gross
+effect of the noise-robustness SFT stage is concentrated on the
 competing-speaker condition.
 
 \paragraph{Residual gap to Qwen3-ASR-1.7B.}
@@ -152,16 +159,18 @@ Qwen3-ASR-1.7B remains the best system on most non-MUSAN-speech
 rows, by margins of $0.1$ to $3.3$ absolute points. The gap
 reflects that Qwen3-ASR-1.7B was trained with a substantially
 larger and more diverse noise / RIR augmentation programme than
-the v3-NR pipeline in this revision. Closing this residual is on
-the agenda for the next iteration; we report v3-NR here as the
-first checkpoint in the AmphionASR family with controlled
-noise-robustness evaluation rather than as a head-to-head winner.
+the noise-robustness SFT stage in this release. Closing this
+residual is on the agenda for the next iteration;
+Table~\ref{tab:noise_robustness} is the first controlled
+noise-robustness evaluation we release for AmphionASR rather than
+a head-to-head winner.
 
 \paragraph{Distortion-type asymmetry.}
 The two language columns track each other closely on every row of
 Table~\ref{tab:noise_robustness} except MUSAN-speech, where the
 English column starts substantially higher than the Mandarin
-column ($41.19$ vs.\ $21.45$\,\% on v3 (w/o NR SFT)) and v3-NR
-reduces both into the same single-digit / mid-teens regime. We do
-not attribute this asymmetry further; a controlled decomposition
-across distortion types is on the agenda for the next iteration.
+column ($41.19$ vs.\ $21.45$\,\% on the no-NR-SFT ablation) and
+the released AmphionASR reduces both into the same single-digit /
+mid-teens regime. We do not attribute this asymmetry further; a
+controlled decomposition across distortion types is on the agenda
+for the next iteration.
