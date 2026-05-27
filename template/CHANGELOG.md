@@ -67,6 +67,40 @@ class 文件层面的具体变更：
 
 ---
 
+## v0.4 — 2026-05-27 — 框架更名 Amphion Technical Reports → Amphion PaperKit
+
+项目品牌名变更：原"Amphion Technical Reports"是历史命名（早期等同于该框架孵化的第一组报告），但框架本身已与具体研究方向（ASR / TTS / Audio-LLM）解耦，更名为 **Amphion PaperKit**——一个写学术 paper / 技术报告的通用工程框架。**非破坏性**：所有 `\documentclass` / class 标识符 / `\ProvidesPackage` macro 名 / egs 内容均未改动；只更新顶层文档与公共层注释里的项目名引用。
+
+公共层的具体变更：
+
+- `README.md` 主标题 `# Amphion Technical Reports` → `# Amphion PaperKit`；首段描述重写以反映"通用框架"定位；mermaid Root 节点 `amphion-technical-reports` → `amphion-paperkit`。
+- `AGENTS.md` 主标题 `# AGENTS.md — Amphion Technical Reports 协作规范` → `# AGENTS.md — Amphion PaperKit 协作规范`；工作目录示例 `~/Documents/llm-asr-report` → `~/Documents/amphion-paperkit`；§ 仓库形态 ASCII 树根目录 `amphion-technical-reports/` → `amphion-paperkit/`。
+- `egs/README.md` 主标题 `# egs/ — Amphion technical reports` → `# egs/ — Amphion PaperKit reports`；首段描述同步。
+- `.cursor/rules/multi-report.mdc` 第 8 行项目描述 `This repo hosts multiple Amphion technical reports as ...` → `Amphion PaperKit hosts multiple technical reports as ...`。
+- `.cursor/rules/latex-engineering.mdc` description `LaTeX project engineering conventions for the AmphionASR report.` → `LaTeX project engineering conventions for Amphion PaperKit reports. Applies whenever editing TeX, BibTeX, class, or style files under egs/<slug>/ or the public template/ layer.`（同步去除"绑定单份报告"的历史措辞，规则适用对象正式扩展为框架内所有 egs）。
+- `template/amphion.cls` 头部注释 `LaTeX class for Amphion technical reports.` → `LaTeX class shipped with Amphion PaperKit, the public LaTeX layer used by all reports under egs/<slug>/.`
+- `template/asr-macros.sty` 头部注释 `ASR-domain math macros for Amphion technical reports.` → `ASR-domain math macros shipped with Amphion PaperKit.`；`\ProvidesPackage` 末尾 `(Amphion)` → `(Amphion PaperKit)`。
+- `figures/_palette.tex` 第 2 行 `Shared TikZ palette + style preset for Amphion technical-report figures.` → `Shared TikZ palette + style preset for Amphion PaperKit report figures.`
+- `figures/architecture-skeleton.tex` 第 2 行 `Skeleton TikZ figure for Amphion technical-report architecture diagrams.` → `Skeleton TikZ figure for Amphion PaperKit architecture diagrams.`
+- `egs/_skeleton/main.tex` 头部注释 `<<TITLE>> — Amphion technical report` / `Built on the Amphion technical-report template` → `<<TITLE>> — built with Amphion PaperKit` / `Uses the public LaTeX template shipped with Amphion PaperKit`。
+- `tools/schemas/refs-index.schema.json` `title` 字段 `Amphion refs INDEX.yaml` → `Amphion PaperKit refs INDEX.yaml`。
+
+显式保留（与新品牌名解耦）：
+
+- `template/amphion.cls` 的 class 标识符 `\ProvidesClass{template/amphion}` 与各 egs `main.tex` 中的 `\documentclass{template/amphion}` 不变。class 文件名 `amphion.cls` 沿用，作为"该框架默认 LaTeX class"的稳定标识；改名会令所有 egs 与历史 commit 中的 `\documentclass` 路径失效，迁移成本远大于命名一致性收益。
+- `LICENSE` 中的 `Copyright (c) 2026 Amphion` 不变（Amphion 在此处表示版权方/组织名，与项目品牌名是两件事）。
+- 所有 `egs/amphion-asr-2026/` 下的内容（slug、报告标题 `AmphionASR`、`shortname`、引用、模型名）不变；这些是单份报告与其模型的命名，独立于框架品牌名。
+
+每 egs 影响：仅文档措辞 / 注释变化，class 标识符 / package 名 / TeX 编译路径均不动；不需要 `depends_on_template` bump。`tools/build-all.sh` 在改名后跑一遍以确认 `amphion-asr-2026` 仍能干净编译。
+
+后续手动步骤（不在公共层 commit 范围内，由仓库维护者执行）：
+
+- 本地目录 rename：`mv ~/Documents/llm-asr-report ~/Documents/amphion-paperkit`，并在 IDE 中重新打开工作区。
+- GitHub repo rename：在 GitHub 网页 Settings → Repository name 改为 `amphion-paperkit`，或 `gh repo rename amphion-paperkit`。GitHub 自动配置 redirect，旧 URL 不会断。
+- 本地 git remote URL 同步：`git remote set-url origin https://github.com/boxpkaka/amphion-paperkit.git`。
+
+---
+
 ## v0.3 — 2026-05-15 — fetch-refs 切换到 uv (PEP 723)
 
 `tools/fetch-refs.py` 从"`pip install -r requirements-fetch.txt` + `python ...`" 工作流切到"`uv run ...`"工作流。脚本头部按 PEP 723 inline metadata 声明 PyYAML + jsonscheme 依赖，[uv](https://docs.astral.sh/uv/) 第一次运行时建临时 venv 并缓存。**非破坏性**：脚本本身仍是合法 Python，stock `python tools/fetch-refs.py ...` 在已有 venv 里也能跑。

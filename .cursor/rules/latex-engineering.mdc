@@ -1,5 +1,5 @@
 ---
-description: LaTeX project engineering conventions for the AmphionASR report. Applies whenever editing TeX, BibTeX, class, or style files.
+description: LaTeX project engineering conventions for Amphion PaperKit reports. Applies whenever editing TeX, BibTeX, class, or style files under egs/<slug>/ or the public template/ layer.
 globs: **/*.tex,**/*.bib,**/*.cls,**/*.sty
 alwaysApply: false
 ---

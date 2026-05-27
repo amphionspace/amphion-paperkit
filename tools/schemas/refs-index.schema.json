@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://amphion.dev/schemas/refs-index.schema.json",
-  "title": "Amphion refs INDEX.yaml",
+  "title": "Amphion PaperKit refs INDEX.yaml",
   "description": "Schema for egs/<slug>/refs/{notes/papers,datasets}/INDEX.yaml — single source of truth for reference PDFs (downloaded via tools/fetch-refs.py).",
   "type": "object",
   "required": ["groups", "papers"],

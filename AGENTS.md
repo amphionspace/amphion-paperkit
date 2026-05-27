@@ -1,9 +1,9 @@
-# AGENTS.md — Amphion Technical Reports 协作规范
+# AGENTS.md — Amphion PaperKit 协作规范
 
-本文件是该工程所有 AI agent（Cursor / Claude Code / Codex / 任意 SDK 客户端）的硬约束。
+本文件是 Amphion PaperKit 框架所有 AI agent（Cursor / Claude Code / Codex / 任意 SDK 客户端）的硬约束。
 人协作者也建议遵守，方便保持工程一致。
 
-工作目录：`~/Documents/llm-asr-report`（mono-repo 根；具体报告住在 `egs/<slug>/`）
+工作目录：`~/Documents/amphion-paperkit`（mono-repo 根；具体报告住在 `egs/<slug>/`）
 编译命令：`cd egs/<slug> && PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex`
 一键编全部：`tools/build-all.sh`
 默认沟通语言：中文（代码注释保持英文）
@@ -13,7 +13,7 @@
 mono-repo + icefall 风格 `egs/` 叶子节点。每份报告自包含；公共能力（LaTeX 模板、AI 协作规则、共享参考资料、helper scripts、CI）在顶层。详见顶层 [README.md](README.md) 与 [egs/README.md](egs/README.md)。
 
 ```
-amphion-technical-reports/
+amphion-paperkit/
 ├── template/      amphion.cls + asr-macros.sty + IEEEtran2.bst + venues.bib
 ├── tools/         new-report.sh / build-all.sh / fact-check-regex.sh / fetch-refs.py / schemas/
 ├── figures/       公共 TikZ preset（_palette.tex / architecture-skeleton.tex）
@@ -368,3 +368,50 @@ agent 在 `egs/<slug>/` 工作时，原则上不要改 `template/` / `figures/_p
 ### 不要在叶子里建公共层副本
 
 不要把 `template/` 或 `figures/_palette.tex` 或顶层 `references.bib` 的副本拷到 `egs/<slug>/` 内自用。所有报告共享同一份公共层，这是 mono-repo 的核心收益。
+
+---
+
+## 规则 9：不自作聪明 — refs/docs 没说的 why / 归因 / 机理一律不补
+
+### 核心原则
+
+看到一个反常实验数字（FLEURS-en 30% WER、LibriMix 性能差、hotword 五个最优、训练只用 ZeRO-2 而非 ZeRO-3）就给出 mechanism 解释，是 agent 常见的"自作聪明"失败模式。
+
+准则：
+
+- 如果 `egs/<slug>/refs/docs` 没有写明这个 why / 归因 / 机理，agent 一律不要自创解释。
+- 如果 `refs/docs` 明确写了「原因未排查」「论文里一笔带过」之类字眼，agent 必须遵守，不要绕过该指示去补假设性归因。
+
+### 工作流
+
+写「Discussion / Analysis / Limitations」类涉及 why 的段落前：
+
+1. 在 `egs/<slug>/refs/docs/` 中检索该现象的 keyword（如 `LibriMix` / `FLEURS` / `ZeRO` / `hotword` / `repetition`），看作者是否已写归因或机理；
+2. 若有，如实复述（语言强度也不要超过 refs/docs 的原始判断），在 fact-check block 列出来源行号；
+3. 若没有，按下列模板一笔带过，不要发挥：
+    - 「the underlying cause has not yet been diagnosed」
+    - 「a controlled ablation is on the agenda for the next iteration」
+    - 「a mechanistic decomposition is left to future work」
+    - 「the cause has not been investigated; a qualitative error-type breakdown is the planned next step」
+
+### 禁用写作模式（无 refs/docs 背书时）
+
+下列短语在正文出现且无 refs/docs 对应支撑，一律视为违规：
+
+- 「We attribute X to Y」
+- 「We suspect / believe / hypothesize / posit / conjecture that ...」
+- 「This is consistent with the intuition that ...」
+- 「The likely cause is ...」/「The remaining suspects are ...」
+- 「indicating that ... works as intended」（除非该 design-test 闭环在 refs/docs 中已被明确写下）
+- 「matches the residual patterns reported by ...」（无 cite 支撑时）
+- 「Why X」段落标题 + 自创机理（除非 refs/docs 已经明确给出原因）
+
+### 触发：fact-check block 必加一行
+
+> 自作聪明 audit：所有 why / 归因 / 机理段落已对照 `refs/docs/<file>`，未背书项一笔带过，无新增 hypothesis。
+
+### 与既有规则的关系
+
+- 与规则 3（fact-check）联动：fact-check block 必须显式标注 why 的来源行号，或明确写"refs/docs 未背书，已一笔带过"。
+- 与规则 5（refs/docs 是原料库，不清楚要问）联动：refs/docs 写「未排查」「论文里一笔带过」是最高优先级指示，不要绕过。
+- 与 `.cursor/rules/paper-writing.mdc` §3 hedge 部分一致：hedge 用语（"suggests", "indicates", "may"）不能成为「写未经核实 mechanism」的借口；hedge 的作用是把已有证据的判断说得克制，不是把无证据的猜测包装成"看上去克制"的论断。

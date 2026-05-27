@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Multi-report Boundary Rules
 
-This repo hosts multiple Amphion technical reports as `egs/<slug>/` leaf directories sharing one public layer (`template/` + `figures/_palette.tex` + top-level `references.bib` + `tools/` + `tools/schemas/` + `.cursor/rules/_sources.md`). Each `egs/<slug>/refs/` is private to its report. These rules tell an agent which layer an edit belongs to and how to amend the shared layer without breaking other reports.
+Amphion PaperKit hosts multiple technical reports as `egs/<slug>/` leaf directories sharing one public layer (`template/` + `figures/_palette.tex` + top-level `references.bib` + `tools/` + `tools/schemas/` + `.cursor/rules/_sources.md`). Each `egs/<slug>/refs/` is private to its report. These rules tell an agent which layer an edit belongs to and how to amend the shared layer without breaking other reports.
 
 See AGENTS.md rule 8 for the same content in 协作规范 form.
 

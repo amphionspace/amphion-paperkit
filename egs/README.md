@@ -1,6 +1,6 @@
-# egs/ — Amphion technical reports
+# egs/ — Amphion PaperKit reports
 
-每份 Amphion 技术报告住在自己的 egs/<slug>/ 子目录下，结构对齐 [k2-fsa/icefall](https://github.com/k2-fsa/icefall) 的 egs 模式：顶层提供公共能力（template / tools / rules），叶子节点提供单份报告的全部材料（含报告私有的 refs/）。
+每份基于 Amphion PaperKit 框架孵化的技术报告住在自己的 egs/<slug>/ 子目录下，结构对齐 [k2-fsa/icefall](https://github.com/k2-fsa/icefall) 的 egs 模式：顶层提供公共能力（template / tools / rules），叶子节点提供单份报告的全部材料（含报告私有的 refs/）。
 
 ## 子目录约定
 

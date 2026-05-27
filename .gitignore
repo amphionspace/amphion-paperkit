@@ -78,3 +78,8 @@ figures/*.synctex(busy)
 # Download via: python tools/fetch-refs.py egs/<slug>
 egs/*/refs/notes/papers/*.pdf
 egs/*/refs/datasets/*.pdf
+
+# Overleaf-pack output: a flat, self-contained copy of egs/<slug>/ + template/
+# produced by `tools/overleaf-pack.sh` (zip + folder). One-way mono-repo -> Overleaf,
+# regenerated on demand; not tracked.
+build/

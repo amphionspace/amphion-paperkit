@@ -1,5 +1,6 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% LaTeX class for Amphion technical reports.
+% LaTeX class shipped with Amphion PaperKit, the public LaTeX layer used by
+% all reports under egs/<slug>/.
 % Version: 0.1
 % Update date: 20260514
 %
@@ -25,7 +26,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{template/amphion}[2026/05/14 v0.1 Amphion technical-report class]
+\ProvidesClass{template/amphion}[2026/05/14 v0.1 Amphion PaperKit class]
 
 % --- Class options / 文档类选项 ---
 % Theme options (mutually exclusive). Default = amphion (warm ivory + petrol teal).
