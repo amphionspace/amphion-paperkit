@@ -12,8 +12,23 @@ Qwen3-ASR audio tower; (ii)~a lightweight two-layer projector that
 uses the SwooshR activation \cite{yao2024zipformer}; and (iii)~four
 learnable \emph{modality-boundary prompts} that mark the audio--text
 boundary inside the LLM's input-embedding stream. The full
-computational graph is reproduced as
-\Cref{fig:architecture} on the title page.
+computational graph is shown in \Cref{fig:architecture}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/architecture.pdf}
+  \caption{AmphionASR architecture. The audio branch (left) maps a
+    16\,kHz waveform through a Whisper-style log-mel front-end, a
+    convolutional sub-sampler, a 24-layer Whisper-style Transformer
+    encoder and a lightweight modality projector into the LLM's
+    2560-dimensional hidden space. The text branch (right) tokenises
+    the chat template and replaces four special boundary tokens with
+    learnable prompt vectors. The two streams meet at a merge step
+    that substitutes the \texttt{<speech>} placeholder with the
+    audio embedding sequence, after which Qwen3-4B-Instruct performs
+    next-token prediction on the assistant span only.}
+  \label{fig:architecture}
+\end{figure}
 
 Component-level parameter counts are summarised in
 Table~\ref{tab:params}. The total of $\approx\!4.74$\,B includes the

@@ -50,7 +50,7 @@
 \fancyhead[L]{AmphionASR}
 
 % --- Teaser 1: capability overview ------------------------------------------
-\begin{figure}[H]
+\begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/capabilities-v2.png}
   \caption{AmphionASR exposes three production-oriented capabilities
@@ -69,31 +69,9 @@
   \label{fig:teaser}
 \end{figure}
 
-% --- Teaser 2: architecture diagram -----------------------------------------
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{figures/architecture.pdf}
-  \caption{AmphionASR architecture. The audio branch (left) maps a
-    16\,kHz waveform through a Whisper-style log-mel front-end, a
-    convolutional sub-sampler, a 24-layer Whisper-style Transformer
-    encoder and a lightweight modality projector into the LLM's
-    2560-dimensional hidden space. The text branch (right) tokenises
-    the chat template and replaces four special boundary tokens with
-    learnable prompt vectors. The two streams meet at a merge step
-    that substitutes the \texttt{<speech>} placeholder with the
-    audio embedding sequence, after which Qwen3-4B-Instruct performs
-    next-token prediction on the assistant span only. See
-    Section~\ref{sec:model} for component-level details.}
-  \label{fig:architecture}
-\end{figure}
-
-\clearpage
-\tableofcontents
-\clearpage
 
 % --- Body sections ----------------------------------------------------------
 \input{sections/01_introduction}
-\input{sections/02_related_work}
 \input{sections/03_data}
 \input{sections/04_model}
 \input{sections/05_training}
