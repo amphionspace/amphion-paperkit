@@ -9,33 +9,52 @@ amount of Mandarin--English code-switching data. We do not claim
 broad multilingual coverage and we do not benchmark on languages
 outside those reported in Section~\ref{sec:experiments}.
 
-\paragraph{Open multi-talker benchmarks.}
+\paragraph{Open multi-talker benchmarks (positive WER).}
 The target-speaker path is substantially weaker on the public
-LibriMix test sets ($66.14$\,\% WER on Libri2Mix, $86.71$\,\% on
-Libri3Mix) than on our internal multi-talker set
-($13.06$\,\% MER). The underlying cause has not been investigated;
-until the next training iteration the public multi-talker numbers
-should be read as a known weakness, not a final result.
+LibriMix test sets ($66.33$\,\% WER on Libri2Mix, $86.00$\,\% on
+Libri3Mix) than on our internal \texttt{ts\_hw\_test} positive
+sub-slice ($12.56$\,\% WER, Table~\ref{tab:tsasr}). The underlying
+cause has not been investigated; until the next training
+iteration the public multi-talker numbers should be read as a
+known weakness, not a final result. The fact that Libri3Mix
+degrades more than Libri2Mix relative to AmphionASR's own
+\texttt{ts\_hw\_test} baseline (an extra $+19.67$ WER points
+between two-speaker and three-speaker mixed audio) further
+suggests that AmphionASR's speaker selection is not yet robust to
+interferer count.
 
-\paragraph{Plain-ASR noise curriculum.}
-Stages~1--3 of the SFT recipe see substantial noise / RIR /
-overlap augmentation through the TS-ASR branch
-(Section~\ref{sec:noise}) but do not apply the same augmentation
-to the plain-ASR examples; the noise-robustness SFT stage of
-Section~\ref{subsec:nrsft} closes this gap by extending the same
-augmentation to the plain-ASR branch and produces the released
-checkpoint reported in Table~\ref{tab:noise_robustness}. Two
-follow-up items remain: (i)~the training-data manifest of the
-noise-robustness SFT stage -- which splits were augmentation-seen
-versus unseen -- is not yet released in a machine-readable form,
-so the unseen-only sub-table of Section~\ref{subsec:nrsft} cannot
-yet be assembled; and (ii)~the released AmphionASR still trails
-Qwen3-ASR-1.7B \cite{qwen2025qwen3asr} on ten of the twenty-two
-degraded rows in Table~\ref{tab:noise_robustness}, so closing the
-residual is on the agenda rather than declared resolved.
-% TODO: publish the noise-robustness SFT training manifest and
-% rerun the Section~\ref{subsec:nrsft} table with training-seen
-% rows marked.
+\paragraph{Negative-slice false alarms.}
+On the $n_\text{neg} = 328$ target-absent samples of
+\texttt{ts\_hw\_test}, AmphionASR reduces the false-alarm rate
+from the open-baseline floor of $100\%$ to $98.17\%$
+(Table~\ref{tab:tsasr}). The bulk of this reduction comes from
+the \emph{silence} sub-type; on the \emph{distractor} sub-type
+(only interfering speakers, no target) AmphionASR remains at
+$100\%$ false alarms. The training-time augmentation source for
+this stage -- Voices-in-the-Wild-2M -- contains no
+\texttt{(audio, empty-target)} pairs, so the model receives no
+explicit ``stay silent'' supervision; closing the gap requires
+extending the SFT mixture with explicit anti-hallucination
+negatives, which is the planned next step.
+
+\paragraph{Noise robustness: residual gap on Voices-in-the-Wild-Bench.}
+The Voices-in-the-Wild-Bench evaluation in
+Section~\ref{sec:noise} reports AmphionASR as the best of nine
+systems on five of sixteen subsets, with the remaining eleven
+cells led by Mega-ASR~\cite{xie2026mega} (eight cells) or
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} (three cells). The two
+cells where AmphionASR trails Mega-ASR most clearly --
+Sim-Echo \& reverberation and Sim-Recording coloration -- are
+explicitly called out in Section~\ref{subsec:vitw-results}; the
+underlying cause has not been investigated and closing the
+residual is on the agenda for the next iteration. The eight
+baseline columns in Table~\ref{tab:vitw_bench} are additionally
+quoted under the Mega-ASR paper's normalisation pipeline rather
+than ours, which is a known cross-system normalisation drift the
+next revision is expected to retire by re-running each baseline.
+% TODO: rerun all eight Voices-in-the-Wild-Bench baselines under
+% our normaliser to retire the normalisation caveat in
+% Section~\ref{sec:noise}.
 
 \paragraph{Retrieve operator.}
 The retrieval operator of

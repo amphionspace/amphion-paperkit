@@ -636,6 +636,25 @@ papers:
   - distant-asr
   - diarization
   usage: 315 会议 / 1000 h 模拟训练；办公场景 distant ASR + diarization。
+- file: xie2026-mega-asr.pdf
+  url: https://arxiv.org/pdf/2605.19833.pdf
+  sha256: d1cda239173b9bac1bae61fa8e0a0e83b5cd759c1fd9e4349bf40dbaa9fd72d0
+  arxiv: '2605.19833'
+  title: 'Mega-ASR: Towards In-the-wild^2 Speech Recognition via Scaling Up Real-world Acoustic Simulation'
+  authors: Xie et al.
+  date: 2026-05
+  venue: arXiv
+  group: benchmark
+  tags:
+  - robust-asr
+  - compound-degradation
+  - in-the-wild
+  usage: 'Voices-in-the-Wild-Bench (5,000 英/中评测集；7 atomic acoustic effects × real+sim) 来源；论文 Table 4 提供
+    8 个 baseline (Gemini3-Flash / Seed-ASR / GPT-4o-trans / Whisper-L-v3 / Qwen2.5-Omni / Kimi-Audio /
+    Qwen3-ASR / Mega-ASR w/ router) 在 16 个 vitw 子集上的 WER，docs/data.xlsx 的 voice-in-the-wild-bench
+    sheet 直接引用。
+
+    '
 - file: openai2024-gpt4o-systemcard.pdf
   url: https://arxiv.org/pdf/2410.21276.pdf
   sha256: 1d7dbfdec9e1f04402165657ae40012da73dbda4e7581f7489738a4df22deb68

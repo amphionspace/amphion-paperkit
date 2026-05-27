@@ -14,31 +14,31 @@ English transcription, and capability SFT that adds in-prompt
 hotword conditioning and reference-utterance target-speaker
 recognition. The released AmphionASR checkpoint additionally
 completes a noise-robustness SFT stage that extends the
-augmentation pipeline to the plain-ASR branch
-(Section~\ref{subsec:nrsft}). On Mandarin benchmarks AmphionASR
-reaches single-digit CER on every reported set, with AISHELL-1 at
-$1.85$\,\% as the headline data point. On English it covers the
-standard LibriSpeech, GigaSpeech, MLS, CommonVoice and FLEURS
-grid, with LibriSpeech \texttt{test-clean} at $1.82$\,\% WER. On
-TALCS Mandarin--English code-switching it reaches $7.48$\,\% MER.
-With as few as five in-prompt hotwords on the CommonVoice~17
-hotword splits, CER and WER drop by roughly half (oracle prompt).
+augmentation pipeline to the plain-ASR branch and is evaluated on
+Voices-in-the-Wild-Bench~\cite{xie2026mega}
+(Section~\ref{sec:noise}). On Mandarin benchmarks AmphionASR
+reaches single-digit CER on every reported set, with AIShell-1 at
+$1.51$\,\% as the headline data point. On English it covers the
+LibriSpeech, GigaSpeech and CommonVoice grid, with LibriSpeech
+\texttt{test-clean} at $1.55$\,\% WER. With
+as few as five in-prompt hotwords on the CommonVoice~17 hotword
+splits, CER and WER drop by roughly half (oracle prompt).
 A parameter-free text-space retrieval operator
 (Section~\ref{subsec:retrieve-algorithm}) extends this prompt-driven
 hotword behaviour to deployment-scale pools by reducing the
 prompt to a per-utterance top-$K$ subset of a pool of size up to
-$10^4$. The noise-robustness SFT stage above gives AmphionASR its
-first controlled noise-robustness evaluation alongside the standard
-benchmarks.
+$10^4$. On Voices-in-the-Wild-Bench~\cite{xie2026mega}, the
+$5{,}000$-clip noise-robustness suite, AmphionASR leads five of
+sixteen subsets against eight publicly reported systems.
 
 What still needs to be solved -- and is the explicit subject of
 the next release -- is closing the gap on the public multi-talker
 LibriMix benchmarks, narrowing the residual gap to
-Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} on the non-MUSAN-speech
-rows of Table~\ref{tab:noise_robustness}, publishing the
-noise-robustness SFT training manifest alongside the rest of the
-SFT recipe, and upgrading the inference path with a measured
-streaming mode. We will release
+Mega-ASR~\cite{xie2026mega} on the Sim-Echo and Sim-Recording
+subsets of Table~\ref{tab:vitw_bench}, re-running the eight
+Voices-in-the-Wild-Bench baselines through our own normaliser to
+remove the cross-system normalisation drift, and upgrading the
+inference path with a measured streaming mode. We will release
 model weights and the vLLM-based serving stack at
 \url{https://github.com/amphionspace/AmphionASR}; the training
 pipeline is documented in

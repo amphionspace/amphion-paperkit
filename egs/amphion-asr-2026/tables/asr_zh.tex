@@ -1,0 +1,31 @@
+% Mandarin ASR baseline table (auto-generated from
+% refs/docs/data.xlsx::ASR sheet on 2026-05-27).
+\begin{table}[t]
+  \caption{Mandarin ASR (CER \%, lower is better) on the six
+    standard test sets covered by the AmphionASR cross-system
+    evaluation pack. All numbers are produced by us under the
+    Mandarin normaliser of Section~\ref{subsec:setup}. Bold marks
+    the lowest CER in each column. ``\,--\,'' means the baseline
+    has not been evaluated on that test set in this revision.}
+  \label{tab:asr_zh}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lcccccc}
+    \toprule
+    System & AIShell-1 & AIShell-2 & KeSpeech & CV17~zh & Wenet.~net & Wenet.~mtg. \\
+    \midrule
+    Whisper-large-v3~\cite{radford2023whisper} & 5.59 & 5.23 & 29.03 & 12.65 & 9.98 & 19.00 \\
+    Kimi-Audio-7B-Instruct~\cite{kimiaudio2025} & 0.81 & 2.62 & 5.36 & 5.63 & 5.82 & 6.03 \\
+    Step-Audio~2~\cite{stepaudio22025} & 0.83 & \textbf{2.35} & 4.16 & 4.80 & 5.40 & 5.51 \\
+    MiniCPM-o~\cite{minicpm2025} & 1.05 & 2.91 & 7.65 & 5.40 & 6.14 & 7.10 \\
+    MOSS-Audio~\cite{moss2026audio} & 2.31 & 3.05 & 14.97 & 6.98 & 5.97 & 7.61 \\
+    MiMo-Audio~\cite{mimo2025audio} & 1.97 & 6.71 & -- & -- & -- & -- \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 1.58 & 2.77 & 5.21 & 5.06 & 5.04 & 5.85 \\
+    FireRed-ASR2-LLM~\cite{fireredasr2025} & \textbf{0.65} & 2.37 & \textbf{3.19} & \textbf{4.34} & \textbf{4.43} & \textbf{4.49} \\
+    GLM-ASR-nano~\cite{glmasr2025} & 2.54 & 3.53 & 9.36 & 6.84 & 6.43 & 8.54 \\
+    \midrule
+    \textbf{AmphionASR} & 1.51 & 2.77 & 6.99 & 5.94 & 5.75 & 6.90 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

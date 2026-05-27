@@ -1,0 +1,31 @@
+% English ASR baseline table (auto-generated from
+% refs/docs/data.xlsx::ASR sheet on 2026-05-27).
+\begin{table}[t]
+  \caption{English ASR (WER \%, lower is better) on the four
+    standard test sets covered by the AmphionASR cross-system
+    evaluation pack. All numbers are produced by us under the
+    Whisper English normaliser of Section~\ref{subsec:setup}. Bold
+    marks the lowest WER in each column. ``\,--\,'' means the
+    baseline has not been evaluated on that test set in this
+    revision.}
+  \label{tab:asr_en}
+  \centering
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    System & LibriSp.~clean & LibriSp.~other & GigaSpeech & CV17~en \\
+    \midrule
+    Whisper-large-v3~\cite{radford2023whisper} & 1.88 & 3.68 & 10.00 & 9.77 \\
+    Kimi-Audio-7B-Instruct~\cite{kimiaudio2025} & \textbf{1.30} & \textbf{2.56} & 9.59 & 7.79 \\
+    Step-Audio~2~\cite{stepaudio22025} & 1.41 & 2.75 & 9.90 & \textbf{6.77} \\
+    MiniCPM-o~\cite{minicpm2025} & 1.46 & 3.57 & 9.31 & 7.96 \\
+    MOSS-Audio~\cite{moss2026audio} & 4.66 & 7.26 & 8.96 & 12.72 \\
+    MiMo-Audio~\cite{mimo2025audio} & -- & -- & -- & -- \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 1.61 & 3.39 & \textbf{8.68} & 7.24 \\
+    FireRed-ASR2-LLM~\cite{fireredasr2025} & 1.43 & 2.98 & 9.19 & 10.03 \\
+    GLM-ASR-nano~\cite{glmasr2025} & 2.13 & 4.42 & 9.43 & 9.52 \\
+    \midrule
+    \textbf{AmphionASR} & 1.55 & 3.62 & 9.25 & 8.34 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

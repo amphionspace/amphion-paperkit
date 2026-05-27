@@ -290,11 +290,13 @@ when no hotword side-channel is available at inference time.
 All evaluations are dispatched through a unified dataset registry,
 shared between the offline batch decoder and the online batched
 inference server. Table~\ref{tab:eval} lists the test sets
-reported in this paper. Per-language WER and CER, mixture error
-rate (MER) on code-switching and target-speaker test sets, and
-silence recall on negative TS-ASR samples are computed by a single
-evaluation harness, so that all numbers in the paper come from the
-same metric implementation.
+reported in this paper. Per-language WER and CER on plain-ASR
+sets, the silence-aware target-speaker metrics
+(WER\,/\,FA\,/\,Miss\,/\,SM, Section~\ref{sec:tsasr}) on TS-ASR
+test sets, and per-system WER on Voices-in-the-Wild-Bench
+(Section~\ref{sec:noise}) are computed by a single evaluation
+harness, so that all numbers in the paper come from the same
+metric implementation.
 
 \begin{table}[t]
   \caption{Evaluation sets used in this report. The hotword sweep
@@ -307,17 +309,17 @@ same metric implementation.
     \toprule
     Task & Test sets & Metric \\
     \midrule
-    ASR-zh        & AISHELL-1/2/3, MagicData, KeSpeech, THCHS-30,
-                    CommonVoice ZH, WenetSpeech (net / meeting),
-                    FLEURS ZH                                                  & CER \\
-    ASR-en        & LibriSpeech (test-clean / -other), GigaSpeech, MLS,
-                    CommonVoice EN, FLEURS EN                                  & WER \\
-    Code-switch   & TALCS test \cite{li2022talcs}                              & MER \\
-    Hotword ASR   & CommonVoice ZH / EN hotword splits (sweep
-                    $k\!\in\!\{0, 5, 10, 15, 20\}$)                            & CER / WER \\
-    TS-ASR        & internal hot+TS test ($n\!=\!6{,}227$, with $5$\,\%
-                    silent negatives) + LibriMix 2 / 3 \cite{cosentino2020librimix}
-                                                                              & MER + silence \\
+    ASR-zh           & AIShell-1/2, KeSpeech, CommonVoice ZH,
+                       WenetSpeech (net / meeting)                                & CER \\
+    ASR-en           & LibriSpeech (test-clean / -other), GigaSpeech,
+                       CommonVoice EN                                             & WER \\
+    Hotword ASR      & CommonVoice ZH / EN hotword splits (sweep
+                       $k\!\in\!\{0, 5, 10, 15, 20\}$)                            & CER / WER \\
+    TS-ASR           & internal \texttt{ts\_hw\_test} ($n_\text{pos}\!=\!6{,}227$,
+                       $n_\text{neg}\!=\!328$) + LibriMix 2 / 3 \cite{cosentino2020librimix}
+                                                                                & WER / FA / Miss / SM \\
+    Noise robustness & Voices-in-the-Wild-Bench \cite{xie2026mega}
+                       ($16$ subsets, $5{,}000$ clips)                            & WER \\
     \bottomrule
   \end{tabular}
 \end{table}

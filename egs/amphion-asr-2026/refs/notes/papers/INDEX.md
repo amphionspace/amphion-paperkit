@@ -3,7 +3,7 @@
 This is a human-readable view derived from [`INDEX.yaml`](INDEX.yaml).
 `INDEX.yaml` is the single source of truth; PDFs are gitignored and downloaded by `tools/fetch-refs.py`.
 
-Total entries: 47 across 8 groups.
+Total entries: 48 across 8 groups.
 
 ## 1. 端到端 Audio LLM / Speech-LLM (直接对标) (16)
 
@@ -88,7 +88,7 @@ HuBERT / WavLM / BEATs 等自监督 speech encoder。
 | [polok2024-target-speaker-whisper.pdf](https://arxiv.org/pdf/2409.09543.pdf) | Target Speaker ASR with Whisper | 2024-09 | diarization-conditioned；NOTSOFAR-1 ORC-WER 改善 12.9。 |
 | [ma2023-whisper-prompt-tuning-tsasr.pdf](https://arxiv.org/pdf/2312.08079.pdf) | Extending Whisper with Prompt Tuning to Target-Speaker ASR | 2023-12 | prompt-tuning 路线，LibriMix baseline。 |
 
-## 7. Benchmark / 评测协议 (5)
+## 7. Benchmark / 评测协议 (6)
 
 公开 benchmark 与挑战赛协议。
 
@@ -99,6 +99,7 @@ HuBERT / WavLM / BEATs 等自监督 speech encoder。
 | [cornell2023-chime7.pdf](https://arxiv.org/pdf/2306.13734.pdf) | CHiME-7 DASR Challenge: Distant Meeting Transcription with Multiple Devices | 2023-06 | 跨 array / 跨场景泛化（CHiME-6 + DiPCo + Mixer 6）。 |
 | [cornell2024-chime8.pdf](https://arxiv.org/pdf/2407.16447.pdf) | CHiME-8 DASR Challenge for Generalizable and Array Agnostic Distant ASR and Diarization | 2024-07 | 加入 NOTSOFAR-1 + LLM-allowed track。 |
 | [vinnikov2024-notsofar1.pdf](https://arxiv.org/pdf/2401.08887.pdf) | NOTSOFAR-1 Challenge: New Datasets, Baseline, and Tasks for Distant Meeting Transcription | 2024-01 | 315 会议 / 1000 h 模拟训练；办公场景 distant ASR + diarization。 |
+| [xie2026-mega-asr.pdf](https://arxiv.org/pdf/2605.19833.pdf) | Mega-ASR: Towards In-the-wild^2 Speech Recognition via Scaling Up Real-world Acoustic Simulation | 2026-05 | Voices-in-the-Wild-Bench (5,000 英/中评测集；7 atomic acoustic effects × real+sim) 来源；论文 Table 4 提供 8 个 baseline (Gemini3-Flash / Seed-ASR / GPT-4o-trans / Whisper-L-v3 / Qwen2.5-Omni / Kimi-Audio / Qwen3-ASR / Mega-ASR w/ router) 在 16 个 vitw 子集上的 WER，docs/data.xlsx 的 voice-in-the-wild-bench sheet 直接引用。 |
 
 ## 8. 闭源 / 商用系统 (1)
 

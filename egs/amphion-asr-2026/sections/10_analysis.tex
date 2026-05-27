@@ -42,12 +42,15 @@ contributions is not yet available and is left to future work.
 
 \subsection{Libri2Mix vs Internal TS-ASR}
 
-The gap between $13.06$\,\% MER on the internal target-speaker
-test and $66.14$\,\% WER on Libri2Mix is the most important open
-issue in this release. The underlying cause has not been diagnosed
-and a controlled ablation against the LibriMix protocol is on the
-agenda for the next training iteration
-(Section~\ref{sec:limitations}).
+The gap between $12.56$\,\% WER on the positive sub-slice of the
+internal \texttt{ts\_hw\_test} and $66.33$\,\% / $86.00$\,\% WER
+on Libri2Mix / Libri3Mix (Table~\ref{tab:tsasr}) is the most
+important positive-sample open issue in this release; the residual
+$98.17\%$ false-alarm rate on the negative sub-slice is the most
+important negative-sample open issue. Both are surfaced in
+Section~\ref{sec:limitations}; the underlying causes have not been
+diagnosed and controlled ablations are on the agenda for the next
+training iteration.
 
 \subsection{Inherited Failure Modes}
 
@@ -61,9 +64,9 @@ AmphionASR:
         noise-only negative branch of the TS-ASR pipeline
         (Section~\ref{subsec:tsasr-synth}) explicitly trains the
         model to terminate on silence under the target-speaker
-        prompt. The noise-robustness SFT stage of
-        Section~\ref{subsec:nrsft} extends this exposure to the
-        plain-ASR branch with a controlled noise grid; a
+        prompt; the released checkpoint additionally extends this
+        augmentation exposure to the plain-ASR branch through the
+        noise-robustness SFT stage of Section~\ref{sec:training}. A
         per-condition qualitative breakdown of residual
         repetition-loop behaviour is left to future work.
   \item Language drift on Mandarin--English code-switching, where

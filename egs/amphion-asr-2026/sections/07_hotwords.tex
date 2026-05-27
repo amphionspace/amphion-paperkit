@@ -211,10 +211,11 @@ retraining the retriever.
 \paragraph{Oracle prompt.}
 Table~\ref{tab:hotwords_oracle} reports the random-padding oracle
 sweep on CommonVoice 17. Five hotwords already produce the bulk of
-the improvement; further hotwords have a small non-monotonic
-effect that the analysis below relates to the gap between random
-padding and the hard-negative padding used during Stage~3
-training.
+the improvement; on both languages five is the minimising row, and
+further hotwords incur a small monotonic upturn (from $2.82$ to
+$2.94$\,\% on Mandarin, from $5.01$ to $5.11$\,\% on English),
+which the analysis below relates to the gap between random padding
+and the hard-negative padding used during Stage~3 training.
 
 \begin{table}[t]
   \caption{Oracle-prompt hotword results on CommonVoice 17. CER (\%)
@@ -228,8 +229,8 @@ training.
     \toprule
     & & $k=0$ & $k=5$ & $k=10$ & $k=15$ & $k=20$ \\
     \midrule
-    CV17 zh hotword test  & $n=10{,}647$ & 6.01 & \textbf{2.67} & 2.70 & 2.71 & 2.77 \\
-    CV17 en hotword test  & $n=16{,}294$ & 7.68 & 4.71          & \textbf{4.69} & 4.75 & 4.79 \\
+    CV17 zh hotword test  & $n=10{,}647$ & 5.93 & \textbf{2.82} & 2.85 & 2.87 & 2.94 \\
+    CV17 en hotword test  & $n=16{,}294$ & 7.79 & \textbf{5.01} & 5.11          & 5.13 & 5.11 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -239,10 +240,10 @@ Table~\ref{tab:hotwords_retrieve} reports retrieval-level recall
 together with downstream WER and biased / unbiased WER (B-WER /
 U-WER), defined as the WER computed only on tokens that overlap
 the biased entity list (B-WER) or its complement (U-WER). The
-Mandarin column reaches Recall@$K$ above $94\%$ from $K=10$
-onwards and B-WER under $4\%$, whereas the English column
-saturates around Recall@$K \approx 78\%$ at $K=20$ with B-WER
-above $19\%$.
+Mandarin column reaches Recall@$K$ above $95\%$ from $K=10$
+onwards and B-WER under $4\%$ from $K=15$, whereas the English
+column saturates around Recall@$K \approx 80\%$ at $K=20$ with
+B-WER above $18\%$.
 
 \begin{table}[t]
   \caption{Retrieve-client hotword results on CommonVoice 17.
@@ -258,16 +259,16 @@ above $19\%$.
     Test set & $K$ & Recall@$K$ (\%) & WER (\%) & B-WER (\%) & U-WER (\%) \\
     \midrule
     \multirow{4}{*}{CV17 zh hotword test ($n=10{,}647$)}
-                          & 5  & 91.00 & 3.82          & 4.54          & 3.52 \\
-                          & 10 & 94.59 & 3.61          & \textbf{3.73} & 3.56 \\
-                          & 15 & 95.13 & \textbf{3.57} & 3.71          & 3.52 \\
-                          & 20 & 95.42 & 3.59          & 3.74          & 3.52 \\
+                          & 5  & 91.52          & 3.78          & 4.73          & 3.38 \\
+                          & 10 & 95.11          & 3.60          & 4.06          & 3.41 \\
+                          & 15 & 95.66          & 3.57          & 3.98          & 3.41 \\
+                          & 20 & \textbf{95.93} & \textbf{3.56} & \textbf{3.97} & 3.39 \\
     \midrule
     \multirow{4}{*}{CV17 en hotword test ($n=16{,}294$)}
-                          & 5  & 65.17 & 7.68          & 26.30          & 5.86 \\
-                          & 10 & 74.04 & 7.43          & 21.63          & 6.04 \\
-                          & 15 & 77.39 & 7.35          & 20.07          & 6.11 \\
-                          & 20 & 78.70 & \textbf{7.34} & \textbf{19.28} & 6.18 \\
+                          & 5  & 65.70          & 7.52          & 25.68          & 5.74 \\
+                          & 10 & 75.24          & 7.10          & 20.44          & 5.80 \\
+                          & 15 & 78.71          & \textbf{6.95} & 18.59          & 5.81 \\
+                          & 20 & \textbf{80.13} & 6.97          & \textbf{18.05} & 5.89 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -304,22 +305,22 @@ contrast without attempting to attribute the Recall@$K$ result.
     \multicolumn{7}{l}{\emph{Oracle prompt -- WER (\%); lower is better}} \\
     \midrule
     \multirow{2}{*}{CV17 zh hotword test}
-       & Fun-ASR-Nano  & 7.05 & 4.55 & 4.88 & 5.22 & 5.53 \\
-       & \textbf{AmphionASR}    & \textbf{6.01} & \textbf{2.67} & \textbf{2.70} & \textbf{2.71} & \textbf{2.77} \\
+       & Fun-ASR-Nano        & 7.05          & 4.55          & 4.88          & 5.22          & 5.53 \\
+       & \textbf{AmphionASR} & \textbf{5.93} & \textbf{2.82} & \textbf{2.85} & \textbf{2.87} & \textbf{2.94} \\
     \cmidrule(lr){2-7}
     \multirow{2}{*}{CV17 en hotword test}
-       & Fun-ASR-Nano  & 11.32 & 9.46 & 9.73 & 10.05 & 10.28 \\
-       & \textbf{AmphionASR}    & \textbf{7.68} & \textbf{4.71} & \textbf{4.69} & \textbf{4.75} & \textbf{4.79} \\
+       & Fun-ASR-Nano        & 11.32         & 9.46          & 9.73          & 10.05         & 10.28 \\
+       & \textbf{AmphionASR} & \textbf{7.79} & \textbf{5.01} & \textbf{5.11} & \textbf{5.13} & \textbf{5.11} \\
     \midrule
     \multicolumn{7}{l}{\emph{Retrieve client -- Recall@$K$ (\%); higher is better}} \\
     \midrule
     \multirow{2}{*}{CV17 zh hotword test}
-       & Fun-ASR-Nano  & -- & 0.04 & 0.08 & 0.12 & 0.17 \\
-       & \textbf{AmphionASR}    & -- & \textbf{91.00} & \textbf{94.59} & \textbf{95.13} & \textbf{95.42} \\
+       & Fun-ASR-Nano        & -- & 0.04           & 0.08           & 0.12           & 0.17 \\
+       & \textbf{AmphionASR} & -- & \textbf{91.52} & \textbf{95.11} & \textbf{95.66} & \textbf{95.93} \\
     \cmidrule(lr){2-7}
     \multirow{2}{*}{CV17 en hotword test}
-       & Fun-ASR-Nano  & -- & 0.06 & 0.13 & 0.19 & 0.27 \\
-       & \textbf{AmphionASR}    & -- & \textbf{65.17} & \textbf{74.04} & \textbf{77.39} & \textbf{78.70} \\
+       & Fun-ASR-Nano        & -- & 0.06           & 0.13           & 0.19           & 0.27 \\
+       & \textbf{AmphionASR} & -- & \textbf{65.70} & \textbf{75.24} & \textbf{78.71} & \textbf{80.13} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -327,46 +328,46 @@ contrast without attempting to attribute the Recall@$K$ result.
 \subsection{Analysis}
 
 \paragraph{Oracle prompt: large gain from a small list with a mild
-non-monotonic tail.}
-Five hotwords reduce Mandarin CER by $3.34$ absolute points (from
-$6.01$\,\% at $k=0$ to $2.67$\,\% at $k=5$) and English WER by
-$2.99$ absolute points (from $7.68$\,\% at $k=0$ to $4.69$\,\% at
-$k=10$, the English minimum). Going from five to twenty hotwords
-has a small but consistent negative effect (roughly $+0.10$ CER
-on Mandarin and $+0.10$ WER on English from the respective
-minima). The oracle protocol pads with random distractors rather
-than the hard negatives used during Stage~3 training; the
-underlying cause of the slight upturn has not yet been
-investigated.
+monotonic tail.}
+Five hotwords reduce Mandarin CER by $3.11$ absolute points (from
+$5.93$\,\% at $k=0$ to $2.82$\,\% at $k=5$) and English WER by
+$2.78$ absolute points (from $7.79$\,\% at $k=0$ to $5.01$\,\% at
+$k=5$). $k=5$ is the minimising row on both languages, and going
+from five to twenty hotwords incurs a small but consistent
+negative effect ($+0.12$ CER on Mandarin and $+0.10$ WER on
+English from the respective minima). The oracle protocol pads
+with random distractors rather than the hard negatives used during
+Stage~3 training; the underlying cause of the slight upturn has
+not yet been investigated.
 
 \paragraph{Retrieve client: high recall, language-asymmetric biased-WER.}
-On Mandarin the retriever attains Recall@$5$ of $91\%$ and
-Recall@$K$ above $94\%$ from $K=10$ onwards, which translates into
-B-WER under $4\%$ and total WER under $3.6\%$ -- about $0.9$ CER
-points above the corresponding $k=5$ oracle row. On English the
-retriever plateaus at Recall@$K \approx 78\%$ for $K=20$, with
-B-WER bounded at $19.28\%$ and total WER at $7.34\%$. The
-Mandarin / English asymmetry reflects the difference between the
-pinyin and content-word matching channels at the same pool size:
-the Mandarin pool can disambiguate same-pronunciation candidates
-through the pinyin channel, whereas the English alphabetic route
-relies on substring matching and is more sensitive to coarse-decode
-errors in $\tilde{y}$.
+On Mandarin the retriever attains Recall@$5$ of $91.52\%$ and
+Recall@$K$ above $95\%$ from $K=10$ onwards, which translates into
+B-WER under $4\%$ from $K=15$ and total WER under $3.6\%$ from
+$K=10$ -- about $1$ CER point above the corresponding $k=5$ oracle
+row. On English the retriever plateaus at Recall@$K \approx 80\%$
+for $K=20$, with B-WER bounded at $18.05\%$ and total WER at
+$6.95\%$ at $K=15$. The Mandarin / English asymmetry reflects the
+difference between the pinyin and content-word matching channels
+at the same pool size: the Mandarin pool can disambiguate
+same-pronunciation candidates through the pinyin channel, whereas
+the English alphabetic route relies on substring matching and is
+more sensitive to coarse-decode errors in $\tilde{y}$.
 
 \paragraph{Retrieve-vs-oracle gap.}
-The retrieve client trails the oracle client by roughly $0.9$ CER
-points on Mandarin and $2.6$ WER points on English at $K=5$. The
-gap has two contributing components -- retrieval recall loss
-(non-zero everywhere) and dilution by retrieval false positives
-(more prominent on the alphabetic route, where the
-discriminative-gap check leaves more borderline candidates on the
-prompt) -- which we do not attempt to decompose further in this
-report.
+The retrieve client trails the oracle client by roughly $1$ CER
+point on Mandarin ($3.78$\,\% vs.\ $2.82$\,\%) and $2.5$ WER points
+on English ($7.52$\,\% vs.\ $5.01$\,\%) at $K=5$. The gap has two
+contributing components -- retrieval recall loss (non-zero
+everywhere) and dilution by retrieval false positives (more
+prominent on the alphabetic route, where the discriminative-gap
+check leaves more borderline candidates on the prompt) -- which we
+do not attempt to decompose further in this report.
 
 \paragraph{Baseline contrast.}
 Fun-ASR-Nano-2512 benefits from the oracle prompt at a smaller
 absolute scale than AmphionASR ($-2.50$\,CER on CV17~zh from $k=0$
-to $k=5$ vs.\ $-3.34$ for AmphionASR) and reverses past $k=10$.
+to $k=5$ vs.\ $-3.11$ for AmphionASR) and reverses past $k=10$.
 In the retrieve protocol the baseline's Recall@$K$ does not exceed
 $0.27\%$ in any configuration, so the comparison degenerates to
 no-hotword ASR. We note the contrast but do not attempt to

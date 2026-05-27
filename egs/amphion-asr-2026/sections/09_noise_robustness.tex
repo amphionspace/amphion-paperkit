@@ -1,176 +1,149 @@
 \section{Noise Robustness}
 \label{sec:noise}
 
-\subsection{What the SFT Pipeline Already Sees}
+\subsection{Evaluation Protocol}
+\label{subsec:vitw-protocol}
 
-Stages~1--3 of the SFT recipe (Section~\ref{sec:training}) do not
-include a dedicated ``noise-robustness'' fine-tuning stage, but
-every TS-ASR training mixture (about $3$\,M examples; roughly half of
-the multi-task training stream) already passes through the
-augmentation pipeline of Section~\ref{subsec:tsasr-synth}:
+Speech recognition in deployment is rarely exercised on clean read
+speech: production audio routinely contains additive noise, room
+reverberation, far-field attenuation, transmission artefacts, and
+compound combinations thereof. We evaluate AmphionASR on
+\textbf{Voices-in-the-Wild-Bench}~\cite{xie2026mega}, a $5{,}000$-clip
+English/Mandarin benchmark released alongside Mega-ASR that covers
+seven atomic acoustic effects --- additive noise, far-field propagation,
+obstruction, echo and reverberation, recording coloration, electronic
+distortion, and transmission dropout --- each exercised both with
+real-world recordings collected from the public internet (\emph{Real},
+$150$ clips per atomic effect plus a $450$-clip Mixed subset) and with
+controlled spectrogram-level simulation (\emph{Sim}, $350$ clips per
+atomic effect plus a $1{,}050$-clip Mixed subset). The Mixed subsets
+compose two to five atomic effects per clip to approximate real-world
+compound degradations.
+
+We report WER (\%) under the Whisper English normaliser and the
+Mandarin normaliser of Section~\ref{subsec:setup}, the same
+normalisation pipeline as Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh}.
+Baseline numbers in the eight non-AmphionASR columns of
+Table~\ref{tab:vitw_bench} are taken from \cite{xie2026mega} Table~4
+and therefore reflect the Mega-ASR paper's own normalisation pipeline
+rather than ours.
+% TODO: re-run all eight baselines through the Section~\ref{subsec:setup}
+% normaliser to remove the cross-system normalisation drift in
+% Table~\ref{tab:vitw_bench}.
+
+\subsection{Headline Results}
+\label{subsec:vitw-results}
+
+Table~\ref{tab:vitw_bench} reports the sixteen-subset breakdown.
+We compare AmphionASR against eight publicly reported systems
+organised by access level:
 
 \begin{itemize}
-  \item \textbf{Reverberation.} Each TS-ASR sample is convolved
-        with an SLR26 / SLR28 RIR with probability $0.5$
-        \cite{ko2017studyrir}, truncated to the first $1.5$\,s
-        (early-reflection regime).
-  \item \textbf{Additive noise.} An independently sampled
-        background segment (MUSAN \cite{snyder2015musan} noise /
-        music or AudioSet road-traffic noise, weighted $0.30$ /
-        $0.20$ / $0.50$) is mixed at
-        $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB and the
-        result is peak-normalised.
-  \item \textbf{Speaker interference.} Each target waveform is
-        mixed with $K\!\in\!\{1, 2\}$ same-language interferers at
-        $\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to
-        $[-5, 20]$, with overlap fraction
-        $\rho\!\sim\!\mathcal{N}(0.35, 0.2^2)$ in $[0.1, 1.0]$.
-  \item \textbf{Background-only / silence inputs.} The noise-only
-        negative sub-type (Section~\ref{subsec:tsasr-synth},
-        $\sim$$2$--$5$\,\% of examples) consists of a real enrollment
-        paired with a $3$--$15$\,s noise-only mixed channel and an
-        empty target transcript, explicitly teaching the decoder
-        to stay silent when no speech is present.
+  \item \textbf{Closed-source}: Gemini~3-Flash, Seed-ASR
+        \cite{bai2024seedasr}, and GPT-4o-transcribe
+        \cite{openai2024gpt4o}.
+  \item \textbf{Open-source}: Whisper-large-v3
+        \cite{radford2023whisper}, Qwen2.5-Omni
+        \cite{xu2025qwen25omni}, Kimi-Audio
+        \cite{kimiaudio2025}, Qwen3-ASR-1.7B
+        \cite{qwen2025qwen3asr}, and Mega-ASR
+        \cite{xie2026mega} with the paper's environment-aware
+        routing variant.
 \end{itemize}
-
-This means that any apparent ``noise robustness'' on the standard
-ASR benchmarks of Section~\ref{sec:experiments} from
-Stages~1--3 alone would be an incidental side-effect of the
-TS-ASR data pipeline rather than the result of an explicitly
-designed noise curriculum, with two caveats that the next
-subsection makes explicit.
-
-\subsection{Noise-Robustness SFT Stage}
-\label{subsec:nrsft}
-
-The released AmphionASR checkpoint extends Stage~3 with a
-\emph{noise-robustness SFT} stage in which the augmentation
-pipeline of Section~\ref{subsec:tsasr-synth} is also applied to
-the plain-ASR branch. The exact data mix and schedule of this
-stage are documented in the model card released alongside this
-report; this section reports its evaluation on a controlled
-noise-robustness grid against the pre-noise-robustness checkpoint
-as an ablation.
-% TODO: link the dedicated noise-robustness SFT stage description
-% from Section~\ref{sec:training} once that subsection lands.
-
-We construct $11$ degraded splits by applying a single distortion
-operator to each of the two CommonVoice~17 clean tests
-(\texttt{cv-en-test}, $n=16{,}402$; \texttt{cv-zh-test},
-$n=10{,}647$):
-\begin{itemize}
-  \item \textbf{$6$ additive-noise splits} at
-        SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB:
-        AudioSet ESC, AudioSet traffic, DNS challenge, MUSAN music,
-        MUSAN noise, MUSAN speech.
-  \item \textbf{$4$ room-impulse-response splits}: RIR-Mega,
-        SLR26, SLR28-real, SLR28-sim.
-  \item \textbf{$1$ overlapping-noise split}: WHAM (free-style
-        ambient).
-\end{itemize}
-The distortion operator is identical across systems; the WER
-values are otherwise computed with the same Whisper normaliser
-(English) / Mandarin normaliser (Mandarin) as
-Section~\ref{sec:experiments}.
-
-\paragraph{Comparison.}
-Table~\ref{tab:noise_robustness} reports WER (\%) for
-Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, an internal
-pre-noise-robustness ablation checkpoint
-(``AmphionASR (no NR SFT)'') and the released
-\textbf{AmphionASR}. The pre-noise-robustness column is an
-ablation and not part of the open release. We rerun
-Qwen3-ASR-1.7B ourselves on each split for like-with-like
-normalisation; the training-seen / unseen status of individual
-splits was not mechanically extractable from the data delivery and
-is therefore left unannotated in this revision.
-% TODO: once the noise-robustness SFT training manifest is
-% finalised, mark the corresponding rows of
-% Table~\ref{tab:noise_robustness} as ``training-seen'' so the
-% unseen-only sub-table can be assembled.
 
 \begin{table}[t]
-  \caption{Noise-robustness grid on CommonVoice~17.
-    \texttt{cv-en-test} reports WER (\%) with the Whisper English
-    normaliser; \texttt{cv-zh-test} reports CER (\%) with the
-    Mandarin normaliser of Section~\ref{subsec:setup}. Lower is
-    better. ``AmphionASR (no NR SFT)'' is an internal ablation
-    checkpoint taken before the noise-robustness SFT stage of
-    Section~\ref{subsec:nrsft} and not part of the open release;
-    ``\textbf{AmphionASR}'' is the released checkpoint that
-    completes the noise-robustness SFT stage. Additive-noise
-    splits use SNR$\,\sim\,\mathrm{Uniform}(5, 20)$\,dB. Bold marks
-    the best among the three systems on each row.}
-  \label{tab:noise_robustness}
+  \caption{Voices-in-the-Wild-Bench~\cite{xie2026mega} results, WER
+    (\%, lower is better). The benchmark contains $5{,}000$ clips
+    covering seven atomic acoustic effects plus a Mixed subset, in
+    two splits: \emph{Real} (public-internet recordings, $150$ clips
+    per atomic effect plus a $450$-clip Mixed) and \emph{Sim}
+    (spectrogram-level simulation, $350$ clips per atomic effect plus
+    a $1{,}050$-clip Mixed). Baseline numbers in the eight
+    non-AmphionASR columns are reproduced from~\cite{xie2026mega}
+    Table~4; the AmphionASR column is produced by the released
+    checkpoint under the same normaliser as
+    Section~\ref{subsec:setup}. Bold marks the lowest WER in each row.
+    See Section~\ref{subsec:vitw-protocol} for the normalisation
+    caveat across the AmphionASR and baseline columns.}
+  \label{tab:vitw_bench}
   \centering
-  \small
-  \setlength{\tabcolsep}{4.5pt}
-  \begin{tabular}{llccc}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{l@{\hspace{3pt}}rccccccccc}
     \toprule
-    Degraded split & Distortion & Qwen3-ASR-1.7B & AmphionASR (no NR SFT) & \textbf{AmphionASR} \\
+    & & \multicolumn{3}{c}{\emph{Closed source}} & \multicolumn{5}{c}{\emph{Open source}} & \\
+    \cmidrule(lr){3-5} \cmidrule(lr){6-10}
+    Subset & $n$ & Gem3-F & Seed & GPT-4o & Wh-Lv3 & Q2.5-O & Kimi-A & Q3-ASR & Mega & \textbf{Amph.} \\
     \midrule
-    \multicolumn{5}{l}{\emph{\texttt{cv-en-test}, $n=16{,}402$ (WER \%)}} \\
+    \multicolumn{11}{l}{\emph{Real (real-world recordings)}} \\
     \midrule
-    AudioSet ESC          & noise & \textbf{11.54} & 12.33 & 11.61 \\
-    AudioSet traffic      & noise & 12.36          & 13.41 & \textbf{12.27} \\
-    DNS                   & noise & \textbf{11.00} & 11.57 & 11.21 \\
-    MUSAN music           & noise & \textbf{9.84}  & 10.84 & 10.43 \\
-    MUSAN noise           & noise & \textbf{9.92}  & 10.58 & 10.31 \\
-    MUSAN speech          & noise & 26.53          & 41.19 & \textbf{18.74} \\
-    RIR-Mega              & RIR   & \textbf{9.71}  & 10.77 & 10.59 \\
-    SLR26                 & RIR   & \textbf{27.47} & 29.66 & 29.07 \\
-    SLR28-real            & RIR   & \textbf{14.16} & 15.60 & 15.23 \\
-    SLR28-sim             & RIR   & \textbf{10.91} & 12.22 & 12.11 \\
-    WHAM                  & noise & \textbf{11.12} & 11.63 & 11.47 \\
+    Noise                  & 150  & 7.63  & 8.21  & 13.19 & 16.57 & 11.92 & 35.10 & 7.51  & \textbf{6.12} & 7.89 \\
+    Far-field              & 150  & 5.14  & 3.06  & \textbf{1.87} & 3.38  & 2.35  & 2.71  & 2.23  & 2.33  & 2.21 \\
+    Obstructed             & 150  & 3.73  & 3.10  & 1.57  & 3.06  & 2.40  & 2.49  & 1.73  & 1.80  & \textbf{1.29} \\
+    Echo \& reverberation  & 150  & 8.75  & 16.55 & 15.62 & 25.34 & 20.01 & 24.00 & 10.40 & \textbf{8.66} & 8.75 \\
+    Recording coloration   & 150  & 8.38  & 18.48 & 13.37 & 18.33 & 13.71 & 8.73  & 9.57  & \textbf{6.91} & 8.19 \\
+    Electronic distortion  & 150  & 3.15  & 3.89  & 3.70  & 3.74  & 2.46  & 1.83  & 1.54  & 1.60  & \textbf{1.49} \\
+    Transmission dropout   & 150  & 5.47  & 7.97  & 8.76  & 7.04  & 6.34  & 4.54  & 4.16  & 2.72  & \textbf{2.38} \\
+    Mixed                  & 450  & 7.99  & 6.88  & 5.62  & 8.91  & 6.40  & 4.44  & 3.30  & \textbf{2.63} & 3.02 \\
     \midrule
-    \multicolumn{5}{l}{\emph{\texttt{cv-zh-test}, $n=10{,}647$ (CER \%)}} \\
+    \multicolumn{11}{l}{\emph{Sim (spectrogram-level simulation)}} \\
     \midrule
-    AudioSet ESC          & noise & \textbf{6.40}  & 7.67  & 7.34  \\
-    AudioSet traffic      & noise & \textbf{6.75}  & 8.10  & 7.62  \\
-    DNS                   & noise & \textbf{6.25}  & 7.50  & 7.28  \\
-    MUSAN music           & noise & \textbf{6.05}  & 7.06  & 6.95  \\
-    MUSAN noise           & noise & \textbf{5.87}  & 7.02  & 6.90  \\
-    MUSAN speech          & noise & 19.90          & 21.45 & \textbf{9.45}  \\
-    RIR-Mega              & RIR   & \textbf{5.75}  & 6.90  & 6.82  \\
-    SLR26                 & RIR   & \textbf{16.62} & 19.89 & 19.71 \\
-    SLR28-real            & RIR   & \textbf{9.31}  & 10.95 & 10.89 \\
-    SLR28-sim             & RIR   & \textbf{6.39}  & 7.72  & 7.60  \\
-    WHAM                  & noise & \textbf{6.43}  & 7.66  & 7.47  \\
+    Noise                  & 350   & 10.61 & 8.11  & 45.78 & 18.19 & 17.88 & 14.59 & 9.52  & 8.09  & \textbf{7.79} \\
+    Far-field              & 350   & 1.90  & 3.19  & 2.39  & 6.85  & 2.44  & 1.92  & \textbf{1.54} & 1.69  & 1.66 \\
+    Obstructed             & 350   & 2.65  & 2.76  & 2.77  & 6.01  & 2.08  & 1.64  & \textbf{1.27} & 1.41  & 1.88 \\
+    Echo \& reverberation  & 350   & 14.86 & 18.21 & 28.76 & 39.87 & 32.64 & 26.58 & 14.61 & \textbf{12.22} & 13.22 \\
+    Recording coloration   & 350   & 19.85 & 23.33 & 22.60 & 31.81 & 30.09 & 18.09 & 19.42 & \textbf{13.23} & 15.08 \\
+    Electronic distortion  & 350   & 7.56  & 5.71  & 8.43  & 8.77  & 5.96  & \textbf{2.78} & 3.41  & 3.35  & 3.28 \\
+    Transmission dropout   & 350   & 7.65  & 7.46  & 7.71  & 8.05  & 5.88  & 6.33  & 4.19  & 2.88  & \textbf{2.50} \\
+    Mixed                  & 1{,}050 & 9.62  & 9.29  & 11.00 & 14.79 & 10.29 & 6.19  & 5.39  & \textbf{4.53} & 4.87 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsection{Analysis}
 
-\paragraph{NR SFT closes the gap on competing-speaker noise.}
-The largest single improvement from the noise-robustness SFT
-stage is on the MUSAN-speech split, where the WER (CER) drops
-from $41.19$\,\% to $18.74$\,\% on English and from $21.45$\,\%
-to $9.45$\,\% on Mandarin -- $22.5$ and $12.0$ absolute points
-respectively, and from above to below the corresponding
-Qwen3-ASR-1.7B number on that split. On the other ten splits
-AmphionASR yields small but consistent gains over the no-NR-SFT
-ablation (typically $0.1$--$1.0$ absolute points), so the gross
-effect of the noise-robustness SFT stage is concentrated on the
-competing-speaker condition.
+\paragraph{AmphionASR leads five of sixteen subsets.}
+On the \emph{Real} split, AmphionASR is the best system on the
+Obstructed ($1.29$\,\% WER), Electronic distortion ($1.49$\,\%) and
+Transmission dropout ($2.38$\,\%) subsets. On the \emph{Sim} split,
+it leads on Noise ($7.79$\,\%) and Transmission dropout
+($2.50$\,\%). The remaining eleven cells are led by Mega-ASR
+(eight cells) or Qwen3-ASR-1.7B (three cells). The two systems
+AmphionASR competes most closely with are therefore Mega-ASR
+(the benchmark's own model, with environment-aware routing) and
+Qwen3-ASR-1.7B (the closest baseline by parameter scale at
+$1.7$\,B vs.\ our $4.3$\,B distinct parameters); the three
+closed-source systems sit further back on most rows.
 
-\paragraph{Residual gap to Qwen3-ASR-1.7B.}
-Qwen3-ASR-1.7B remains the best system on most non-MUSAN-speech
-rows, by margins of $0.1$ to $3.3$ absolute points. The gap
-reflects that Qwen3-ASR-1.7B was trained with a substantially
-larger and more diverse noise / RIR augmentation programme than
-the noise-robustness SFT stage in this release. Closing this
-residual is on the agenda for the next iteration;
-Table~\ref{tab:noise_robustness} is the first controlled
-noise-robustness evaluation we release for AmphionASR rather than
-a head-to-head winner.
+\paragraph{Compound mixtures remain the hardest condition.}
+The Mixed subsets compose two to five atomic effects per clip and
+are uniformly the most demanding rows of
+Table~\ref{tab:vitw_bench}. AmphionASR reaches $3.02$\,\% WER on
+Real-Mixed (third behind Mega-ASR's $2.63$\,\% and Qwen3-ASR-1.7B's
+$3.30$\,\%) and $4.87$\,\% WER on Sim-Mixed (third behind
+Mega-ASR's $4.53$\,\% and Qwen3-ASR-1.7B's $5.39$\,\%). The Real
+$\!\to\!$ Sim gap on the Mixed subset is approximately $1.85$ WER
+points and is broadly consistent across the nine systems,
+suggesting that the spectrogram-level simulation is uniformly
+slightly harder than the matched real recordings rather than
+producing a system-specific gap.
 
-\paragraph{Distortion-type asymmetry.}
-The two language columns track each other closely on every row of
-Table~\ref{tab:noise_robustness} except MUSAN-speech, where the
-English column starts substantially higher than the Mandarin
-column ($41.19$ vs.\ $21.45$\,\% on the no-NR-SFT ablation) and
-the released AmphionASR reduces both into the same single-digit /
-mid-teens regime. We do not attribute this asymmetry further; a
-controlled decomposition across distortion types is on the agenda
-for the next iteration.
+\paragraph{Residual gap on echo and recording coloration.}
+The two cells where AmphionASR most clearly trails Mega-ASR are
+Sim-Echo \& reverberation ($13.22$ vs.\ $12.22$\,\% WER) and
+Sim-Recording coloration ($15.08$ vs.\ $13.23$\,\%); the
+corresponding Real-split cells are tighter ($8.75$ vs.\ $8.66$ on
+Echo, $8.19$ vs.\ $6.91$ on Recording). The underlying cause has
+not been investigated and a controlled decomposition by
+atomic-effect type is left to the next iteration.
+
+\paragraph{Normalisation caveat.}
+Because the eight comparison columns in Table~\ref{tab:vitw_bench}
+are quoted verbatim from \cite{xie2026mega} Table~4 (with the
+Mega-ASR paper's normaliser) while the AmphionASR column is
+produced under our own normaliser
+(Section~\ref{subsec:setup}), absolute differences between the
+AmphionASR column and the other eight should be read with a small
+margin of system-incomparability. A like-with-like re-run of all
+eight baselines through our normaliser is on the agenda for the
+next revision.

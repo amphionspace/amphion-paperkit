@@ -36,12 +36,11 @@ unlocks more of the model and adds more demanding tasks:
 \end{enumerate}
 
 After Stages~1--3 the released checkpoint additionally goes through
-a noise-robustness SFT stage (Section~\ref{subsec:nrsft}) that
-extends the augmentation pipeline of
-Section~\ref{subsec:tsasr-synth} to the plain-ASR branch. The
-ablation column of Table~\ref{tab:noise_robustness} reports an
-internal pre-noise-robustness checkpoint that is not part of the
-release.
+a noise-robustness SFT stage that extends the augmentation pipeline
+of Section~\ref{subsec:tsasr-synth} to the plain-ASR branch; its
+external evaluation against eight other systems on
+Voices-in-the-Wild-Bench~\cite{xie2026mega} is reported in
+Section~\ref{sec:noise}.
 
 \subsection{Objective}
 

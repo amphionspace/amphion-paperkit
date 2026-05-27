@@ -66,41 +66,47 @@ Our contributions are:
         $\approx\!9.2$\,M-parameter modality projector (a two-layer
         MLP with the SwooshR activation \cite{yao2024zipformer})
         and four learnable modality-boundary prompts. On a curated
-        public-plus-internal corpus the model reaches $1.85$\,\%
-        CER on AISHELL-1, $1.82$\,\% WER on LibriSpeech
-        \texttt{test-clean} and $7.48$\,\% MER on the TALCS
-        Mandarin--English code-switching test set
-        \cite{li2022talcs} (Section~\ref{sec:experiments}).
+        public-plus-internal corpus the model reaches $1.51$\,\%
+        CER on AIShell-1 and $1.55$\,\% WER on LibriSpeech
+        \texttt{test-clean}, with the full six-Mandarin and
+        four-English baseline grid reported in
+        Tables~\ref{tab:asr_en}--\ref{tab:asr_zh}
+        (Section~\ref{sec:experiments}).
   \item \textbf{Strong oracle-prompt hotword conditioning.} With
         five in-prompt hotwords the CommonVoice~17 hotword test
-        CER drops from $6.01$\,\% to $2.67$\,\% on Mandarin and
-        the WER from $7.68$\,\% to $4.69$\,\% on English (oracle
+        CER drops from $5.93$\,\% to $2.82$\,\% on Mandarin and
+        the WER from $7.79$\,\% to $5.01$\,\% on English (oracle
         protocol, random padding;
         Section~\ref{sec:hotwords}).
   \item \textbf{A parameter-free hotword retrieval operator.} We
         further describe a text-space retrieve-then-bias operator
         that, paired with a matched SFT hard-negative augmentation,
         scales prompt-driven hotword behaviour to pools of size up
-        to $10^4$. The retriever attains Recall@$K$ above $94\%$
-        on Mandarin from $K=10$ onwards and Recall@$K \approx 78\%$
+        to $10^4$. The retriever attains Recall@$K$ above $95\%$
+        on Mandarin from $K=10$ onwards and Recall@$K \approx 80\%$
         on English at $K=20$
         (Section~\ref{subsec:retrieve-algorithm}).
   \item \textbf{Target-speaker recognition with reference audio.}
         A $3$--$5$\,s reference utterance suffices to make the
         model attend to a single speaker in mixed audio. On our
-        internal hot+TS test set we reach $13.06$\,\% MER, with
-        explicit anti-hallucination training that keeps the
-        decoder silent when the requested speaker is absent; we
-        report and analyse the substantially weaker numbers on the
-        public LibriMix benchmarks (Section~\ref{sec:tsasr}).
+        internal \texttt{ts\_hw\_test} the released checkpoint
+        reaches $12.56$\,\% WER on the target-present
+        (\emph{positive}) sub-slice, roughly $4.2\times$ below the
+        strongest open-source dual-audio baseline
+        (Qwen3-Omni~\cite{xu2025qwen25omni}, $52.90$\,\%); we
+        report the LibriMix gap and the residual false-alarm
+        behaviour on \emph{negative} sub-slices in
+        Section~\ref{sec:tsasr}.
   \item \textbf{A noise-robustness SFT stage.} The TS-ASR branch
         already passes through reverberation, additive noise
         (MUSAN \cite{snyder2015musan} and AudioSet road-traffic)
         and competing-speaker interference; an additional
         noise-robustness SFT stage extends the same augmentation
-        to the plain-ASR branch and gives AmphionASR its first
-        controlled noise-robustness evaluation grid against
-        Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
+        to the plain-ASR branch and is evaluated on
+        Voices-in-the-Wild-Bench~\cite{xie2026mega} against eight
+        publicly reported systems including Mega-ASR,
+        Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, Kimi-Audio
+        \cite{kimiaudio2025} and three closed-source models
         (Section~\ref{sec:noise}).
 \end{itemize}
 

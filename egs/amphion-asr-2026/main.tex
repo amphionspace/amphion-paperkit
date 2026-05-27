@@ -1,6 +1,6 @@
 % =============================================================================
 % AmphionASR Technical Report
-% Built on the Amphion technical-report template (template/amphion.cls v0.1).
+% Built with Amphion PaperKit (public LaTeX layer template/amphion.cls v0.1).
 % Default theme = amphion (warm ivory + petrol teal) inherited from the class;
 % header logos are off by default. See template/CHANGELOG.md for theme options.
 % =============================================================================
@@ -52,14 +52,19 @@
 % --- Teaser 1: capability overview ------------------------------------------
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{figures/capabilities.pdf}
-  \caption{AmphionASR exposes five production-oriented Mandarin--English
-    ASR capabilities through a single LLM prompt. Each row names one
-    capability, describes its input or selection condition, and shows
-    the prompt key (right column, typewriter font) that activates the
-    capability at inference time; rows without a key inherit the plain
-    transcription prompt and are handled implicitly by the model.
-    Quantitative results are reported in
+  \includegraphics[width=\linewidth]{figures/capabilities-v2.png}
+  \caption{AmphionASR exposes three production-oriented capabilities
+    that arise from coupling a Whisper-style audio encoder with a
+    pre-trained LLM. \emph{Top-left} hotword conditioning: a
+    user-supplied keyword list (e.g.\ \texttt{Hotword: Amphion}) is
+    placed in the LLM prompt and the decoder biases towards those
+    terms. \emph{Top-right} target-speaker recognition: a
+    $3$--$5$\,s enrollment utterance steers the model to transcribe
+    only the matching speaker in overlapped multi-talker audio.
+    \emph{Bottom} noise--RIR robustness: an augmentation curriculum
+    plus a noise-robustness SFT stage keeps the transcript clean
+    under additive noise and room reverberation. Quantitative results
+    for each capability are reported in
     Sections~\ref{sec:experiments}--\ref{sec:noise}.}
   \label{fig:teaser}
 \end{figure}
