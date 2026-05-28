@@ -1,77 +1,7 @@
-\section{Hotword Conditioning}
+\subsection{Hotword Conditioning}
 \label{sec:hotwords}
 
-\subsection{Setup}
-\label{subsec:hotword-setup}
-
-We evaluate hotword behaviour with two evaluation protocols that
-differ in how the per-utterance hotword list is constructed.
-
-\paragraph{Oracle prompt (random padding).}
-The CommonVoice 17 hotword test splits ship with a per-utterance
-ground-truth list of rare entities (mined offline) and a per-utterance
-QA acceptance flag. For a target prompt size $k$, the inference
-client pads each utterance's list to $k$ entries by mixing the
-ground-truth hotwords with random distractors drawn from the same
-corpus's global hotword pool. No online hard negatives are added at
-evaluation time, in contrast to training
-(Section~\ref{subsec:hotword-pool}). The $k=0$ row drops the hotword
-prompt line entirely (mirroring the training-time fallback) and is
-nearly identical to the corresponding row of
-Tables~\ref{tab:asr_zh}--\ref{tab:asr_en}. We report CER for Mandarin
-and WER for English. Because the per-utterance ground-truth list is
-revealed to the model up to random padding, this protocol gives an
-upper bound on the model's prompt-driven hotword behaviour and does
-not test the retriever.
-
-\paragraph{Retrieve client (retrieval-based padding).}
-The retrieve client replaces ground-truth knowledge with a
-per-utterance top-$K$ output of the retrieval operator described in
-Section~\ref{subsec:retrieve-algorithm}. The operator takes the
-audio and a much larger pool $\mathcal{H}$ (here the union of all
-ground-truth lists in the test split) and returns a $K$-element
-subset whose content is not guaranteed to contain the ground-truth
-term. We report two families of metrics: retrieval-level recall and
-biased / unbiased WER on the downstream transcript.
-
-\paragraph{Training exposure.}
-Training-time hotword exposure follows
-Section~\ref{subsec:hotword-pool}: each sample's prompt is built from
-\textbf{real terms} (each ground-truth term independently dropped
-with probability $0.05$), \textbf{up to 10 hard negatives} from the
-char-overlap + bigram-Jaccard + pinyin-syllable retriever, and the
-\textbf{remainder of $n_\text{distractor}\!\in\![1, 20]$ slots} from
-the global pool. The hotword prompt line itself is kept with
-probability $0.8$. Training and evaluation sweeps therefore cover
-the same prompt-length regime; the retrieve client additionally
-exercises the discriminative-gap and miss-recall behaviour covered
-by the training augmentation in Section~\ref{subsec:hotword-pool}.
-
-\subsection{Retrieve Algorithm}
 \label{subsec:retrieve-algorithm}
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=\linewidth]{figures/retrieve.pdf}
-  \caption{Retrieve-then-bias paradigm
-    (Eq.~\eqref{eq:retrieve-decompose}). Left: AmphionASR is
-    invoked twice -- a no-hotword coarse pass $g(x)$ produces a
-    coarse transcript $\tilde{y}$ that a parameter-free text
-    retriever $r(\cdot)$ maps to the top-$K$ subset of a hotword
-    pool $\mathcal{H}$ of size $\sim\!10^4$; a discriminative-gap
-    check (alphabetic route only) drops the list back to the empty
-    set when no candidate dominates; and a with-hotword fine pass
-    $f(x, \mathcal{H}')$ produces the final transcript with the
-    retrieved hotwords inserted as a single \texttt{Hotwords:}
-    prompt line. Right (dashed, contrast only): the audio-space
-    alternative of Min et al.~\cite{min2024speechrag} skips $g$ by
-    learning a speech adapter that maps the waveform directly into
-    a frozen text retriever; AmphionASR does not adopt this route
-    because it requires an additional audio-to-text alignment
-    network and hotword--utterance supervision that our training
-    data does not provide.}
-  \label{fig:retrieve}
-\end{figure}
 
 \paragraph{Problem formalisation.}
 Let the global hotword pool be $\mathcal{H} = \{h_1, \dots, h_N\}$
@@ -185,28 +115,6 @@ $1$ and $K_\text{max}$ mirrors retriever-output-size variance
 across pools. GRPO (Section~\ref{subsec:grpo}) then pushes the
 binary $c \in \hat{y}$ / $c \notin \hat{y}$ decision at the margin
 through the hotword match-accuracy reward.
-
-\paragraph{Relation to prior retrieval-based contextual ASR.}
-Three concurrent lines target the same retrieve-then-bias
-structure. Lakomkin et al.~\cite{lakomkin2025contextual} use a
-joint-embedding CLAP-style retriever and align it with GRPO. Sun
-et al.~\cite{sun2025br} (BR-ASR) train a retrieval head on top of
-hotword embeddings for very large pools (200\,k entries).
-Yang et al.~\cite{yang2024ctc} use a CTC auxiliary decoder as the
-coarse decode. The closest neighbour from the speech-RAG line is
-Min et al.~\cite{min2024speechrag}, who skip $g$ entirely with a
-learned speech adapter that maps audio directly into a frozen text
-retriever, and the speaker-querying line in TS-ASR
-(Section~\ref{sec:tsasr}). The differentiating choice of our
-operator is that $r$ is parameter-free and routed by script: it
-has a small number of global constants (four channel weights, one
-acceptance threshold, one discriminative ratio, two augmentation
-drop probabilities), each constrained structurally rather than
-learned. This trades data-driven gain for cross-domain
-transferability; new domains require updating the pool but not
-retraining the retriever.
-
-\subsection{Results}
 
 \paragraph{Oracle prompt.}
 Table~\ref{tab:hotwords_oracle} reports the random-padding oracle
@@ -324,8 +232,6 @@ contrast without attempting to attribute the Recall@$K$ result.
     \bottomrule
   \end{tabular}
 \end{table}
-
-\subsection{Analysis}
 
 \paragraph{Oracle prompt: large gain from a small list with a mild
 monotonic tail.}

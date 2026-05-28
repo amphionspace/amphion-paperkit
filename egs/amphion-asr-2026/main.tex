@@ -5,7 +5,7 @@
 % header logos are off by default. See template/CHANGELOG.md for theme options.
 % =============================================================================
 
-\documentclass{template/amphion}
+\documentclass[notitlebox]{template/amphion}
 
 % --- ASR-domain math macros (\wer / \cer / \mer / \hotwerN) ---
 \usepackage{template/asr-macros}
@@ -18,14 +18,14 @@
   pdfkeywords={Speech Recognition, SpeechLLM, LLM-based ASR,
                Personalised ASR, Industrial-Grade ASR, Production ASR,
                Hotword Biasing, Contextual Biasing, Target-Speaker ASR,
-               Noise Robustness, Code-switching, Mandarin-English ASR,
+               Degradation Robustness, Code-switching, Mandarin-English ASR,
                Qwen3, Modality Boundary Prompt},
 }
 
 % --- Title, author, affiliation, abstract -----------------------------------
-\title{AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin--English Speech Recognition}
+\title{AmphionASR Technical Report}
 
-\author{Amphion ASR Team}
+\author{Amphion Team}
 
 % Abstract is supplied by sections/00_abstract.tex as plain prose
 % (no \begin{abstract} ... \end{abstract} environment under xlance.cls).
@@ -34,41 +34,37 @@
 % Optional: project metadata line under the abstract.
 \metadatainfo{
   \small\makebox[\linewidth][c]{
-    \href{https://github.com/amphionspace/AmphionASR}{\texttt{GitHub: amphionspace/AmphionASR}}
+    \raisebox{-2pt}{\includegraphics[height=1.0em]{../../template/assets/logos/GitHub.png}}\;
+    \href{https://github.com/amphionspace/AmphionASR}{\texttt{amphionspace/AmphionASR}}
     % TODO: verify the public URL (currently 404 on github.com).
   }
 }
 
 % =============================================================================
 \begin{document}
-\publishdate{2026.05.13}
+\newcommand{\reportpubdate}{2026.05.28}
+\publishdate{\reportpubdate}
+
+% --- First-page header: logo left, publish date right, thin rule ---
+\fancypagestyle{firstpage}{%
+  \fancyhf{}%
+  \fancyhead[L]{\includegraphics[height=0.92cm]{figures/logo_v3.png}}%
+  \fancyhead[R]{\small\color{gray}\reportpubdate}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \fancyfoot[C]{\thepage}%
+}
+
 \maketitle
 
-% --- Body page header: amphion.cls injects the full \title into the body
-%     header at \maketitle; we override here with the short name because the
-%     full title is too long to repeat on every page.
-\fancyhead[L]{AmphionASR}
+% --- Body pages: no header text, no rule ---
+\fancyhead[L]{}
+\renewcommand{\headrulewidth}{0pt}
 
-% --- Teaser 1: capability overview ------------------------------------------
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/capabilities-v2.png}
-  \caption{AmphionASR exposes three production-oriented capabilities
-    that arise from coupling a Whisper-style audio encoder with a
-    pre-trained LLM. \emph{Top-left} hotword conditioning: a
-    user-supplied keyword list (e.g.\ \texttt{Hotword: Amphion}) is
-    placed in the LLM prompt and the decoder biases towards those
-    terms. \emph{Top-right} target-speaker recognition: a
-    $3$--$5$\,s enrollment utterance steers the model to transcribe
-    only the matching speaker in overlapped multi-talker audio.
-    \emph{Bottom} noise--RIR robustness: an augmentation curriculum
-    plus a noise-robustness SFT stage keeps the transcript clean
-    under additive noise and room reverberation. Quantitative results
-    for each capability are reported in
-    Sections~\ref{sec:experiments}--\ref{sec:noise}.}
-  \label{fig:teaser}
-\end{figure}
-
+% --- Relax float placement constraints so large figures share pages with text ---
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{3}
 
 % --- Body sections ----------------------------------------------------------
 \input{sections/01_introduction}
@@ -88,6 +84,7 @@
 \setcitestyle{numbers}
 \bibliography{template/venues,references}
 
+\clearpage
 \appendix
 \input{sections/A_appendix}
 

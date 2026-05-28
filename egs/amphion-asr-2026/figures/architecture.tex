@@ -131,7 +131,7 @@
   };
   \node[tokenizer, below=1.3cm of seqbox.south, anchor=north,
         at={([xshift=\xR]seqbox.south)}] (embed) {%
-    Tokenizer + Embedding%
+    \frozenIcon~~Text Tokenizer%
   };
 
   % vertical arrows: each source -> the sequence bottom on its own x
@@ -143,21 +143,17 @@
         node[midway, edgelabel] {text embs};
 
   % ====================== Audio column (left, downstream) ======
-  \node[encoder, below=of proj] (aut) {%
-    \frozenIcon~~Whisper-style Audio Encoder%
-  };
-  \node[encoder, below=of aut] (front) {%
-    Log-mel + Conv%
+  \node[adapter, below=of proj] (aut) {%
+    \fireIcon~~Audio Encoder%
   };
   % Waveform: no box, just the pictogram and a small caption.
   \node[draw=none, fill=none, inner sep=2pt, align=center,
-        font=\small, below=of front] (wave) {%
+        font=\small, below=of aut] (wave) {%
     \WaveformPictogram\\[-1pt]
     \scriptsize raw audio
   };
-  \draw[flow] (wave)  -- (front);
-  \draw[flow] (front) -- (aut);
-  \draw[flow] (aut)   -- (proj);
+  \draw[flow] (wave) -- (aut);
+  \draw[flow] (aut)  -- (proj);
 
   % ====================== Text column (right, downstream) ======
   \node[promptbox, below=of embed] (prompt) {%

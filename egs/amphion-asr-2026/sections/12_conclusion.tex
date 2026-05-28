@@ -13,7 +13,7 @@ three stages: audio--text alignment, continue-SFT for Mandarin and
 English transcription, and capability SFT that adds in-prompt
 hotword conditioning and reference-utterance target-speaker
 recognition. The released AmphionASR checkpoint additionally
-completes a noise-robustness SFT stage that extends the
+completes a degradation-robustness SFT stage on Voice-in-the-Wild-2M~\cite{xie2026mega} that extends
 augmentation pipeline to the plain-ASR branch and is evaluated on
 Voices-in-the-Wild-Bench~\cite{xie2026mega}
 (Section~\ref{sec:noise}). On Mandarin benchmarks AmphionASR
@@ -28,7 +28,7 @@ A parameter-free text-space retrieval operator
 hotword behaviour to deployment-scale pools by reducing the
 prompt to a per-utterance top-$K$ subset of a pool of size up to
 $10^4$. On Voices-in-the-Wild-Bench~\cite{xie2026mega}, the
-$5{,}000$-clip noise-robustness suite, AmphionASR leads five of
+$5{,}000$-clip degradation-robustness suite, AmphionASR leads five of
 sixteen subsets against eight publicly reported systems.
 
 What still needs to be solved -- and is the explicit subject of

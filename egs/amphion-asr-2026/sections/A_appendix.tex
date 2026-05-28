@@ -5,7 +5,7 @@ The five task templates of Table~\ref{tab:tasks} are reproduced here
 in their fully rendered form for unambiguous reproduction. The
 \verb|<speech>| placeholder marks the position in the input
 embedding stream where the merge step substitutes the projected
-audio embedding sequence (Section~\ref{subsec:merge}); the
+audio embedding sequence; the
 \verb|<start_speech>| and \verb|<end_speech>| tokens are emitted by
 the chat template around every audio content item.
 
@@ -105,9 +105,7 @@ Table~\ref{tab:grpo_hparams} lists the hyperparameters of the GRPO
 recipe of Section~\ref{subsec:grpo}.
 
 \begin{table}[ht]
-  \caption{GRPO hyperparameters for
-    Section~\ref{subsec:grpo}. Equation references point to the
-    relevant terms in Section~\ref{subsec:grpo}.}
+  \caption{GRPO hyperparameters for Section~\ref{subsec:grpo}.}
   \label{tab:grpo_hparams}
   \centering
   \small
@@ -115,10 +113,10 @@ recipe of Section~\ref{subsec:grpo}.
     \toprule
     Item & Value \\
     \midrule
-    Group size $G$ (Eq.~\ref{eq:grpo-advantage})       & $16$ \\
-    Sampling temperature                                & $0.6$ \\
-    PPO clip $\varepsilon$ (Eq.~\ref{eq:grpo-objective}) & $0.2$ \\
-    KL coefficient $\beta$ (Eq.~\ref{eq:grpo-objective}) & $1\!\times\!10^{-3}$ \\
+    Group size $G$            & $16$ \\
+    Sampling temperature      & $0.6$ \\
+    PPO clip $\varepsilon$    & $0.2$ \\
+    KL coefficient $\beta$    & $1\!\times\!10^{-3}$ \\
     Peak learning rate                                  & $1\!\times\!10^{-6}$ \\
     Epochs                                              & $1$ \\
     Per-device prompt batch                             & $8$ \\

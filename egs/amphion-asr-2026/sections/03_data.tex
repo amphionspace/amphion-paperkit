@@ -60,15 +60,6 @@ repeat-factor knobs across languages.
   \end{tabular}
 \end{table}
 
-\paragraph{Language tag canonicalisation.}
-Source manifests use a mixture of ISO-639-1, ISO-639-3 and locale tags
-(``zh'', ``zh-cn'', ``en-us'', ``eng''). The data conversion layer
-normalises every per-utterance language tag to a Title-Case
-English name (e.g.\ ``zh''\,$\to$\,Chinese, ``en-us''\,$\to$\,English)
-across the eighteen languages we currently support
-(zh, en, ja, ko, fr, de, es, ru, pt, it, nl, tr, ar, hi, vi, th, id, ms);
-unknown values are preserved verbatim.
-
 \subsection{Hotword-Conditioned ASR Sources}
 \label{subsec:hotword-sources}
 
@@ -99,38 +90,6 @@ acceptance flag shipped with each split.
     \midrule
     CommonVoice 17 ZH hotwords & CommonVoice ZH test & test (QA-filtered) & -- \\
     CommonVoice 17 EN hotwords & CommonVoice EN test & test (QA-filtered) & -- \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsection{Augmentation Resources}
-\label{subsec:aug-resources}
-
-Two pools of side data are used by the TS-ASR synthesis pipeline
-(Section~\ref{subsec:tsasr-synth}): room impulse responses (RIRs) and
-additive noise. RIR convolutions are truncated to $1.5$\,s (early
-reflections dominate intelligibility) and applied via an FFT-based
-overlap-add. Noise is mixed at a configured signal-to-noise ratio
-(SNR) and the result is peak-normalised to avoid clipping.
-
-\begin{table}[t]
-  \caption{Room impulse response and noise pools used by the TS-ASR
-    synthesiser. Within each pool, RIRs are sampled uniformly; noise
-    sources are sampled with the listed weights per training example.}
-  \label{tab:data_rir_noise}
-  \centering
-  \small
-  \begin{tabular}{p{4.0cm}p{6.0cm}r}
-    \toprule
-    Resource & Source & Weight \\
-    \midrule
-    SLR26 sim RIRs       & OpenSLR-26 \cite{ko2017studyrir}                            & uniform \\
-    SLR28 sim RIRs       & OpenSLR-28 \cite{ko2017studyrir}                            & uniform \\
-    SLR28 real RIRs      & OpenSLR-28 (AIR / RWCP / REVERB-2014) \cite{ko2017studyrir} & uniform \\
-    \midrule
-    MUSAN noise          & SLR17 \cite{snyder2015musan}                                & 0.30 \\
-    MUSAN music          & SLR17 \cite{snyder2015musan}                                & 0.20 \\
-    AudioSet road traffic & AudioSet road-traffic subset                               & 0.50 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -208,6 +167,31 @@ $\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to $[-5, 20]$,
 and $3$--$5$\,s enrollments. After mixing we apply an RIR with
 probability $0.5$ (Table~\ref{tab:data_rir_noise}) and an additive
 background noise segment with $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB.
+RIR convolutions are truncated to $1.5$\,s (early reflections dominate
+intelligibility) and applied via an FFT-based overlap-add; noise is mixed
+at the configured SNR and peak-normalised to avoid clipping.
+
+\begin{table}[t]
+  \caption{Room impulse response and noise pools used by the TS-ASR
+    synthesiser. Within each pool, RIRs are sampled uniformly; noise
+    sources are sampled with the listed weights per training example.}
+  \label{tab:data_rir_noise}
+  \centering
+  \small
+  \begin{tabular}{p{4.0cm}p{6.0cm}r}
+    \toprule
+    Resource & Source & Weight \\
+    \midrule
+    SLR26 sim RIRs       & OpenSLR-26 \cite{ko2017studyrir}                            & uniform \\
+    SLR28 sim RIRs       & OpenSLR-28 \cite{ko2017studyrir}                            & uniform \\
+    SLR28 real RIRs      & OpenSLR-28 (AIR / RWCP / REVERB-2014) \cite{ko2017studyrir} & uniform \\
+    \midrule
+    MUSAN noise          & SLR17 \cite{snyder2015musan}                                & 0.30 \\
+    MUSAN music          & SLR17 \cite{snyder2015musan}                                & 0.20 \\
+    AudioSet road traffic & AudioSet road-traffic subset                               & 0.50 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{table}[t]
   \caption{Single-speaker source manifests fed to the TS-ASR
@@ -284,42 +268,3 @@ The whole hotword prompt line is then kept with probability $0.8$
 and dropped otherwise, training the same model to behave gracefully
 when no hotword side-channel is available at inference time.
 
-\subsection{Evaluation Datasets and Metrics}
-\label{subsec:eval-data}
-
-All evaluations are dispatched through a unified dataset registry,
-shared between the offline batch decoder and the online batched
-inference server. Table~\ref{tab:eval} lists the test sets
-reported in this paper. Per-language WER and CER on plain-ASR
-sets, the silence-aware target-speaker metrics
-(WER\,/\,FA\,/\,Miss\,/\,SM, Section~\ref{sec:tsasr}) on TS-ASR
-test sets, and per-system WER on Voices-in-the-Wild-Bench
-(Section~\ref{sec:noise}) are computed by a single evaluation
-harness, so that all numbers in the paper come from the same
-metric implementation.
-
-\begin{table}[t]
-  \caption{Evaluation sets used in this report. The hotword sweep
-    pads each test utterance to $k$ in-prompt hotwords by adding
-    random distractors drawn from the same corpus.}
-  \label{tab:eval}
-  \centering
-  \small
-  \begin{tabular}{lp{8.5cm}l}
-    \toprule
-    Task & Test sets & Metric \\
-    \midrule
-    ASR-zh           & AIShell-1/2, KeSpeech, CommonVoice ZH,
-                       WenetSpeech (net / meeting)                                & CER \\
-    ASR-en           & LibriSpeech (test-clean / -other), GigaSpeech,
-                       CommonVoice EN                                             & WER \\
-    Hotword ASR      & CommonVoice ZH / EN hotword splits (sweep
-                       $k\!\in\!\{0, 5, 10, 15, 20\}$)                            & CER / WER \\
-    TS-ASR           & internal \texttt{ts\_hw\_test} ($n_\text{pos}\!=\!6{,}227$,
-                       $n_\text{neg}\!=\!328$) + LibriMix 2 / 3 \cite{cosentino2020librimix}
-                                                                                & WER / FA / Miss / SM \\
-    Noise robustness & Voices-in-the-Wild-Bench \cite{xie2026mega}
-                       ($16$ subsets, $5{,}000$ clips)                            & WER \\
-    \bottomrule
-  \end{tabular}
-\end{table}

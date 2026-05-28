@@ -1,37 +1,6 @@
-\section{Noise Robustness}
+\subsection{Degradation Robustness}
 \label{sec:noise}
 
-\subsection{Evaluation Protocol}
-\label{subsec:vitw-protocol}
-
-Speech recognition in deployment is rarely exercised on clean read
-speech: production audio routinely contains additive noise, room
-reverberation, far-field attenuation, transmission artefacts, and
-compound combinations thereof. We evaluate AmphionASR on
-\textbf{Voices-in-the-Wild-Bench}~\cite{xie2026mega}, a $5{,}000$-clip
-English/Mandarin benchmark released alongside Mega-ASR that covers
-seven atomic acoustic effects --- additive noise, far-field propagation,
-obstruction, echo and reverberation, recording coloration, electronic
-distortion, and transmission dropout --- each exercised both with
-real-world recordings collected from the public internet (\emph{Real},
-$150$ clips per atomic effect plus a $450$-clip Mixed subset) and with
-controlled spectrogram-level simulation (\emph{Sim}, $350$ clips per
-atomic effect plus a $1{,}050$-clip Mixed subset). The Mixed subsets
-compose two to five atomic effects per clip to approximate real-world
-compound degradations.
-
-We report WER (\%) under the Whisper English normaliser and the
-Mandarin normaliser of Section~\ref{subsec:setup}, the same
-normalisation pipeline as Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh}.
-Baseline numbers in the eight non-AmphionASR columns of
-Table~\ref{tab:vitw_bench} are taken from \cite{xie2026mega} Table~4
-and therefore reflect the Mega-ASR paper's own normalisation pipeline
-rather than ours.
-% TODO: re-run all eight baselines through the Section~\ref{subsec:setup}
-% normaliser to remove the cross-system normalisation drift in
-% Table~\ref{tab:vitw_bench}.
-
-\subsection{Headline Results}
 \label{subsec:vitw-results}
 
 Table~\ref{tab:vitw_bench} reports the sixteen-subset breakdown.
@@ -63,8 +32,8 @@ organised by access level:
     Table~4; the AmphionASR column is produced by the released
     checkpoint under the same normaliser as
     Section~\ref{subsec:setup}. Bold marks the lowest WER in each row.
-    See Section~\ref{subsec:vitw-protocol} for the normalisation
-    caveat across the AmphionASR and baseline columns.}
+    Baseline columns use the Mega-ASR normalisation pipeline~\cite{xie2026mega}
+    rather than ours; see Section~\ref{subsec:setup} for our normaliser.}
   \label{tab:vitw_bench}
   \centering
   \scriptsize
@@ -99,8 +68,6 @@ organised by access level:
     \bottomrule
   \end{tabular}
 \end{table}
-
-\subsection{Analysis}
 
 \paragraph{AmphionASR leads five of sixteen subsets.}
 On the \emph{Real} split, AmphionASR is the best system on the

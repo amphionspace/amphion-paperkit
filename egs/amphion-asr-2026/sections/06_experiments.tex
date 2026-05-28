@@ -31,16 +31,90 @@ FireRed-ASR2-LLM~\cite{fireredasr2025}, and
 GLM-ASR-nano~\cite{glmasr2025}. The baseline columns in
 Tables~\ref{tab:asr_en}--\ref{tab:asr_zh} are produced by us under
 the same normaliser as the AmphionASR column.
-% TODO: confirm whether each baseline column comes from "we re-ran"
-% or "as reported in [cite]" and populate the per-row notes accordingly.
+
+\paragraph{Hotword conditioning setup.}
+\label{subsec:hotword-setup}
+Two protocols are evaluated on CommonVoice 17 ZH/EN hotword splits
+with prompt-size sweep $k\!\in\!\{0, 5, 10, 15, 20\}$.
+\emph{Oracle prompt}: ground-truth hotwords padded to $k$ entries
+with random distractors, providing an upper bound on prompt-driven
+biasing without testing the retriever.
+\emph{Retrieve client}: the hotword list is constructed by the
+parameter-free retrieval operator of Section~\ref{subsec:retrieve-algorithm}
+from the full test-split pool, testing end-to-end biasing performance.
+CER is reported for Mandarin and WER for English.
+
+\paragraph{Target-speaker recognition setup.}
+Three test sets are used: the internal \texttt{ts\_hw\_test}
+($n_\text{pos}\!=\!6{,}227$ target-present, $n_\text{neg}\!=\!328$
+target-absent, synthesised by the same pipeline as training but on
+held-out speakers), Libri2Mix ($n\!=\!6{,}000$), and Libri3Mix
+($n\!=\!9{,}000$). We report WER on positive samples, False Alarm
+(FA), Miss, and Silence Match (SM\,$=$\,$1\!-\!$FA) on
+\texttt{ts\_hw\_test}, and WER on LibriMix. Baselines are
+Qwen3-ASR-0.6B, Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} and
+Qwen3-Omni~\cite{xu2025qwen25omni}; all systems use the same
+dual-audio prompt template.
+
+\paragraph{Degradation robustness setup.}
+\label{subsec:vitw-protocol}
+We evaluate on Voices-in-the-Wild-Bench~\cite{xie2026mega}, a
+$5{,}000$-clip English/Mandarin benchmark covering seven atomic
+acoustic degradations (additive noise, far-field propagation,
+obstruction, echo/reverberation, recording coloration, electronic
+distortion, transmission dropout) under both real-world recordings
+(\emph{Real}) and spectrogram-level simulation (\emph{Sim}), plus
+compound-degradation Mixed subsets --- $16$ subsets in total. WER
+is reported under the same normalisers as
+Tables~\ref{tab:asr_en}--\ref{tab:asr_zh}; baseline numbers for
+eight comparison systems are reproduced from~\cite{xie2026mega}
+and use the Mega-ASR normalisation pipeline rather than ours.
+
+\subsection{Evaluation Datasets and Metrics}
+\label{subsec:eval-data}
+
+All evaluations are dispatched through a unified dataset registry,
+shared between the offline batch decoder and the online batched
+inference server. Table~\ref{tab:eval} lists the test sets
+reported in this paper. Per-language WER and CER on plain-ASR
+sets, the silence-aware target-speaker metrics
+(WER\,/\,FA\,/\,Miss\,/\,SM, Section~\ref{sec:tsasr}) on TS-ASR
+test sets, and per-system WER on Voices-in-the-Wild-Bench
+(Section~\ref{sec:noise}) are computed by a single evaluation
+harness, so that all numbers in the paper come from the same
+metric implementation.
+
+\begin{table}[t]
+  \caption{Evaluation sets used in this report. The hotword sweep
+    pads each test utterance to $k$ in-prompt hotwords by adding
+    random distractors drawn from the same corpus.}
+  \label{tab:eval}
+  \centering
+  \small
+  \begin{tabular}{lp{8.5cm}l}
+    \toprule
+    Task & Test sets & Metric \\
+    \midrule
+    ASR-zh           & AIShell-1/2, KeSpeech, CommonVoice ZH,
+                       WenetSpeech (net / meeting)                                & CER \\
+    ASR-en           & LibriSpeech (test-clean / -other), GigaSpeech,
+                       CommonVoice EN                                             & WER \\
+    Hotword ASR      & CommonVoice ZH / EN hotword splits (sweep
+                       $k\!\in\!\{0, 5, 10, 15, 20\}$)                            & CER / WER \\
+    TS-ASR           & internal \texttt{ts\_hw\_test} ($n_\text{pos}\!=\!6{,}227$,
+                       $n_\text{neg}\!=\!328$) + LibriMix 2 / 3 \cite{cosentino2020librimix}
+                                                                                & WER / FA / Miss / SM \\
+    Degradation robustness & Voices-in-the-Wild-Bench \cite{xie2026mega}
+                       ($16$ subsets, $5{,}000$ clips)                            & WER \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \subsection{Main Results}
 
 \input{tables/asr_en}
 
 \input{tables/asr_zh}
-
-\subsection{Discussion}
 
 \paragraph{Closest-scale comparison: Qwen3-ASR-1.7B.}
 We treat Qwen3-ASR-1.7B as the closest open-source comparison

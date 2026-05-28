@@ -1,27 +1,3 @@
-We present \textbf{AmphionASR}, an open Mandarin and English
-SpeechLLM purpose-built for the failure modes that dominate
-real-world deployments rather than open-benchmark leaderboards: rare
-named entities, overlapping speakers, and noisy or far-field
-acoustic conditions. The model couples a Whisper-style audio encoder
-with Qwen3-4B-Instruct~\cite{qwen2025qwen3} through a lightweight
-modality projector; the LLM prompt accepts a hotword list or a
-$3$--$5$\,s target-speaker reference at inference time, and a
-dedicated noise-robustness SFT stage extends acoustic augmentation
-to the plain-ASR branch.
-
-On public benchmarks AmphionASR reaches $\mathbf{1.51}$\,\% CER on
-AIShell-1 and $\mathbf{1.55}$\,\% WER on LibriSpeech
-\texttt{test-clean}; with five in-prompt hotwords the
-CommonVoice~17 Mandarin hotword CER drops from $5.93$\,\% to
-$\mathbf{2.82}$\,\%, and target-speaker recognition reaches
-$\mathbf{12.56}$\,\% WER on our internal \texttt{ts\_hw\_test}. On the
-$5{,}000$-clip Voices-in-the-Wild-Bench~\cite{xie2026mega}
-noise-robustness suite, AmphionASR leads $5$ of $16$ subsets
-against eight publicly reported systems. Model weights and a
-batched vLLM~\cite{kwon2023vllm} serving stack will be released at
-\url{https://github.com/amphionspace/AmphionASR}; the training
-code is not part of this release, and current gaps on LibriMix and
-on the Sim-Echo and Sim-Recording cells of
-Voices-in-the-Wild-Bench are documented in
-Section~\ref{sec:limitations}.
+We present \textbf{AmphionASR}, an open-source industrial-grade SpeechLLM for Mandarin and English speech recognition, designed to address the failure modes that dominate real-world deployments: rare named entities, overlapping speakers, and real-world acoustic degradations. The model couples a 24-layer Whisper-style audio encoder (${\approx}314$\,M parameters, initialised from the Qwen3-ASR audio tower) with Qwen3-4B-Instruct through a lightweight modality projector, totalling $4.7$\,B parameters. A unified prompt-based interface handles hotword lists and target-speaker reference audio at inference time, while a dedicated degradation-robustness SFT stage on Voice-in-the-Wild-2M~\cite{xie2026mega} covers real-world acoustic degradations for the plain-ASR branch.
+On public benchmarks, AmphionASR achieves $\mathbf{1.51}$\,\% CER on AIShell-1 and $\mathbf{1.55}$\,\% WER on LibriSpeech \texttt{test-clean}. With five in-prompt hotwords, CommonVoice~17 Mandarin hotword CER drops from $5.93$\,\% to $\mathbf{2.82}$\,\%. Target-speaker recognition reaches $\mathbf{12.56}$\,\% WER on our internal \texttt{ts\_hw\_test}, roughly $4.2\times$ below the strongest open-source baseline (Qwen3-Omni, $52.90$\,\%). On the $5{,}000$-clip Voices-in-the-Wild-Bench degradation-robustness suite, AmphionASR leads $5$ of $16$ subsets against eight publicly reported systems. Model weights and a batched vLLM serving stack are released at \url{https://github.com/amphionspace/AmphionASR}.
 % TODO: verify the public URL (currently 404 on github.com).

@@ -40,6 +40,10 @@
 \newif\if@amphion@withlogo
 \@amphion@withlogofalse
 \DeclareOption{withlogo}{\@amphion@withlogotrue}
+% Orthogonal option: render title/abstract as plain text without tcolorbox. Off by default.
+\newif\if@amphion@notitlebox
+\@amphion@notitleboxfalse
+\DeclareOption{notitlebox}{\@amphion@notitleboxtrue}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions\relax
 
@@ -399,7 +403,10 @@
 \newcommand\metadataformatinfo[2][]{{\small #2}}
 \newcommand\metadatainfo[1]{\addtolist{#1}{\metadatalist}{\metadataformatinfo}{}}
 
-\renewcommand{\abstract}[1]{\def\abstractlist{{\color{themecolor@2} #1}}}
+\renewcommand{\abstract}[1]{%
+    \def\abstractlist{{\color{themecolor@2} #1}}%
+    \def\abstractlistplain{#1}%
+}
 \newcommand{\email}[1]{\href{mailto:#1}{\texttt{#1}}}
 
 \renewcommand\date[1]{\metadata[Date]{#1}}
@@ -545,16 +552,58 @@
     \FloatBarrier
 }
 
+% --- Plain title (no tcolorbox): used when [notitlebox] is active ---
+\newcommand{\mymaketitle@plain}{%
+    \begingroup
+    \setlength{\parindent}{0cm}
+    \setlength{\parskip}{0cm}
+    % Title (centered)
+    {%
+        \centering\nohyphens
+        {\setstretch{1.4}\Large\bfseries\titlelist\par}
+    }
+    \vskip 0.3cm
+    % Author (centered)
+    {%
+        \centering
+        \authorlist\par
+        \vskip 0.06cm
+        \affiliationlist\par
+        \contributionlist\par
+        {\small
+        \if@amphion@equalcontrib\textsuperscript{*}Equal Contribution\fi
+        \if@amphion@corresponding
+            \if@amphion@equalcontrib\hspace{1em}\fi
+            \textsuperscript{\dag}Correspondence to: \texttt{\@amphion@corr@email}%
+        \fi
+        \par}
+    }
+    \vskip 0.2cm
+    % Metadata / links (GitHub etc.)
+    {%
+        \setlength{\parskip}{0cm}
+        \ifdefempty{\metadatalist}{}{\metadatalist\par}
+    }
+    \vskip 0.3cm
+    % Abstract heading (matches section style) + black body text
+    {\centering{\Large\bfseries Abstract}\par}
+    \vskip 0.3cm
+    {\color{black}\abstractlistplain}
+    \vskip 0.5cm
+    \endgroup
+    \FloatBarrier
+}
+
 \if@twocolumn%
 \renewcommand{\maketitle}{
     \twocolumn[%
-        \mymaketitle
+        \if@amphion@notitlebox\mymaketitle@plain\else\mymaketitle\fi
         \vskip 0.38cm
     ]
 }%
 \else%
 \renewcommand{\maketitle}{
-    \mymaketitle
+    \if@amphion@notitlebox\mymaketitle@plain\else\mymaketitle\fi
 }%
 \fi
 

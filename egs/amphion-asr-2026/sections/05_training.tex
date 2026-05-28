@@ -1,7 +1,7 @@
 \section{Training}
 \label{sec:training}
 
-\subsection{Stages}
+\subsection{SFT Stages}
 
 The released AmphionASR checkpoint is the output of a multi-stage
 supervised fine-tuning (SFT) recipe. Each stage progressively
@@ -11,8 +11,7 @@ unlocks more of the model and adds more demanding tasks:
   \item \textbf{Stage~1 -- Audio--Text Alignment.}
         The audio encoder and the LLM are both frozen; only the
         modality projector (Section~\ref{subsec:projector}) and the
-        four learnable modality-boundary prompts
-        (Section~\ref{subsec:boundary-prompt}) receive gradients. The
+        four learnable modality-boundary prompts receive gradients. The
         objective is to map speech representations into the LLM's
         token space without disturbing either the encoder's acoustic
         priors or the LLM's text capabilities.
@@ -36,154 +35,45 @@ unlocks more of the model and adds more demanding tasks:
 \end{enumerate}
 
 After Stages~1--3 the released checkpoint additionally goes through
-a noise-robustness SFT stage that extends the augmentation pipeline
-of Section~\ref{subsec:tsasr-synth} to the plain-ASR branch; its
-external evaluation against eight other systems on
+a degradation-robustness SFT stage trained on Voice-in-the-Wild-2M~\cite{xie2026mega},
+a large-scale dataset covering diverse real-world acoustic degradations
+for the plain-ASR branch. Unlike the earlier stages, the audio encoder
+is \emph{unfrozen} in this stage. The motivation is that real-world
+degradations (reverberation, background noise, codec artefacts) corrupt
+the acoustic signal before it reaches the encoder; a frozen encoder
+produces distorted speech embeddings that carry degradation-induced
+artefacts into the LLM, interfering with its transcription capability.
+Jointly fine-tuning the encoder on degraded speech allows it to learn
+degradation-robust representations, so that the embeddings passed to
+the LLM remain semantically clean regardless of recording condition.
+Its external evaluation against eight other systems on
 Voices-in-the-Wild-Bench~\cite{xie2026mega} is reported in
 Section~\ref{sec:noise}.
-
-\subsection{Objective}
-
-For all three stages we use token-level cross-entropy on the assistant
-tokens, with loss masked over the prompt tokens (system instructions,
-task header, language line, hotword line, audio embedding positions
-and the enrollment audio block). Audio positions are masked from the
-loss as a hard rule. Anti-hallucination negatives use an empty
-assistant string, so the model learns to terminate immediately after
-the assistant header. For an input prompt $\mathbf{p}$ and reference
-transcript $\mathbf{y} = (y_1, \ldots, y_T)$,
-
-\begin{equation}
-  \mathcal{L}(\theta) = -\sum_{t=1}^{T} \log p_\theta(y_t \mid y_{<t}, \mathbf{p}).
-  \label{eq:sft-loss}
-\end{equation}
-
-No auxiliary objective (CTC head, contrastive loss) is used; the
-projector is trained purely through the LLM gradient.
-
-\subsection{Optimisation}
-
-Table~\ref{tab:hparams} summarises the per-stage hyperparameters of
-the SFT recipe; entries marked \texttt{?} are still pending the
-published training log.
-
-\begin{table}[t]
-  \caption{Per-stage SFT hyperparameters. The effective global batch
-    size at Stages~2 and 3 is
-    $16 \times 4 \times N_\text{gpu}$ samples per step.
-    Entries marked ``?'' are still pending the published training
-    log.}
-  \label{tab:hparams}
-  \centering
-  \small
-  \begin{tabular}{lccc}
-    \toprule
-                            & Stage 1 (alignment) & Stage 2 (continue SFT) & Stage 3 (capability) \\
-    \midrule
-    Trainable modules       & projector, boundary & + LoRA-adapted LLM   & + LoRA-adapted LLM \\
-    Audio encoder           & frozen               & frozen              & frozen \\
-    LoRA rank / $\alpha$    & --                   & $64$ / $128$        & $64$ / $128$ \\
-    LoRA target             & --                   & all linear          & all linear \\
-    Peak learning rate      & ?                    & $1\!\times\!10^{-5}$ & $1\!\times\!10^{-5}$ \\
-    LR schedule             & cosine               & cosine              & cosine \\
-    Warmup ratio            & ?                    & $0.05$               & $0.05$ \\
-    Per-device batch        & ?                    & $16$                 & $16$ \\
-    Grad-accumulation       & ?                    & $4$                  & $4$ \\
-    Max text length         & --                   & $2048$               & $2048$ \\
-    Epochs                  & ?                    & $4$--$6$             & $4$--$6$ \\
-    Optimiser               & AdamW                & AdamW                & AdamW \\
-    Precision               & bf16                 & bf16                 & bf16 \\
-    Grad-checkpointing      & true                 & true                 & true \\
-    Parallelism             & DeepSpeed ZeRO-2     & DeepSpeed ZeRO-2     & DeepSpeed ZeRO-2 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\paragraph{Parallelism.}
-We use DeepSpeed ZeRO-2 in all three stages; ZeRO-3 was found to be
-unstable in this setup and was not used.
-
-\subsection{Infrastructure}
-
-Training is run on the internal H800 cluster.
-% TODO: confirm GPU count (default config implies $\geq 4$ GPUs from
-% the effective batch size 16 \times 4 \times N_\text{gpu}; record
-% the actual N_\text{gpu} and total wall-clock time).
-The training framework is ms-swift~\cite{msswift}; inference and
-evaluation throughput rely on vLLM~\cite{kwon2023vllm} as a batched
-HTTP service (Section~\ref{subsec:inference}).
 
 \subsection{Group Relative Policy Optimisation}
 \label{subsec:grpo}
 
-On top of Stage~3, we describe a reinforcement-learning step based on
-Group Relative Policy Optimisation (GRPO)
-\cite{lakomkin2025contextual} with two rule-based, verifiable rewards
-computed directly on the assistant text. The numbers reported in
-Sections~\ref{sec:experiments}--\ref{sec:noise} are produced from the
-SFT checkpoint described above; a dedicated SFT vs. SFT+GRPO ablation
-is deferred to a follow-up revision. The method description below
-covers the design choices that motivate the reward functions and the
-training-evaluation alignment they enforce.
+On top of the degradation-robustness SFT stage, we apply a
+reinforcement-learning step based on Group Relative Policy
+Optimisation (GRPO) \cite{lakomkin2025contextual} with two
+rule-based rewards computed directly on the assistant text. The
+numbers reported in Sections~\ref{sec:experiments}--\ref{sec:noise}
+are produced from the SFT checkpoint described above; a dedicated
+SFT vs.\ SFT+GRPO ablation is deferred to a follow-up revision.
 
 \paragraph{Motivation.}
-SFT on ASR is teacher-forced: the cross-entropy loss is computed at
-every token under the true prefix, and two failure modes of the
-resulting decoder are not directly addressed by more SFT epochs.
+SFT on ASR is teacher-forced, and two failure modes of the resulting
+decoder are not directly addressed by more SFT epochs.
 \emph{(i)~Boundary-discrimination samples}~-- silent inputs that
 should produce an empty hypothesis, and hotword decisions about
 whether a candidate term was actually spoken~-- carry a token-count
 weight that is small relative to typical transcripts, so the
-cross-entropy gradient does not specifically reward correct
-boundary behaviour. \emph{(ii)~Metric-train gap}~-- CER is a
-sequence-level edit-distance whose minimum-CER hypothesis is not
-guaranteed to be the minimum-cross-entropy hypothesis on any
-particular sample; near the SFT convergence point this gap is what
-remains to be optimised. A sequence-level reward signal addresses
-both issues directly.
-
-\paragraph{Algorithm.}
-GRPO is the critic-free variant of PPO~\cite{schulman2017ppo}: for
-each prompt $q$, $G$ completions $\{o_1, \dots, o_G\}$ are sampled
-from the current policy, scored by a reward function to obtain
-$\{r_1, \dots, r_G\}$, and the per-completion advantage is the
-within-group $z$-score
-\begin{equation}
-  A_i = \frac{r_i - \mathrm{mean}(\{r_j\}_{j=1}^G)}{\mathrm{std}(\{r_j\}_{j=1}^G) + \epsilon}.
-  \label{eq:grpo-advantage}
-\end{equation}
-The surrogate objective sums the clipped per-token policy ratio over
-each completion with a KL penalty against the SFT reference
-$\pi_\mathrm{ref}$,
-\begin{equation}
-\begin{aligned}
-  &\mathcal{J}_\mathrm{GRPO}(\theta) =
-    \mathbb{E}_{q, \{o_i\}} \Bigg[
-      \frac{1}{G}\sum_{i=1}^{G} \frac{1}{|o_i|}\sum_{t=1}^{|o_i|}
-        \min\!\big(\rho_{i,t}\,A_i,\\
-  &\hspace{6em} \mathrm{clip}(\rho_{i,t}, 1{-}\varepsilon, 1{+}\varepsilon)\,A_i\big)
-      - \beta\,D_\mathrm{KL}(\pi_\theta \,\|\, \pi_\mathrm{ref})
-    \Bigg],
-\end{aligned}
-  \label{eq:grpo-objective}
-\end{equation}
-with $\rho_{i,t} = \pi_\theta(o_{i,t}\!\mid\!q, o_{i,<t}) /
-\pi_\mathrm{old}(o_{i,t}\!\mid\!q, o_{i,<t})$. Replacing the PPO
-critic by the within-group baseline matches the structure of ASR
-rewards, which are defined at the completion level and do not admit
-a natural token-level value decomposition.
-
-\paragraph{Verifiable rewards.}
-A central property of ASR as an RL target is that the reward is a
-deterministic function of the hypothesis $\hat{y}$, the reference
-$y$, and the candidate hotword set $C$ parsed from the prompt. No
-reward model and no human preference data are required. This
-removes the three failure modes that motivate reward-model
-caution~-- reward hacking through proxy exploits, distribution
-shift between policy and reward model, and the recurring annotation
-cost~-- at the price of restricting rewards to forms that a rule can
-compute. For transcription this restriction is not binding: the
-downstream evaluation metrics themselves are rule-based.
+cross-entropy gradient does not specifically reward correct boundary
+behaviour. \emph{(ii)~Metric-train gap}~-- CER is a sequence-level
+edit-distance whose minimum-CER hypothesis is not guaranteed to be
+the minimum-cross-entropy hypothesis; near the SFT convergence point
+this gap is what remains to be optimised. A sequence-level reward
+signal addresses both issues directly.
 
 \paragraph{ASR accuracy reward.}
 The accuracy reward is the negative CER clipped to $[0, 1]$,
@@ -260,23 +150,4 @@ collapse GRPO to pure accuracy optimisation. Empirically the
 $[0.2, 0.4]$ band satisfies both constraints; this paper takes the
 midpoint and does not claim an ablated optimum.
 
-\paragraph{Training--evaluation alignment.}
-The two rewards have the same functional form as the corresponding
-evaluation metrics (CER in Section~\ref{sec:experiments}; Hotword
-Match Accuracy in Section~\ref{sec:hotwords}), so reward increases
-during RL translate into evaluation-time improvements without a
-reward--metric gap. The verifiable-reward formulation makes this
-relationship exact: any policy that improves training reward
-improves a metric that is itself a downstream report item.
-
-\paragraph{Relation to SFT.}
-The SFT stages and GRPO target different regions of the policy.
-SFT operates under a teacher-forced prefix and dense token-level
-loss, and is responsible for moving the model into the high-CER
-basin where most of the training distribution is correctly
-transcribed. GRPO operates under self-sampled prefixes with a
-sparse sequence-level reward, and is responsible for the
-boundary-discrimination and metric-train-gap residuals that SFT
-cannot directly address. Hyperparameter details (group size,
-temperature, learning rate, prompt batch) are reported in the
-appendix.
+Hyperparameter details are reported in the appendix.

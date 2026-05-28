@@ -1,6 +1,18 @@
 \section{Introduction}
 \label{sec:intro}
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.92\linewidth]{figures/capabilities-v3.png}
+  \caption{Three production-oriented capabilities of AmphionASR.
+    \emph{Top-left:} hotword conditioning via an in-prompt keyword list.
+    \emph{Top-right:} target-speaker recognition with a $3$--$5$\,s
+    enrollment utterance.
+    \emph{Bottom:} degradation robustness via SFT on Voice-in-the-Wild-2M~\cite{xie2026mega}.
+    See Sections~\ref{sec:experiments}--\ref{sec:noise} for quantitative results.}
+  \label{fig:teaser}
+\end{figure}
+
 % --- Background: ASR landscape ---
 End-to-end speech recognition has matured from hybrid HMM-DNN systems
 \cite{hinton2012deep} to large-scale weakly-supervised models such as
@@ -34,22 +46,20 @@ multilingual ASR model:
         separation followed by ASR is brittle; an end-to-end LLM that
         receives a short reference utterance can be trained to decode
         only the matching speaker.
-  \item \textbf{Noisy and far-field acoustic conditions.}
-        Reverberation, background noise and competing voices are
-        pervasive in real recordings but rare in clean read-speech
-        training sets. Augmentation curricula are the standard
-        remedy; the released AmphionASR checkpoint inherits noise
-        / RIR / overlap augmentation as a by-product of the
-        target-speaker training pipeline, and additionally
-        completes a noise-robustness SFT stage that extends the
-        same augmentation to the plain-ASR branch.
+  \item \textbf{Real-world acoustic degradations.}
+        Production audio routinely contains noise, reverberation,
+        far-field attenuation, transmission artefacts and compound
+        combinations thereof. The released AmphionASR checkpoint
+        addresses this with a dedicated degradation-robustness SFT
+        stage trained on Voice-in-the-Wild-2M~\cite{xie2026mega}, a large-scale dataset
+        covering diverse real-world degradation conditions.
 \end{itemize}
 
 % --- This work ---
 We describe \textbf{AmphionASR}, an open-source, industrial-grade
 SpeechLLM whose LLM prompt is the single interface for personalised
 Mandarin and English speech recognition: hotword lists,
-target-speaker reference audio, and noisy or overlapping-speaker
+target-speaker reference audio, and degraded or overlapping-speaker
 inputs are all consumed as prompt features, while the model remains
 competitive on standard Mandarin and English ASR benchmarks. The
 released AmphionASR checkpoint totals $4.7$\,B parameters
@@ -72,20 +82,16 @@ Our contributions are:
         four-English baseline grid reported in
         Tables~\ref{tab:asr_en}--\ref{tab:asr_zh}
         (Section~\ref{sec:experiments}).
-  \item \textbf{Strong oracle-prompt hotword conditioning.} With
-        five in-prompt hotwords the CommonVoice~17 hotword test
-        CER drops from $5.93$\,\% to $2.82$\,\% on Mandarin and
-        the WER from $7.79$\,\% to $5.01$\,\% on English (oracle
-        protocol, random padding;
-        Section~\ref{sec:hotwords}).
-  \item \textbf{A parameter-free hotword retrieval operator.} We
-        further describe a text-space retrieve-then-bias operator
-        that, paired with a matched SFT hard-negative augmentation,
-        scales prompt-driven hotword behaviour to pools of size up
-        to $10^4$. The retriever attains Recall@$K$ above $95\%$
-        on Mandarin from $K=10$ onwards and Recall@$K \approx 80\%$
-        on English at $K=20$
-        (Section~\ref{subsec:retrieve-algorithm}).
+  \item \textbf{Hotword conditioning with scalable retrieval.}
+        With five in-prompt hotwords, CommonVoice~17 hotword CER
+        drops from $5.93$\,\% to $2.82$\,\% on Mandarin and WER
+        from $7.79$\,\% to $5.01$\,\% on English (oracle protocol).
+        We further describe a parameter-free text-space
+        retrieve-then-bias operator that scales prompt-driven hotword
+        behaviour to pools of size up to $10^4$; the retriever
+        attains Recall@$K{>}95\%$ on Mandarin at $K=10$ and
+        Recall@$K{\approx}80\%$ on English at $K=20$
+        (Section~\ref{sec:hotwords}).
   \item \textbf{Target-speaker recognition with reference audio.}
         A $3$--$5$\,s reference utterance suffices to make the
         model attend to a single speaker in mixed audio. On our
@@ -97,26 +103,25 @@ Our contributions are:
         report the LibriMix gap and the residual false-alarm
         behaviour on \emph{negative} sub-slices in
         Section~\ref{sec:tsasr}.
-  \item \textbf{A noise-robustness SFT stage.} The TS-ASR branch
-        already passes through reverberation, additive noise
-        (MUSAN \cite{snyder2015musan} and AudioSet road-traffic)
-        and competing-speaker interference; an additional
-        noise-robustness SFT stage extends the same augmentation
-        to the plain-ASR branch and is evaluated on
-        Voices-in-the-Wild-Bench~\cite{xie2026mega} against eight
-        publicly reported systems including Mega-ASR,
+  \item \textbf{A degradation-robustness SFT stage.} On top of the
+        capability SFT checkpoint we train a dedicated
+        degradation-robustness SFT stage on Voice-in-the-Wild-2M~\cite{xie2026mega},
+        a large-scale dataset of real-world degraded speech that
+        covers diverse acoustic conditions. The resulting model is
+        evaluated on Voices-in-the-Wild-Bench~\cite{xie2026mega}
+        against eight publicly reported systems including Mega-ASR,
         Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, Kimi-Audio
         \cite{kimiaudio2025} and three closed-source models
         (Section~\ref{sec:noise}).
 \end{itemize}
 
 % --- Roadmap ---
-Section~\ref{sec:related} surveys related work; Section~\ref{sec:data}
+Section~\ref{sec:data}
 documents the training corpus; Section~\ref{sec:model} introduces the
 architecture; Section~\ref{sec:training} details the staged training
 recipe; Section~\ref{sec:experiments} reports the multilingual main
-results; Sections~\ref{sec:hotwords}--\ref{sec:noise} dig into the three
-flagship capabilities; Section~\ref{sec:analysis} consolidates failure
-modes and ablations; we discuss limitations in
-Section~\ref{sec:limitations} and conclude in
-Section~\ref{sec:conclusion}.
+results and digs into the three flagship capabilities (hotword
+conditioning, target-speaker recognition, and degradation robustness);
+Section~\ref{sec:analysis} consolidates failure modes and ablations;
+we discuss limitations in Section~\ref{sec:limitations} and conclude
+in Section~\ref{sec:conclusion}.
