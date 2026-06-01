@@ -1,0 +1,274 @@
+---
+description: EmoAnalyzer 报告专属写作手册——术语统一、Abstract 结构、章节写法、Limitations 内容。仅作用于 egs/amphion-emo-2026/。
+alwaysApply: true
+---
+
+# EmoAnalyzer 写作手册
+
+> 仅作用于 `egs/amphion-emo-2026/`。公共层规则（[paper-writing.mdc](../../../.cursor/rules/paper-writing.mdc)、[reproducibility.mdc](../../../.cursor/rules/reproducibility.mdc)、[latex-engineering.mdc](../../../.cursor/rules/latex-engineering.mdc)）是通用约束，本文件不复述，仅基于情感理解领域补充本报告专属的术语 / 结构 / 卖点 / 对标系统细化。
+
+---
+
+## 1. 术语约定（全篇统一）
+
+### 1.1 模型自称
+
+| 场景 | 使用术语 | 禁止使用 |
+|------|---------|---------|
+| 整体模型 | **Amphion EmoAnalyzer** 或 **EmoAnalyzer**（首次全称，后续可简称）| `EmoAnalyzer Model`、`our system`（在有具体名称时）|
+| 任务1 | **speech emotion recognition (SER)**（首次全称，后续 SER）| `emotion classification`、`categorical emotion recognition`（二者在 Related Work 引用他人时可用，但自称统一用 SER）|
+| 任务2 | **descriptive emotion analysis (DEA)**（首次全称，后续 DEA）| `emotion captioning`、`paralinguistic captioning`（引用 SpeechCraft / ParaSpeechCaps 时可用其原始术语）|
+| 对齐方法 | **Emotional DPO**（首次出现加全称 "Emotional Direct Preference Optimization"）| `eDPO`、`emotion DPO`（不统一）|
+| 模型类别 | **speech emotion understanding model** 或 **speech-language model (SLM)**（引用同类时）| `MLLM`（多模态 LLM，留给 Gemini/GPT-4o 等）、`LALM`（Qwen3-ASR 用语）、`audio LLM`（Kimi-Audio 用语）|
+
+### 1.2 架构组件术语
+
+| 组件 | 使用术语 | 禁止使用 |
+|------|---------|---------|
+| 编码器 | **audio encoder**（首次：`AuT (Audio Tokenizer) encoder from Qwen3-Omni-Captioner`）| `speech encoder`、`AuT encoder`（单独使用时——先要解释 AuT 来源）|
+| 连接层 | **two-layer fully connected adapter** 或 **adapter**（已明确是 FC 层，非 Q-Former）| `projector`、`connector`、`modality projector`（这是 ASR 报告术语）|
+| 语言模型 | **LLM decoder**，首次加规格：`Qwen2.5-1.5B-Instruct LLM decoder`| abstract 中禁止写版本号（见 §2.1）|
+| 微调方法 | **LoRA**（Low-Rank Adaptation，首次注明 rank/alpha/dropout）| `LoRA-adapted`（可用于描述训练状态）|
+| 训练状态 | **frozen**（audio encoder）/ **trainable**（adapter）/ **LoRA-tuned**（LLM）| 不一致混用 |
+
+### 1.3 指标术语
+
+- UA = Unweighted Accuracy（首次出现须注明，后续可直接用 UA）
+- WA = Weighted Accuracy（同上）
+- Macro-F1（不简写为 F1，避免与 Micro-F1 混淆）
+- Strict Acc / Soft Acc / Avg. Score（DEA 指标，首次出现须在表格 caption 或正文中定义评分规则）
+
+---
+
+## 2. Abstract 结构（覆盖 paper-writing.mdc §2 的 4 句模板）
+
+本报告 abstract 采用 **扩展 5 段式**（在公共层 4 句基础上，将卖点独立一句）：
+
+1. **问题句**：SER 的局限（传统系统只输出离散标签，缺乏副语言细节描述）
+2. **系统介绍句**：我们提出 Amphion EmoAnalyzer，一个 X.XB 双语情感理解模型，联合支持 SER 和 DEA（**禁止在 abstract 中写 LLM 的完整版本号**，写 `1.5B-parameter LLM decoder` 即可）
+3. **方法卖点句**：核心技术亮点（多任务训练 + 1000h 双语数据集 + Emotional DPO）
+4. **结果句**：至少两个具体数字，一个来自 SER（`45.49% UA vs. 37.05% from the leading SLM baseline`），一个来自 DEA（`surpasses Gemini-3.0-Flash with 67.4% Strict Acc vs. 64.2%`）
+5. **释放句**：说明将公开的资源（测试集 / 权重 / 代码）
+
+**当前 abstract 已基本符合此结构，维护此结构，不要破坏。**
+
+禁止在 abstract 中：
+- 写 `Qwen2.5-1.5B-Instruct` 这类第三方 backbone 全名（与公共层 writing-style.mdc 一致，理由：非自家产品时隐藏版本号）
+- 使用 "state-of-the-art" 而不给具体数字支撑
+- 写 "first to..." 类声明，除非有文献依据
+
+---
+
+## 3. Introduction 写法
+
+### 3.1 开篇句式
+
+从问题域起手，不从自家模型起手：
+
+> `Speech emotion understanding requires models to go beyond recognizing what is said...`（当前开篇已合规，保持）
+
+避免 `This report presents EmoAnalyzer...` 起手——这是产品发布通稿口吻。
+
+### 3.2 贡献列表（4 条 bullet，结构固定）
+
+每条格式：**粗体主题词 + 冒号 + 一句具体描述（含一个数字或具体技术点）**
+
+当前 4 条已有结构，维护时保持：
+1. **Comprehensive Multi-task Modeling**：架构 + 参数量
+2. **Emotional DPO for DEA**：方法 + 解决的具体问题（sarcasm / tonal shifts / acoustic degradation）
+3. **High-Fidelity Data Curation Pipeline**：规模（1,000h）+ 标注方法
+4. **Strong SER and DEA Performance**：headline 数字
+
+数字若更新，4 条贡献的描述必须同步更新（避免 abstract / intro / conclusion 三处数字不一致）。
+
+---
+
+## 4. 数据标注描述规范（§3 Data 专属约定）
+
+### 4.1 MLLM 标注流程的描述粒度
+
+正文中描述标注 pipeline 时，须明确以下要素，但**禁止粘贴完整 prompt 到正文**（prompt 可放 Appendix `lstlisting` 块）：
+
+| 要素 | 应描述的内容 | 禁止写的内容 |
+|------|-------------|-------------|
+| 使用的 MLLM | 名称+版本（`Gemini 3.0 Flash`, `GPT-4o`）| 内部 API 端点、模型 ID 字符串 |
+| CoT 分解思路 | 概念性描述（先生成多维度 vocal profile，再提取结论）| 具体的系统 prompt JSON / system_instruction 字段 |
+| 标注输出字段 | SER label（8类） + DEA narrative（描述格式）| 输出 JSON schema 的 key 名称 |
+| verifier 角色 | emotion2vec+ 计算置信度分布，用于交叉核验 | 具体阈值数字（除非已确认可发布）|
+
+### 4.2 各 Section 描述顺序（§3 必须保持）
+
+1. 数据来源（渠道类型 + 总量）
+2. 过滤协议（单说话人验证 + 时长过滤 + 语言均衡）→ Figure: 时长分布
+3. 标注流程（MLLM → 文本 LLM 提取 → emotion2vec+ 验证 → 人工复核）→ Figure: 标注 pipeline
+4. 最终情感分布 → Figure: 情感分布
+
+图表引用顺序须与章节叙述顺序一致（`\Cref{fig:data_dur}` 在描述时长过滤后，`\Cref{fig:data_label_pipeline}` 在描述标注流程后，依此类推）。
+
+---
+
+## 5. 模型架构描述规范（§3 Model Architecture）
+
+### 5.1 开篇三组件句式
+
+仿 Kimi-Audio §2.1 / Voxtral §2 的三模块起手，本报告固定句式：
+
+> `Amphion EmoAnalyzer consists of three components: (i) a frozen audio encoder that maps waveforms into continuous speech representations, (ii) a trainable two-layer adapter that bridges the encoder's embedding space to the LLM's token space, and (iii) a LoRA-tuned 1.5B-parameter LLM decoder that generates categorical SER labels and free-form DEA narratives.`
+
+保持此结构，数字更新时同步修改。
+
+### 5.2 必须给出模块表（§3 末）
+
+参考 writing-style.mdc §4.3（ASR 版本），本报告模块表列：
+
+| 列名 | 内容 |
+|------|------|
+| Module | Encoder / Adapter / LLM Decoder |
+| Backbone | `AuT encoder (Qwen3-Omni-Captioner)` / `2-layer FC` / `Qwen2.5-1.5B-Instruct` |
+| Parameters | 数量（M，一位小数）|
+| Trainable | frozen / trainable / LoRA (r=64) |
+| LoRA Config | 仅 LLM 行：rank / alpha / dropout |
+
+若参数量尚未确认，写 `% TODO: verify param count` 而非编造数字。
+
+### 5.3 Backbone 引用规则
+
+- **Abstract** 中：只写 `1.5B-parameter LLM decoder`，不写 Qwen2.5-1.5B-Instruct
+- **§3 Model Architecture 首次** 出现时：`Qwen2.5-1.5B-Instruct \cite{qwen2.5}`，后续简称 `LLM decoder`
+- **AuT encoder**：首次出现须解释 `AuT (Audio Tokenizer) encoder from Qwen3-Omni-Captioner \cite{qwen3omni-captioner}`，并说明省略了最后两层 projection layers
+
+---
+
+## 6. 训练章节规范（§4 Training）
+
+### 6.1 多任务联合训练阶段（必须给出）
+
+| 要素 | 必须描述 | 本报告已有 |
+|------|---------|---------|
+| 训练目标 | 三个任务的 loss 设计（是否加权？是否 mask prompt tokens？）| 部分（须补充 loss formula 或说明）|
+| LoRA 配置 | r=64 / α=16 / dropout=0.05 / 注入层位置 | ✅ 已有 |
+| 数据比例 | SER:DEA:ASR 的采样比例 | 未明确，须补充或说明"均匀混合" |
+| 硬件 | GPU 类型和数量 / 训练时长 | ❌ 缺失，须补充 |
+| 优化器 | AdamW betas / weight decay / LR schedule | ❌ 缺失，须补充 |
+| 批大小 | 以样本数或 audio-hours 表示 | ❌ 缺失，须补充 |
+
+### 6.2 Emotional DPO 阶段（必须给出）
+
+依据 [reproducibility.mdc §1](../../../.cursor/rules/reproducibility.mdc)（RL/DPO 须报告偏好数据来源、pair 构建策略、KL 系数）：
+
+- 偏好数据来源：人工复核阶段的 hard case（须说明规模，如"X 样本"）
+- Pair 构建：chosen = 人工校验的 DEA 描述；rejected = 模型 on-policy 生成 or 初始幻觉标注
+- KL 系数 / beta 参数
+- DPO variant（on-policy DPO，须引用 [DPO] 原文）
+
+### 6.3 数据增强描述粒度
+
+噪声增强描述须包含：
+
+- 加噪概率（p=0.5）✅
+- SNR 范围（10–30 dB）✅
+- 噪声来源（DNS Challenge 4 / AudioSet / Freesound / MUSAN）✅ 须有 citation
+- RIR 增强（real + synthetic）✅
+
+禁止在正文使用内部脚本名或配置文件路径（AGENTS.md 规则 4）。
+
+---
+
+## 7. 实验评估章节规范（§5 Evaluation and Analysis）
+
+### 7.1 SER 小节结构
+
+1. 评估设置：5 个 benchmark、split 说明、统一本地推理声明
+2. 数据集统计表（Table 1，已有）
+3. SER 结果表（Table 2，已有）→ 结果分析
+4. 分析段落须包含：为何 EmoAnalyzer 在 M3ED/MELD/MSP-Podcast 强？归因于 DEA 辅助训练的段落逻辑须有支撑（定性或 ablation 数字）
+
+**禁止在分析段落写"our model achieves state-of-the-art"而不给 benchmark 对比数字作支撑。**
+
+### 7.2 DEA 小节结构
+
+1. 评估设置：测试集构建（1000 样本、英中各半、人工校验）
+2. Judge 框架说明（DeepSeek-v4-Flash 的评分标准）
+3. DEA 结果表（Table 4，已有）→ 分析：为何 EmoAnalyzer > Gemini？
+4. 定性示例表（Table 5，已有）→ 每行说明 baseline 的具体错误类型
+
+定性示例表必须：每个 baseline 的 miss 原因要具体（不只是 "misunderstood emotion"，要说 `misreads slow, stately awe as high-energy emotion`）。当前 Table 5 已符合，维护此风格。
+
+### 7.3 辅助 ASR 小节
+
+ASR 辅助结果须明确定位：**ASR 是 grounding task，不是主要贡献**。
+
+> `Although Amphion EmoAnalyzer is optimized for emotion understanding rather than standalone transcription...`（当前已有，保持此定位语）
+
+禁止将 ASR 结果夸大成主要卖点（与 SER/DEA headline 结果保持层级差异）。
+
+---
+
+## 8. Anti-hallucination 补充（基于本报告实际引用）
+
+### 8.1 refs/ 已 cover 的外部事实（写 §2 Related Work 时直接用，无需重新 WebFetch）
+
+- emotion2vec：一作 ziyang Ma，Interspeech 2024；提出 distillation 框架用于通用语音情感表示
+- wav2vec 2.0：一作 Alexei Baevski，NeurIPS 2020；masked prediction SSL
+- HuBERT：一作 Wei-Ning Hsu，IEEE/ACM TASLP 2021
+- WavLM：一作 Sanyuan Chen，JSTSP 2022
+- SALMONN：一作 Changli Tang，ICLR 2024；encoder-connector-LLM 架构
+- Qwen-Audio：一作 Yunfei Chu，arXiv 2023.11；instruction-following audio-language model
+- IEMOCAP：一作 Carlos Busso，Language Resources and Evaluation 2008；acted + elicited，5 sessions
+- MSP-Podcast：一作 Carlos Busso，IEEE Trans. Affective Computing 2023；naturalistic podcast
+- MELD：一作 Soujanya Poria，ACL 2019；Friends TV 对话语料
+- LoRA：一作 Edward Hu，ICLR 2022；rank=r 注入 attention layers
+- DPO：一作 Rafael Rafailov，NeurIPS 2023；RLHF 的 closed-form 替代
+
+若上述 cite 在 `references.bib` 中不存在，须先添加 bib entry 再写入正文。
+
+### 8.2 必须外部验证的事实（写完须标 TODO 或先 WebFetch）
+
+- EmoAnalyzer 训练 GPU 硬件和时长（内部记录，未在文档中确认）
+- DEA 测试集 API 调用的具体时间段（防止模型版本漂移）
+- Qwen3-Omni-Captioner 的 AuT encoder 省略最后两层 projection 的依据（须从内部实验确认）
+- 各数据集 license 的 SPDX identifier（IEMOCAP / MSP-Podcast / MELD 须逐一确认）
+
+### 8.3 禁止凭印象写的声明
+
+任何"首个..." / "最强..." / "远超..."类声明，必须在 fact-check block 列出具体数字来源。
+
+---
+
+## 9. 图表维护规范（与 AGENTS.md 规则 1 协同）
+
+### 9.1 当前图表状态
+
+| 图 | 当前格式 | 规范要求 | 待处理 |
+|----|---------|---------|--------|
+| `images/multi_task_ser_v2.png` | PNG | TikZ | 需重绘 |
+| `images/model_arch.png` | PNG | TikZ | 需重绘（用 `_palette.tex` 调色板）|
+| `images/duration_hist.png` | PNG | pgfplots | 需原始数据 |
+| `images/data_label_diagram.png` | PNG | TikZ | 需重绘 |
+| `images/dpo_example.png` | PNG | TikZ 或重排为表格 | 可考虑改为表格（结构化文字）|
+| `images/primary_emotion_dist.png` | PNG | pgfplots | 需原始数据 |
+
+**在 TikZ 重绘完成前**，PNG 可临时保留用于草稿编译，但不得在正式提交版本中保留 PNG 图。重绘时使用 `../../figures/_palette.tex` 中的颜色变量，不另定义新色。
+
+### 9.2 新增图的命名规范
+
+图源文件：`figures/<name>.tex`（standalone class）
+编译产物：`figures/<name>.pdf`（入 git）
+引用方式：`\includegraphics{figures/<name>.pdf}`
+
+命名建议：
+- `figures/task-comparison.tex`（替换 `multi_task_ser_v2.png`）
+- `figures/model-architecture.tex`（替换 `model_arch.png`）
+- `figures/data-pipeline.tex`（替换 `data_label_diagram.png`）
+- `figures/dpo-example.tex`（替换 `dpo_example.png`，或改为表格）
+
+---
+
+## 10. Reply contract（与公共层 paper-writing.mdc §6 协同）
+
+每次改 `sections/*.tex` 或 `main.tex` 后的回复必须包含：
+
+1. **fact-check block**（公共层规定，本报告用 §1.3 定义的类别标签格式）
+2. **覆盖声明**（如本次修改涉及 asr-domain.mdc 与本规则冲突的区域）：`asr-domain.mdc §X 在此处被 evaluation-metrics.mdc §Y 覆盖，理由：...`
+
+若本次修改只涉及纯排版，可省略但须说明"无新事实 / 无规则冲突"。

@@ -1,0 +1,16 @@
+groups:
+  - id: ser-benchmarks
+    title: SER Evaluation Benchmarks
+  - id: asr-auxiliary
+    title: Auxiliary ASR Datasets
+  - id: noise-augmentation
+    title: Noise Augmentation Sources
+
+papers: []
+# TODO: populate with dataset entries
+# Example:
+# - file: busso2008-iemocap.pdf
+#   url: https://link.springer.com/article/10.1007/s10579-008-9076-6
+#   title: "IEMOCAP: interactive emotional dyadic motion capture database"
+#   group: ser-benchmarks
+#   sha256: null

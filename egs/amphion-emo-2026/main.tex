@@ -1,0 +1,60 @@
+% =============================================================================
+% Amphion EmoAnalyzer Technical Report — built with Amphion PaperKit
+% Uses template/amphion.cls (warm ivory + petrol teal theme).
+% Compile from this directory: PATH=/usr/bin:$PATH latexmk -pdf main.tex
+% =============================================================================
+
+\documentclass[notitlebox]{template/amphion}
+
+% ASR math macros (\wer / \cer) — used in auxiliary ASR evaluation table.
+\usepackage{template/asr-macros}
+
+% PDF metadata
+\hypersetup{
+  pdftitle={Amphion EmoAnalyzer Technical Report},
+  pdfsubject={Speech Emotion Understanding},
+  pdfauthor={Amphion Team},
+  pdfkeywords={speech emotion recognition, descriptive emotion analysis,
+               speech language models, emotional direct preference optimization,
+               paralinguistic understanding},
+}
+
+% Title, author, abstract
+\title{Amphion EmoAnalyzer Technical Report}
+\author{Amphion Team}
+\abstract{\input{sections/00_abstract}}
+
+% =============================================================================
+\begin{document}
+\newcommand{\reportpubdate}{2026.05.11}
+\publishdate{\reportpubdate}
+
+% First-page header: logo left, publish date right, thin rule
+\fancypagestyle{firstpage}{%
+  \fancyhf{}%
+  \fancyhead[L]{\includegraphics[height=0.92cm]{figures/logo_v4.png}}%
+  \fancyhead[R]{\small\color{gray}\reportpubdate}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \fancyfoot[C]{\thepage}%
+}
+
+\maketitle
+
+% Body pages: no header text, no rule
+\fancyhead[L]{}
+\renewcommand{\headrulewidth}{0pt}
+
+% Body sections
+\input{sections/01_introduction}
+\input{sections/03_model}
+\input{sections/04_data}
+\input{sections/05_training}
+\input{sections/06_experiments}
+\input{sections/08_conclusion}
+
+% Bibliography: report-local cites + venue strings from the shared template.
+\bibliographystyle{template/IEEEtran2}
+\setcitestyle{numbers}
+\bibliography{template/venues, references}
+
+\end{document}

@@ -1,0 +1,21 @@
+groups:
+  - id: slm-baselines
+    title: Speech Language Model Baselines (SER/DEA)
+  - id: ser-specialized
+    title: Specialized SER Models
+  - id: ssl-encoders
+    title: Self-Supervised Speech Encoders
+  - id: alignment
+    title: Alignment / DPO Methods
+  - id: datasets-benchmarks
+    title: Datasets and Benchmarks
+
+papers: []
+# TODO: populate with paper entries following refs-index.schema.json
+# Each entry needs: file, url, title, group
+# Example:
+# - file: ma2024-emotion2vec.pdf
+#   url: https://arxiv.org/abs/2312.15185
+#   title: "emotion2vec: Self-Supervised Pre-Training for Speech Emotion Representation"
+#   group: ser-specialized
+#   sha256: null

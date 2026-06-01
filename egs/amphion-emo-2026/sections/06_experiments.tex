@@ -1,0 +1,58 @@
+\section{Experiments}
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Baselines.}
+We compare EmoAnalyzer against two groups of models. The first group consists of general-purpose open-source speech language models (SLMs): MiniCPM-o-4.5 \cite{MiniCPM-o-4.5}, Kimi-Audio \cite{Kimi-Audio}, Step-Audio2-mini \cite{Step-Audio2}, MOSS-Audio \cite{MOSS-Audio}, and MiMo-Audio \cite{Mimo-Audio}. These models represent the current frontier of general audio-language understanding and provide the most direct comparison for our SER results. The second group consists of specialized speech emotion classification models from the \textit{emotion2vec+} family \cite{emotion2vec}, which represent the dedicated SER paradigm. For the DEA task, where open-source SLMs lack meaningful DEA capability, we additionally compare against proprietary multimodal large language models (MLLMs): Gemini-3.0-Flash \cite{gemini3}, GPT-4o-Audio \cite{GPT-4o}, and Qwen3.5-Omni-Flash. To ensure a fair comparison, all baseline results were obtained through local inference using publicly released model weights and evaluated under a unified inference pipeline; no results are taken from prior publications.
+
+\paragraph{SER Metrics.}
+We report three complementary metrics for categorical SER. \textit{Unweighted Accuracy} (UA) computes the mean per-class recall across all emotion categories and is the primary metric for class-imbalanced corpora. \textit{Weighted Accuracy} (WA) weights each class by its sample frequency and reflects overall classification accuracy. \textit{Macro-F1} provides a harmonic mean of per-class precision and recall, offering a balanced view of performance across categories.
+
+\paragraph{DEA Evaluation Framework.}
+Evaluating open-form paralinguistic narratives requires a structured scoring protocol. We use an LLM-as-a-judge framework with DeepSeek-v4-Flash as the judge, which compares model-generated DEA narratives against expert human-corrected references across both core affective states and fine-grained paralinguistic cues (breathiness, pauses, pitch contour, vocal tension). Each dimension is scored as $1.0$ (semantic match), $0.5$ (partial match), or $0.0$ (mismatch). We report three aggregate metrics: \textit{Strict Acc.} (fraction of dimensions scoring $1.0$), \textit{Soft Acc.} (fraction scoring $\geq 0.5$), and \textit{Avg.\ Score} (mean score across all dimensions).
+
+
+\subsection{Speech Emotion Recognition (SER)}
+
+We evaluate Amphion EmoAnalyzer on the standard categorical SER task across five widely adopted, open-source emotion corpora: IEMOCAP \cite{IEMOCAP}, MSP-Podcast \cite{MSP-Podcast}, MELD \cite{MELD}, BIIC-Podcast \cite{BIIC-Podcast}, and M3ED \cite{M3ED}. These benchmarks cover both English and Chinese speech, acted and naturalistic settings, and diverse emotion taxonomies, providing a broad testbed for categorical emotion understanding.
+
+The comprehensive statistics of this aggregated test corpus are summarized in \Cref{tab:datasets}. For BIIC-Podcast, M3ED, and MELD, we used the standard pre-split test sets; for MSP-Podcast, we used Test Set~1; and for IEMOCAP, since it lacks a single standard partition and is traditionally evaluated using cross-validation, we used the last session (Session~5) as the test set. For all datasets except IEMOCAP, we use their given taxonomy, while for IEMOCAP we use the standard 4-class benchmark mapping (Anger, Happiness/Excitement, Sadness, Neutral).
+
+\input{tables/datasets}
+
+\input{tables/ser_comparison}
+
+As shown in the average performance metrics (Avg.), Amphion EmoAnalyzer achieves the strongest overall results in our unified benchmark setting, with an average UA of 45.49\% and a WA of 63.34\%. This represents a clear improvement over the leading general-purpose SLM baseline, Step-Audio2-mini, which achieves a UA of 37.05\%. The results highlight the value of combining multi-task speech-language training with high-quality emotion labeling: the model is not only exposed to semantic content, but is also trained to capture the acoustic affect that shapes how speech is perceived.
+
+The performance of \textit{emotion2vec+} on IEMOCAP requires additional context. To maintain a unified evaluation pipeline, we evaluated the publicly released checkpoints locally. However, because IEMOCAP lacks a single standard pre-defined split, our Session~5 test set was likely included in the training data of these public checkpoints. The exceptionally high IEMOCAP scores for \textit{emotion2vec+} should therefore be interpreted as affected by train-test leakage rather than as directly comparable held-out performance.
+
+Amphion EmoAnalyzer also performs strongly in expressive multimedia contexts such as M3ED and MELD, where emotion cues often appear through rapid transitions, conversational context, and overlapping dialogue. We attribute this advantage to the integration of descriptive emotion analysis (DEA) as a reasoning-oriented training task. While auxiliary ASR grounds the model in linguistic content, DEA encourages the model to articulate paralinguistic nuance in natural language rather than merely mapping audio to isolated categories. Together, these results validate the multi-task training design and position EmoAnalyzer as a generalizable emotion-aware speech model.
+
+The relative underperformance of general-purpose SLMs on this benchmark is not primarily a capacity limitation---several baselines use substantially larger backbones---but rather a \textit{data alignment} limitation. Without explicit emotion-specialized training data and targeted DEA objectives, these models tend to anchor emotion attribution to semantic content rather than acoustic evidence, replicating the same semantic-acoustic confusion that motivated our CoT annotation pipeline. EmoAnalyzer's training with paired acoustic profiles and categorical labels directly addresses this failure mode.
+
+
+\subsection{Descriptive Emotion Analysis (DEA)}
+
+We benchmark Descriptive Emotion Analysis (DEA) on a highly curated in-house dataset comprising 1,000 challenging conversational samples, balanced equally between English and Mandarin. The ground-truth reference narratives for all 1,000 samples were inspected and corrected by expert human adjudicators. Evaluation follows the LLM-as-a-judge protocol described in \Cref{sec:setup}.
+
+\input{tables/dea_results}
+
+As illustrated in \Cref{tab:dea_results}, Amphion EmoAnalyzer consistently outperforms Gemini-3.0-Flash across all metrics, despite using a compact 1.5B-parameter backbone. This result highlights the value of specialization: curated emotion data, DEA-oriented multi-task training, and Emotional DPO together produce narratives with stronger paralinguistic fidelity and fewer hallucinations than general-purpose proprietary models. These results confirm that DEA is not only an output format, but also an effective training signal for more sensitive speech emotion understanding.
+
+\input{tables/dea_qualitative}
+
+\Cref{tab:dea_qualitative} provides qualitative examples of this behavior. These selected cases show that EmoAnalyzer more consistently grounds DEA narratives in subtle vocal evidence, such as breath, vocal fry, pitch movement, airflow, and temporal delivery, rather than defaulting to generic neutral or calm descriptions.
+
+The advantage of specialization is clearest on hard cases: samples involving sarcasm, code-switching, or acoustic degradation---precisely the subset targeted by Emotional DPO during post-training alignment. Proprietary MLLMs, despite their broader training scale, lack an explicit alignment signal for paralinguistic fidelity and are therefore more likely to generate narratives anchored to plausible semantic content rather than to the actual acoustic signal. The remaining failure modes for EmoAnalyzer concentrate on extreme acoustic degradation and rapid emotion transitions within a single utterance, where even human annotators show reduced inter-rater agreement; these cases motivate future work on context-aware emotion reasoning.
+
+
+\subsection{Auxiliary Automatic Speech Recognition (ASR)}
+
+Although Amphion EmoAnalyzer is optimized for emotion understanding rather than standalone transcription, ASR is included as an auxiliary grounding task during multi-task training. We therefore evaluate ASR performance on representative English and Mandarin benchmarks, including LibriSpeech \cite{LibriSpeech}, Common Voice \cite{CommonVoice}, WenetSpeech \cite{WenetSpeech}, and AISHELL-1 \cite{AIShell}, to verify that the model preserves reliable linguistic grounding while supporting downstream SER and DEA. We include Whisper-L-v3 \cite{Whisper} and Qwen3-ASR-1.7B \cite{Qwen3-ASR} as dedicated ASR references, and compare against the general-purpose audio baselines also used in \Cref{tab:ser_comparison}.
+
+\input{tables/asr_results}
+
+As shown in \Cref{tab:asr_results}, EmoAnalyzer maintains solid ASR performance across both English and Mandarin evaluation sets. These results indicate that the auxiliary ASR task provides reliable semantic grounding for downstream emotion recognition and descriptive emotion analysis.
+
+Some degradation relative to dedicated ASR systems (Whisper-L-v3, Qwen3-ASR-1.7B) is expected: EmoAnalyzer allocates a portion of its model capacity and training data budget to emotion-specific objectives, trading transcription accuracy at the margin for emotional grounding capability. This trade-off is intentional. The auxiliary ASR objective is included not to maximize WER but to ensure that the model cannot achieve strong DEA performance by relying on lexical shortcuts alone---forcing the training to jointly account for how speech sounds and what it means.

@@ -1,0 +1,33 @@
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.17\textwidth}p{0.24\textwidth}p{0.24\textwidth}p{0.27\textwidth}}
+\toprule
+\textbf{Transcript} & \textbf{Reference} & \textbf{Ours} & \textbf{Representative Baseline Miss} \\
+\midrule
+\emph{``living in a relatively large compound in Abbottabad, Pakistan\ldots''} &
+Solemn and grave delivery with controlled prosody, sharp inhalation, and vocal fry. &
+Captures slow pace, controlled intonation, non-verbal breaths, and vocal fry, matching the somber authoritative tone. &
+\textbf{GPT-4o-Audio:} ``calm and neutral.'' \textit{Miss:} loses the grave emotion, breath cues, and vocal fry. \\
+\midrule
+\emph{``through woodlands, and over national borders''} &
+Slow, stately tempo and sweeping intonation evoke epic scale and awe. &
+Captures slow measured pace, resonant voice, awe, gravity, vocal fry, and rhythmic pauses. &
+\textbf{Gemini:} ``excitement and urgency.'' \textit{Miss:} misreads slow, stately awe as high-energy emotion. \\
+\midrule
+\emph{``You are asking for death; your brothers are still counting on you to get out.''} &
+Cold threat and hostility, strengthened by squeezed airflow, heavy nasal breath, anger, and contempt. &
+Identifies urgency, anger, stressed delivery, inhalation, throat friction, and nasal airflow, matching the threatening affect. &
+\textbf{GPT-4o-Audio:} ``helpless and complaining.'' \textit{Miss:} softens threat and contempt into a mild complaint. \\
+\midrule
+\emph{``Wait.''} &
+Rapid inhalation and lip-smacking heighten urgency; the energy burst conveys a decisive stopping command. &
+Captures urgent explosive airflow and a tense stopping intent with decisive emotional force. &
+\textbf{Qwen3.5-Omni:} ``calm and restrained.'' \textit{Miss:} overlooks the urgent command-like delivery. \\
+\bottomrule
+\end{tabular}
+\caption{Selected qualitative DEA examples. Each case shows a representative baseline miss where a proprietary model either defaults to generic calm descriptions or misreads fine-grained paralinguistic evidence. Mandarin transcripts are translated into English for presentation.}
+\label{tab:dea_qualitative}
+\end{table*}

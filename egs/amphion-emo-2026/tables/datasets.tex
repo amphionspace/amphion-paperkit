@@ -1,0 +1,17 @@
+\begin{table*}[ht]
+\centering
+\small
+\begin{tabular}{llcp{7.5cm}r}
+\toprule
+\textbf{Dataset} & \textbf{Language} & \textbf{Classes} & \textbf{Taxonomy} & \textbf{Test Samples} \\
+\midrule
+BIIC-Podcast & Chinese & 8 & Anger, Disgust, Fear, Happy, Sad, Surprise, Neutral, Other & 10{,}328 \\
+M3ED         & Chinese & 7 & Anger, Disgust, Fear, Happy, Sad, Surprise, Neutral & 4{,}194 \\
+MELD         & English & 7 & Anger, Disgust, Fear, Joy (Happy), Sad, Surprise, Neutral & 2{,}608 \\
+IEMOCAP      & English & 4* & Anger, Happiness/Excitement (Happy), Sadness, Neutral & 1{,}241 \\
+MSP-Podcast  & English & 8 & Anger, Disgust, Fear, Happy, Sad, Surprise, Neutral, Other (Contempt) & 37{,}787 \\
+\bottomrule
+\end{tabular}
+\caption{Statistical overview of the open-source SER test sets used in the unified benchmark. *IEMOCAP uses a 4-class mapping; we use Session~5 as the test set. \textbf{Bold} marks the best value per column in \Cref{tab:ser_comparison}.}
+\label{tab:datasets}
+\end{table*}

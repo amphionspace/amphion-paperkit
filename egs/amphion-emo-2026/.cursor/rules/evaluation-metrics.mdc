@@ -1,0 +1,170 @@
+---
+description: 覆盖并补充公共层 asr-domain.mdc 中不适用于情感理解报告的规则。仅作用于 egs/amphion-emo-2026/。
+alwaysApply: true
+---
+
+# 评测指标与 Baseline 规范（情感理解报告专属）
+
+> 仅作用于 `egs/amphion-emo-2026/`。本规则与公共层 [asr-domain.mdc](../../../.cursor/rules/asr-domain.mdc) **同时生效**，但以下各节**显式覆盖** asr-domain.mdc 中不适用于本报告的条款。
+>
+> 覆盖关系说明：
+> - asr-domain.mdc §1（WER 报告规范）→ 本规则 §1 覆盖（SER/DEA 主指标）
+> - asr-domain.mdc §2（必选 baseline）→ 本规则 §2 覆盖（情感域 baseline 集合）
+> - asr-domain.mdc §7（失效模式）→ 本规则 §4 覆盖（情感域失效模式）
+> - asr-domain.mdc §1–§6 中未被覆盖的条款（数据字段要求 §3、训练描述 §5、硬件 §5 等）仍对本报告有效，但见本规则 §3 的情感域补充。
+
+---
+
+## 1. 主指标报告规范（覆盖 asr-domain.mdc §1）
+
+本报告主评测任务为 SER（Speech Emotion Recognition）和 DEA（Descriptive Emotion Analysis），**WER/CER 仅为辅助 ASR 任务指标**，不作为 headline 数字。
+
+### 1.1 SER 指标（UA / WA / Macro-F1，三者缺一不可）
+
+对每个 SER 结果，必须同时标注：
+
+- **数据集名 + split**（如 `IEMOCAP Session 5`，不可只写 `IEMOCAP`；`MSP-Podcast Test Set 1`，不可只写 `MSP-Podcast`）
+- **情感类别映射**（如 IEMOCAP 4-class 映射：Anger / Happiness+Excitement / Sadness / Neutral；MELD 7-class 按原始分类法）——各数据集分类法不同，必须在表格 caption 或 footnote 中注明
+- **是否重新在本地跑 baseline**（本报告所有 baseline 均本地推理，必须在正文或 caption 中明确：`All baseline results were obtained through our own local inference using publicly released model weights`）
+- **解码配置**（greedy / temperature / beam size；对 SLM baseline，注明是否使用 task-specific prompt）
+
+对 IEMOCAP，必须额外说明：因无标准划分，使用 Session 5 作为测试集；emotion2vec+ 公开 checkpoint 可能已见过此 split，其分数应加脚注警示（train-test leakage 风险）。
+
+禁止只报告 Avg. UA 而不报告每个数据集的具体数字；headline 表格至少要有 per-dataset breakdown。
+
+### 1.2 DEA 指标（Strict Acc / Soft Acc / Avg. Score）
+
+DEA 使用 LLM-as-a-judge 评估框架，必须描述：
+
+- Judge 模型身份（本报告：DeepSeek-v4-Flash）
+- 评分粒度：1.0（语义匹配）/ 0.5（部分匹配）/ 0.0（不匹配）
+- Strict Acc 定义：score = 1.0 的比例
+- Soft Acc 定义：score ≥ 0.5 的比例
+- 测试集来源与构成（本报告：1,000 样本，英中各 500，人工专家校验）
+- Judge prompt 的核心评估维度（核心情感状态 + 细粒度副语言线索，如气息声、停顿、音高、声音张力）
+
+不可仅报告 Avg. Score 一个数字；必须三个指标（Strict Acc / Soft Acc / Avg. Score）同时出现。
+
+### 1.3 辅助 ASR 指标（WER/CER，asr-domain.mdc §1 在此子任务仍有效）
+
+Table 3 中的 ASR 辅助评测结果**继续适用 asr-domain.mdc §1 的 WER/CER 报告规范**：
+
+- 英文数据集报告 WER（%），中文报告 CER（%）；表格 caption 必须声明
+- 归一化 pipeline：本报告使用各数据集标准 normalization（如 LibriSpeech 原始 text，WenetSpeech 去标点 lowercase），在 caption 或 footnote 中注明
+- 解码配置：greedy decoding（如有差异，在 footnote 说明）
+- 必须注明所有 baseline 为本地重跑（`we evaluated the publicly released model weights locally`）
+
+---
+
+## 2. Baseline 集合规范（覆盖 asr-domain.mdc §2）
+
+**asr-domain.mdc §2 中"Required baselines for an English LLM-ASR report: Whisper-large-v3 (must)"仅适用于 §6 ASR 辅助任务表格，不适用于 SER/DEA headline 表格。**
+
+### 2.1 SER headline 表格（Table 2）必须包含的 baseline
+
+| 类别 | 必选 | 理由 |
+|------|------|------|
+| 情感专用模型 | emotion2vec+ base / seed / large（三个规格全部列出）| 当前 SER 专用 SOTA；与通用 SLM 形成直接对比 |
+| 通用 SLM baseline（至少 2 个）| Kimi-Audio-7B-Instruct、Step-Audio2-mini（已在本报告中，勿删）| 代表通用音频 LLM 的情感理解能力上限 |
+| 通用 SLM baseline（可选追加）| MOSS-Audio-4B、MiMo-Audio-7B、MiniCPM-o-4.5（已在本报告中）| 增强覆盖度；删减须说明理由 |
+
+Whisper-large-v3 **不作为 SER baseline**（Whisper 无情感分类能力，不在比较范围内）。
+
+所有 baseline 数字来自本地推理，必须在正文或 caption 注明（已在 main.tex 有相关说明，保持）。
+
+### 2.2 DEA 表格（Table 4）必须包含的 baseline
+
+| 类别 | 必选 | 理由 |
+|------|------|------|
+| 闭源多模态 LLM | Gemini-3.0-Flash（必须）| 当前 DEA 任务最强闭源 baseline，已在本报告中 |
+| 闭源多模态 LLM | GPT-4o-Audio（必须）| 代表 OpenAI 系能力 |
+| 闭源多模态 LLM | Qwen3.5-Omni-Flash（可选，已有）| 代表中文多模态能力 |
+
+说明：DEA 基准测试集为内部构建，外部模型通过 API 调用（不需要本地推理），须在正文说明调用时间段（防止模型版本漂移）。
+
+### 2.3 ASR 辅助表格（Table 3）必须包含的 baseline
+
+继续遵循 asr-domain.mdc §2 要求：
+
+- Whisper-large-v3（必须）
+- 至少一个强开源 ASR 模型（本报告使用 Qwen3-ASR-1.7B，合规）
+- 与 SER 表格中出现的通用 SLM（MOSS-Audio / Step-Audio2-mini / MiniCPM-o）保持一致，以便读者横向对比
+
+---
+
+## 3. 数据章节补充要求（补充 asr-domain.mdc §3）
+
+asr-domain.mdc §3 中的通用字段（name / hours / utterances / language / license / domain / citation）对本报告仍然有效。以下是情感数据专属补充要求：
+
+### 3.1 每个开源数据集必须额外给出
+
+- 情感标注方案：离散类别（几类、类别名）还是连续维度（valence/arousal/dominance）
+- 录制情境：acted（表演）/ naturalistic（自然）/ elicited（诱发）
+- 标注者一致性：若有，给出 Cohen's κ 或 inter-rater agreement；若原论文未报告，注明 "not reported in source"
+
+### 3.2 自建专有数据集必须描述
+
+- 数据采集渠道（web-sourced / 录制 / 合成）及各部分占比
+- 单说话人/多说话人过滤标准（使用的 speaker verification 模型名和版本）
+- 时长过滤区间（本报告：0.7–10.0 s）
+- MLLM 标注阶段必须说明：使用的 MLLM 名称+版本、CoT 分解 prompt 的关键设计（不粘贴完整 prompt，但须描述结构）
+- emotion2vec+ 作为 verifier 的具体角色：计算置信度分布，用于交叉核验 MLLM 标注；高置信度分歧样本进入人工复核
+- 人工复核比例：标注冲突样本的处理规则（保留/修正/丢弃）
+- 最终数据集的情感分布（已有 Figure 3，确保文字与图对应）
+
+### 3.3 禁止在数据章节出现
+
+- 内部路径、脚本名、配置字段（遵循 AGENTS.md 规则 4）
+- 未经说明来源的过滤率/丢弃比例（"approximately X% of samples were discarded" 须配来源或实验记录）
+
+---
+
+## 4. 情感域失效模式（覆盖 asr-domain.mdc §7）
+
+**本报告的 Limitations 章节不使用 asr-domain.mdc §7 中的 ASR 失效模式列表**（重复/幻觉循环、语言漂移、命名实体错误、system prompt 敏感性、灾难性遗忘——这些是 ASR-specific，与情感理解不直接相关）。
+
+本报告 Limitations 须覆盖以下情感域失效模式（至少选 4 项，每项给一个具体数字或定性证据）：
+
+| 失效模式 | 证据形式 | 说明 |
+|----------|----------|------|
+| 复杂情感误判（讽刺、多情绪混合、语调漂移）| 定性 DEA 对比案例（Table 5 已有示例）| 模型在 edge case 仍低于人类上限 |
+| 情感分类的数据分布偏差 | 各数据集 UA 与 WA 差距（高偏斜分布下 WA 虚高）| MSP-Podcast 类别不平衡影响解读 |
+| IEMOCAP train-test leakage 风险 | 脚注量化：emotion2vec+ local vs 原文报告分差 | 公开 checkpoint 可能见过 Session 5 |
+| DEA 副语言幻觉（生成音频中不存在的声音线索）| Soft Acc 与 Strict Acc 的差距（本报告 67.4% vs 91.4%）| 约 24% 样本仅部分匹配 |
+| 跨语言情感分布偏差 | 定性说明（英中数据集情感分布差异）| 中文数据集 BIIC/M3ED 情感分布与英文不同 |
+| 专有测试集不可复现 | 明确说明 1000 样本 DEA 测试集的发布计划 | 承诺开放 or 说明不开放原因 |
+| 模型规模限制 | 与 8B baseline 的差距分析（尤其 IEMOCAP）| 1.5B vs 7-8B 在某些 dataset 有差距 |
+
+每个声明的失效模式须给 **至少一个量化数字或定性案例**，不允许只写泛化的 "the model may struggle with X" 而无支撑。
+
+---
+
+## 5. 可复现性要求（补充 reproducibility.mdc §3）
+
+**覆盖 reproducibility.mdc §3 中 Model Card 的指标部分**：本报告 Model Card 不使用 WER，而使用：
+
+- SER 指标：每个 benchmark 的 UA / WA / Macro-F1，附 dataset+split+taxonomy 信息
+- DEA 指标：Strict Acc / Soft Acc / Avg. Score，附 judge 模型、测试集规模、语言分布
+- 辅助 ASR 指标：WER（英文）/ CER（中文），附 normalization 说明
+
+Model Card 必须额外包含：
+
+- 支持的任务类型（SER / DEA / 辅助 ASR）
+- 输入格式要求（采样率 / 时长范围）
+- Emotional DPO 的训练数据来源说明（hard case 构成、preferred/rejected 对的构建方法）
+
+---
+
+## 6. Fact-check block 格式（与 paper-writing.mdc §6 协同）
+
+本报告 fact-check block 必须区分三类来源：
+
+```
+Fact check:
+- [SER数字] IEMOCAP Session 5 UA 77.75% — 来源：refs/docs/（待补真相源文件名）— 已确认
+- [DEA数字] Gemini-3.0-Flash Strict Acc 64.2% — 来源：本地 API 评测，调用时间 2026-05-XX — 已确认
+- [外部baseline] emotion2vec+ seed MELD UA 31.45% — 来源：本地推理，公开权重 emotion2vec+_seed — 已确认
+- [外部事实] IEMOCAP 数据集 1,241 samples Session 5 — 来源：refs/datasets/INDEX.yaml 或 WebFetch — 已确认
+```
+
+类别标签用 `[SER数字]` / `[DEA数字]` / `[外部baseline]` / `[外部事实]` 区分，便于 review。

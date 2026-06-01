@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Model & Strict Acc.\ (\%) & Soft Acc.\ (\%) & Avg.\ Score \\
+\midrule
+GPT-4o-Audio & 38.0 & 76.6 & 0.573 \\
+Qwen3.5-Omni-Flash & 47.8 & 76.1 & 0.620 \\
+Gemini-3.0-Flash & 64.2 & 90.6 & 0.774 \\
+Ours & \textbf{67.4} & \textbf{91.4} & \textbf{0.794} \\
+\bottomrule
+\end{tabular}
+\caption{DEA performance comparison with proprietary MLLMs on a 1,000-sample human-verified bilingual benchmark (500 English, 500 Mandarin), evaluated via an LLM-as-a-judge framework (DeepSeek-v4-Flash). Strict Acc.: score~$= 1.0$; Soft Acc.: score~$\ge 0.5$. \textbf{Bold} marks the best value per column.}% TODO: record API call dates for all three baselines (evaluation-metrics.mdc §2.2)
+\label{tab:dea_results}
+\end{table}
