@@ -12,6 +12,8 @@ Sources distilled from: Simon Peyton Jones (How to write a great research paper)
 - The paper has exactly one sharp idea ("one ping"). State it explicitly: "The main idea of this paper is …".
 - Write the paper as if you were explaining at a whiteboard: problem → why it is interesting → why prior work falls short → our idea → evidence it works → implications.
 - Do not start from "what we did". Start from "what is the problem and why should the reader care".
+- Use reader order, not implementation order. Before the first result or contribution for a task, define the user scenario, the failure being addressed, and the desired output. A contribution bullet must not be the reader's first explanation of target-speaker ASR, contextual ASR, whispered ASR, or another unfamiliar task.
+- Lead with the capability or research delta, then give the mechanism that enables it. Training stages, datasets, LoRA/SFT, serving libraries, and retrieval plumbing are supporting means unless the paper establishes that one of them is itself novel.
 - Don't wait until the experiments are done to start writing. Writing forces clarity and exposes gaps.
 
 ## 2. Section formulas
@@ -20,7 +22,7 @@ Abstract (4 sentences):
 
 1. The problem we tackle.
 2. Why it matters / why current approaches are insufficient.
-3. What our solution achieves (one concrete number if possible).
+3. What new capability or research delta our solution provides and what it achieves (one representative number if possible).
 4. What this implies for the field / what we release.
 
 Introduction (about 1 page):
@@ -28,6 +30,12 @@ Introduction (about 1 page):
 1. Open with a concrete example or scenario of the problem.
 2. State the contributions as a bullet list — nothing more.
 3. The five questions (Widom): What is the problem? Why is it interesting? Why is it hard? What have others done? What do we propose?
+
+Contribution bullets:
+
+- Name a capability, finding, resource, or method whose novelty is owned by this work. Generic operations such as "SFT", "LoRA", or "training on dataset X" are not contributions by themselves.
+- Use the order `capability / claim → distinguishing design choice → representative evidence`. Move implementation detail and full recipes to Methods.
+- If a dataset or curation pipeline is the actual novelty, say how it was collected or constructed and what capability it unlocks; do not hide it behind the name of the fine-tuning procedure.
 
 Section ordering and depth: each successive section is read by fewer readers. Title → Abstract → Intro → Problem → Solution → Details → Related Work → Appendix.
 
@@ -38,6 +46,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - Pronoun: "we" throughout. Do not switch between "we" / "I" / "the authors".
 - Bold and italic only for technical terms or conventional emphasis. Never for decoration.
 - Every inserted paragraph must connect explicitly to the one before and the one after via a transition sentence — no orphan paragraphs.
+- Every sentence must earn its place by defining a term, advancing the argument, specifying a method, reporting evidence, or delimiting scope. Remove project-management prose ("on the agenda for the next iteration"), redundant navigation, and backend names that do not change the scientific protocol.
 - Avoid LLM-ish writing tells: triple-rhyme rhetorical lists, "delve", "tapestry", "in the realm of", "pivotal", "leverage" (use "use"), "crucial" (use "important" or remove), "comprehensive" without measurement.
 
 ## 4. Endorsement awareness
@@ -45,7 +54,14 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - Only put into the paper what the user has explicitly agreed to or asked for. Conversations and notes contain many tentative ideas; do not silently promote them to claims in the paper.
 - If part of the user's input is ambiguous about endorsement, write what is clearly endorsed and explicitly flag the rest in the reply: "I left X out — please confirm if you want it in".
 
-## 5. Anti-hallucination (hard rules)
+## 5. Claim ownership and design rationale
+
+- When adapting a public backbone, use neutral, precise ownership language: "`System`, built on `Backbone`, adds `owned delta`." Avoid both minimising the work as "a variant" and implying that inherited capabilities or components were introduced here.
+- Before making a headline claim, compare it with the backbone's documented capability envelope. A narrowed language/domain scope is a limitation or specialisation, not an advantage by itself.
+- For each non-obvious design choice, use the chain `choice → intended purpose → measured evidence`. If there is no controlled evidence, state the design fact and motivation only; do not claim that it improves performance or "works as intended".
+- Do not use vague labels such as "production problem", "industrial-grade", or "deployment-scale" as substitutes for a scenario. Name the concrete constraint: vocabulary size, overlap, latency, noise condition, memory limit, or operational interface.
+
+## 6. Anti-hallucination (hard rules)
 
 - Every concrete number, dataset name, model name, dataset size, year, author name, conference name, arXiv ID, license, and benchmark score must trace to a citable source. If you can't find one, write `?` or `% TODO: verify ...` rather than a plausible-sounding fabrication.
 - Never invent a citation. If a `\citep{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
@@ -55,7 +71,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
   3. If still uncertain → `% TODO: verify ...`
 - ICLR 2026 / NeurIPS 2026 require disclosure of significant LLM use in writing. Keep an `ack/llm-usage.md` log noting which sections were drafted with agent assistance, so the disclosure can be written truthfully later.
 
-## 6. Reply contract for every content edit
+## 7. Reply contract for every content edit
 
 The reply must include a short "Fact check" block, e.g.:
 

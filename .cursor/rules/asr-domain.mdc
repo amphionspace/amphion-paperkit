@@ -17,6 +17,8 @@ Distilled from: Aksenova et al. 2021 "How Might We Create Better Benchmarks for 
 - The same normalization MUST be applied to both reference and hypothesis, and MUST be the same across compared systems. If you can't apply identical normalization across rows in a table, split the table or annotate with a footnote.
 - Report at least one slice in addition to the average: per-language for multilingual, per-domain for multi-domain, per-noise-condition for robustness, U-WER vs B-WER for contextual ASR. A single average WER is necessary but never sufficient.
 - If reporting CER, MER, BLEU, COMET (for translation), or named-entity F1, define the metric in a footnote at first use.
+- Headline evidence must cover the breadth of the headline claim. Do not use only one or two convenient clean sets to support a claim of broad public-benchmark quality; show a representative multi-dataset view or explicitly narrow the claim.
+- A macro average is allowed only across compatible metrics and protocols. Never average WER with CER, or rows with different normalisation / decoding rules. Always retain the per-dataset values beside any aggregate so the average cannot hide a weak slice.
 
 ## 2. Baselines and comparisons
 
@@ -26,6 +28,7 @@ Distilled from: Aksenova et al. 2021 "How Might We Create Better Benchmarks for 
   - "from public leaderboard [URL] retrieved on [date]"
 - Strongly prefer re-running with your own normalizer for the headline table; cite-as-reported numbers belong in a separate appendix table titled "Comparison to numbers reported in prior work".
 - Required baselines for an English LLM-ASR report: Whisper-large-v3 (must), at least one strong recent open model (Canary / Parakeet / OWSM v3.1 / SeamlessM4T), and your prior internal version if any.
+- For a model adapted from a public backbone, add a capability-delta audit before writing the Abstract: inherited languages/tasks, retained capabilities, intentionally narrowed scope, and capabilities newly introduced by this work. Do not present an inherited or reduced capability as the paper's novelty.
 
 ## 3. Data section requirements
 
@@ -63,12 +66,26 @@ For every component, report:
 
 For the prompt template, paste the literal template (using `lstlisting` with the `prompt` style defined in `main.tex`). Do not paraphrase.
 
+Prompt provenance is part of the model specification:
+
+- Verify every literal template against the final training/evaluation source of truth, not memory or a nearby model's README.
+- Label each template as inherited unchanged, modified from the backbone, or introduced by this work; cite the public backbone at the first inherited template.
+- If the official public interface hides an internal template, do not call a guessed string "the Qwen3-ASR prompt". Name it as this work's template and mark any unresolved provenance with `% TODO: verify`.
+
+For contextual / hotword ASR, keep two layers distinct:
+
+- retrieval layer: recalls/selects candidate hotwords from the external vocabulary;
+- conditioning layer: encodes/injects the selected terms and changes the ASR model's transcription behaviour.
+
+Report and diagram both layers. Retriever Recall@$K$ alone does not establish contextual-awareness quality; pair it with B-WER/U-WER or another end-to-end recognition measure.
+
 ## 5. Training section requirements
 
 - State the objective (e.g. token-level CE on transcript tokens, with prompt-token loss masking) explicitly with the formula on first use.
 - Per stage: trainable params, learning rate schedule, batch size in audio-hours and in tokens, sequence length cap, total tokens consumed, total update steps, precision (fp32 / bf16 / fp16-amp), optimizer (AdamW betas, weight decay).
 - Hardware: GPU/TPU type and count, parallelism strategy (FSDP / ZeRO-3 / TP+PP), throughput in TFLOPS or audio-hours/GPU/day, total wall-clock training time.
 - If RL / DPO is used: preference data source, pair construction policy, KL coefficient.
+- Distinguish the decoding algorithm from the serving backend. Report greedy/beam/sampling parameters because they affect the metric; name vLLM or another server only when it changes decoding semantics or supports a measured systems claim such as throughput or latency.
 
 ## 6. Robustness, long-form, streaming
 
@@ -93,3 +110,8 @@ LLM-based ASR has well-documented failure modes — be honest:
 - Catastrophic forgetting of the LLM's text capabilities after speech fine-tuning.
 
 Show one qualitative example per claimed failure mode if making the claim.
+
+## 8. Historical framing and task introduction
+
+- If the Introduction uses an ASR timeline, include the intermediate paradigm(s) needed for the argument (for example CTC, RNN-T, or attention-based encoder-decoder systems between hybrid HMM-DNN and SpeechLLMs), with citations. Otherwise compress the sentence into a non-historical contrast instead of presenting a misleading leap.
+- Define task semantics before reporting task results: what side information is provided, what speech must be transcribed, and what counts as success. This is mandatory for target-speaker ASR, contextual ASR, code-switching, whispered speech, and degradation robustness.

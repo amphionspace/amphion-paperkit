@@ -72,6 +72,7 @@
 | Aksenova et al. 2021 — How Might We Create Better Benchmarks for Speech Recognition? | https://aclanthology.org/2021.bppf-1.4/ | WER 之外的 metric、benchmark 多样性 |
 | Gladia ASR Benchmarking 文档 | https://docs.gladia.io/chapters/pre-recorded-stt/benchmarking | 工业界 normalization 实践 |
 | OpenSLR resources list | https://openslr.org/resources.php | aidatatang / MagicData / Primewords / RIR 等无 paper 资源的官方入口 |
+| QwenLM/Qwen3-ASR 官方仓库 | https://github.com/QwenLM/Qwen3-ASR | backbone 能力边界、官方推理接口、继承组件与 prompt provenance 核验 |
 
 ## 7. 行业 prompt collection（不是规则，是辅助灵感）
 

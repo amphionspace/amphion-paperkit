@@ -6,6 +6,21 @@
 
 ---
 
+## v0.5 — 2026-07-20 — 批注驱动的 claim / narrative / evidence gates
+
+根据 `main-ymd.pdf` 对 AmphionASR 草稿的 20 条人工批注，将反复出现的问题抽象为公共写作规则，而不直接修改单份报告内容。**非破坏性**：仅增强 agent 的写作与审阅 gate，不改 class、macro、TeX 接口或现有 egs 源码，因此不需要更新 `depends_on_template`。
+
+公共层的具体变更：
+
+- `.cursor/rules/paper-writing.mdc`：新增 reader-order 与 capability-first 叙事；贡献项必须按“能力 / claim → 区分性设计 → 代表性证据”组织；公开 backbone 的继承能力与本工作增量必须分开；设计收益必须有受控证据；删除无科学作用的项目管理措辞与后端细节。
+- `.cursor/rules/asr-domain.mdc`：headline 证据必须覆盖 claim 广度；禁止跨 WER / CER 或跨协议做误导性平均；新增 backbone capability-delta audit、prompt provenance、hotword retrieval / conditioning 两层拆分、decoding / serving 区分，以及 ASR 历史与任务定义 gate。
+- `.cursor/rules/latex-engineering.mdc`：新增 figure claim / readability gate，要求 teaser 覆盖全部 headline capability、架构图准确表达语义数据流、继承组件可追溯，并在 100% 阅读比例下可读。
+- `.cursor/rules/_sources.md`：补充 Qwen3-ASR 官方仓库，作为 backbone 能力、官方接口和 prompt provenance 的核验入口。
+
+每 egs 影响：规则适用于所有 active egs，但不修改任何 egs 源码或渲染结果；无需迁移。
+
+---
+
 ## v0.1 — 2026-05-14
 
 首次 fork。从 xlance.cls 整体迁移到 amphion.cls，吸收原 main.tex preamble 中"实际上覆盖了模板默认值"的 ~50 行代码。

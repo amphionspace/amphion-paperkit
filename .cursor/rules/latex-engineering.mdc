@@ -27,6 +27,14 @@ Distilled from: X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429), Ove
 - `xlance/` -- vendored template, treat as read-only.
 - Tables that exceed ~30 rows or are script-generated: separate file under `tables/`, `\input` from the relevant section.
 
+## Figure claim and readability gate
+
+- A teaser figure must visually communicate the paper's one ping and every headline capability it claims. Do not omit a capability from the graphic and repair the omission with a caption sentence.
+- Architecture figures must show the actual semantic data flow, including all branches that affect the claim. For contextual ASR, show candidate retrieval, hotword text tokenisation/encoding, context injection, and the decoder path; do not collapse retrieval and conditioning into one ambiguous "RAG" arrow.
+- Label inherited components and owned components distinctly. Cite the source of a borrowed named component at its first semantic mention, including a figure caption when the caption is the first mention.
+- Inspect the rendered PDF at 100% scale. Figure body text should be approximately the paper body size, and no critical label should depend on zooming. Prefer fewer, larger panels over dense dashboard-style miniatures.
+- A figure caption should explain the takeaway and reading order, not introduce a missing method or claim that the figure itself does not show.
+
 ## When editing sections
 
 - Prefer `\input{sections/XX_name}` over `\include{}`.
