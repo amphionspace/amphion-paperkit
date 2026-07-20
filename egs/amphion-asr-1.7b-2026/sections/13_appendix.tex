@@ -1,0 +1,166 @@
+\appendix
+\section{Hotword Extraction Prompt}
+\label{sec:appendix-hotword-prompt}
+
+Hotword pools for both training and evaluation
+(Section~\ref{subsec:hotword-sources}) are mined offline by prompting a
+large language model with the instruction below. Each utterance
+transcript is sent as the user message and the model is constrained to
+return a strict JSON object whose \texttt{hotwords} field lists the
+extracted proper-noun entities. The prompt is reproduced in
+Listing~\ref{lst:hotword-prompt}; non-Latin example tokens are
+romanised (pinyin for Mandarin, RTGS for Thai) for the Latin-only
+typesetting, while the deployed prompt keeps the original scripts.
+
+\begin{lstlisting}[style=plain,
+    caption={Hotword extraction prompt used to annotate training and
+    evaluation hotword pools.},
+    label={lst:hotword-prompt}]
+You are an ASR (Automatic Speech Recognition) data optimization expert. Your task is to extract **proper-noun hotwords** from the given text. These hotwords help the ASR model correctly recognize words that are rare, easily confused, or carry specific reference.
+
+# Core Criterion
+Extract words that **could easily be mis-transcribed by an ASR system based on pronunciation alone, without context**.
+- Extract: personal names, specific place names, organization/brand names, domain-specific terms.
+- Discard: common nouns, everyday verbs, adjectives, function words.
+
+# Extraction Categories (ONLY the following entity types)
+
+## 1. Personal names / specific titles -- HIGHEST PRIORITY
+**Always extract personal names.** This is the most important category. Names are the hardest for ASR to transcribe correctly.
+   - Extract: full names, nicknames, name+title combinations, transliterated foreign names, historical figure names.
+   - Examples: "Wang Zhiqiang", "Buster Keaton", "Dr. Schmidt", "Dvorak", "Murong Ren", "Fuxi", "Joko Widodo", "Soekarno", "Megawati"
+   - Filter out ONLY: generic titles used alone without a name ("teacher", "sir", "laoshi", "xiansheng", "Bapak", "Ibu")
+
+## 2. Specific place names / buildings
+   - Extract: named locations that are **uncommon or easily mis-transcribed** -- specific streets, parks, districts, landmarks, neighborhoods, provinces/states, lesser-known cities, transliterated foreign place names.
+   - Examples: "Chaoyang Park", "Arkansas", "Bavaria", "Jaipur", "Nanjing Road", "Yogyakarta", "Surabaya", "Kalimantan", "Bandung", "Borobudur"
+   - Filter out: generic location words ("home", "office", "gongsi", "louxia", "rumah", "kantor")
+   - Filter out: **only the most common country names and world capitals** (e.g. "China", "USA", "Japan", "Germany", "France", "UK", "Beijing", "Tokyo", "London", "Paris", "Indonesia", "Jakarta"). When in doubt, keep the place name.
+
+## 3. Organizations / brands / teams
+   - Extract: named companies, schools, institutions, product brands, sports teams.
+   - Examples: "Tsinghua University", "Starbucks", "NATO", "Lenovo", "Xinjiang Tianshan Snow Leopards", "Pertamina", "Garuda Indonesia", "Tokopedia", "Universitas Indonesia"
+   - Filter out: generic category words ("bank", "hospital", "xuexiao", "chaoshi", "rumah sakit", "sekolah")
+
+## 4. Domain-specific terms / proper nouns
+   - Extract: technical terms, legal terms, scientific names (species, taxonomy), historical proper nouns.
+   - Examples: "blockchain", "Pythagorean theorem", "Civil Code", "Poaceae"
+
+# Strict Negative Constraints (NEVER extract)
+These constraints apply ONLY to common/generic words, NOT to proper nouns listed above.
+1. **High-frequency common nouns**: "phone", "computer", "clothes", "telepon", "komputer", "makanan"
+2. **Common verbs / adjectives**: "like", "happy", "expensive", "suka", "senang", "mahal"
+3. **Numbers and time expressions**: "two hundred", "3 o'clock", "Monday", "2023", "dua ratus", "Senin"
+4. **Filler words, pronouns, particles**: "um", "that", "it", "na ge", "en", "itu", "ya", "kan", "sih"
+5. **Single-character / single-letter words**: isolated single characters -- too ambiguous as hotwords
+6. **Only the most common country/capital names**: "China", "USA", "Japan", "Germany", "France", "Beijing", "London", "Indonesia", "Jakarta" -- ASR already handles these well. Do NOT over-apply this rule to less common places.
+
+# Important: When in Doubt, EXTRACT
+If you are unsure whether a word qualifies as a hotword, **extract it**. It is better to include a borderline hotword than to miss a genuine one. The only exception is the negative constraints above.
+
+# Mixed-Language Handling
+When the input contains multiple languages (code-switching), extract hotwords in their **original script** as they appear in the text. Do NOT translate them.
+
+# Output Format
+Return a JSON object with key "hotwords" and value as a list of strings (List[str]).
+If no hotwords are found, return {"hotwords": []}.
+\end{lstlisting}
+
+\section{TS-ASR Synthesis Recipe}
+\label{sec:appendix-tsasr-synth}
+
+This appendix details the offline synthesiser used to build the
+target-speaker training sets of Section~\ref{subsec:tsasr-synth}
+(\Cref{fig:tsasr-pipeline}).
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/tsasr-pipeline.pdf}
+  \caption{Offline TS-ASR synthesiser. From a target speaker
+    $s_\text{tgt}$ the pipeline draws two different recordings --
+    one becomes the $3$--$5\,$s enrollment, the other becomes the
+    target waveform. Cross-source interferer sampling adds
+    $K\!\in\!\{1,2\}$ competing speakers under
+    Eq.~\eqref{eq:mixspeakers}, after which an RIR is applied with
+    probability $0.5$ (truncated to $1.5\,$s) and an additive noise
+    segment from the MUSAN / AudioSet pool is mixed at
+    $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0,25)\,$dB. Five to ten
+    percent of every shard is instead generated by the dashed
+    anti-hallucination recipe shown below the pipeline: a real
+    enrollment is paired with either a noise-only or
+    distractor-only mixture and an empty target transcript, so
+    the decoder learns to remain silent when the requested
+    speaker is absent.}
+  \label{fig:tsasr-pipeline}
+\end{figure}
+
+Given single-speaker source manifests, each output sample contains a
+target waveform mixed with $K$ interferers, an enrollment utterance
+from the same speaker but \emph{a different recording}, and the
+target's transcript:
+\begin{equation}
+  \mathrm{mixed}[n] = s_\text{tgt}[n] + \sum_{k=1}^{K}\,\alpha_k\,s_{\text{int},k}[n - o_k],
+  \qquad
+  \alpha_k = \frac{\rho_\text{tgt}}{\rho_{\text{int},k}}\cdot 10^{-\mathrm{SNR}_k/20},
+  \label{eq:mixspeakers}
+\end{equation}
+where $\rho$ denotes RMS energy, $o_k$ is a uniformly sampled time
+offset that places interferer $k$ inside the target, and the overlap
+fraction $|\text{int}_k|/|\text{tgt}|\!\sim\!\mathrm{Uniform}[0.1, 1.0]$
+controls how much of the target the interferer covers.
+The default recipe draws
+$K\!\sim\!\mathrm{Cat}(\{1{:}0.8, 2{:}0.2\})$,
+$\mathrm{SNR}\!\sim\!\mathcal{N}(5, 7^2)$\,dB clipped to $[-5, 20]$,
+and $3$--$5$\,s enrollments.
+After mixing we apply an RIR with probability $0.5$
+(Table~\ref{tab:data_rir_noise}) and an additive background noise
+segment with $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB.
+RIR convolutions are truncated to $1.5$\,s and applied via an
+FFT-based overlap-add; noise is mixed at the configured SNR and
+peak-normalised to avoid clipping.
+
+\begin{table}[!htbp]
+  \caption{Room impulse response and noise pools used by the TS-ASR
+    synthesiser. Within each pool, RIRs are sampled uniformly; noise
+    sources are sampled with the listed weights per training example.}
+  \label{tab:data_rir_noise}
+  \centering
+  \small
+  \begin{tabular}{p{4.0cm}p{6.0cm}r}
+    \toprule
+    Resource & Source & Weight \\
+    \midrule
+    SLR26 sim RIRs       & OpenSLR-26 \cite{ko2017studyrir}                            & uniform \\
+    SLR28 sim RIRs       & OpenSLR-28 \cite{ko2017studyrir}                            & uniform \\
+    SLR28 real RIRs      & OpenSLR-28 (AIR / RWCP / REVERB-2014) \cite{ko2017studyrir} & uniform \\
+    \midrule
+    MUSAN noise          & SLR17 \cite{snyder2015musan}                                & 0.30 \\
+    MUSAN music          & SLR17 \cite{snyder2015musan}                                & 0.20 \\
+    AudioSet road traffic & AudioSet road-traffic subset                               & 0.50 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Anti-hallucination negatives.}
+Five to fifteen percent of each target-speaker partition is replaced by
+\emph{negative} samples whose ground-truth transcript is the empty
+string. Two sub-types (Table~\ref{tab:tsasr_negatives}) are sampled
+with equal weight; both preserve a real enrollment but remove the
+target speaker from the mixed channel, training the model to remain
+silent when the requested speaker is absent.
+
+\begin{table}[!htbp]
+  \caption{Anti-hallucination negative sub-types.}
+  \label{tab:tsasr_negatives}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lp{4.5cm}p{6.5cm}}
+    \toprule
+    Sub-type & Composition & Key parameters \\
+    \midrule
+    Noise-only       & Real enrollment + 1--2 noise / silence segments & duration $[3,15]$\,s; gain $[-30, 0]$\,dB; silence inclusion probability $0.1$; sources weighted road-traffic $0.6$, MUSAN noise $0.3$, MUSAN music $0.1$ \\
+    Distractor-only  & Real enrollment + 1--3 non-target speakers      & SNR $[-5, 20]$\,dB; overlap fraction $[0.1, 1.0]$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
