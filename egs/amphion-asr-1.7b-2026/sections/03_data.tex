@@ -1,0 +1,251 @@
+\section{Data}
+\label{sec:data}
+
+AmphionASR is initialised from the public
+Qwen3-ASR-1.7B weights~\cite{qwen2025qwen3asr} and trained through a
+three-stage LoRA supervised fine-tuning (SFT) recipe
+over eight curated training sets
+(Table~\ref{tab:training_sets}), totalling $3.74$\,million utterances
+built from eleven public corpora (Table~\ref{tab:data_public}).
+The sets map directly onto the deployment-facing capabilities of
+Section~\ref{sec:intro}: whispered-speech ASR, degradation-robust
+ASR, hotword-conditioned ASR, target-speaker ASR (TS-ASR), and
+plain transcription training data retained to limit catastrophic
+forgetting.
+The eight sets are distributed across the three SFT stages:
+degradation and whisper data in Stage~1, hotword and target-speaker
+data in Stage~2, and a replay of the Stage~1--2 sets together with
+plain-transcription corpora in Stage~3. Section~\ref{sec:training}
+documents the per-stage optimiser settings.
+
+\begin{table}[t]
+  \caption{Training sets used across the AmphionASR three-stage
+    SFT recipe.
+    ``Utterances'' counts training examples after offline preparation;
+    TS-ASR rows contain two audio inputs (enrollment + mixture) per
+    example.}
+  \label{tab:training_sets}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{p{4.8cm}lrp{3.2cm}}
+    \toprule
+    Training set & Task & Utterances & Notes \\
+    \midrule
+    WhispEar \cite{fang2025whisperear}
+      & Whisper ASR     & 222\,440  & bilingual whisper corpus \\
+    Voice-in-the-Wild-2M \cite{xie2026mega}
+      & Degradation     & 556\,421  & real-world degradations \\
+    Five-corpus hotword mixture
+      & Hotword ASR     & 1\,043\,317 & single-audio \\
+    AISHELL-2 \cite{du2018aishell2}
+      & Plain ASR       & 1\,009\,223 & Mandarin retention \\
+    LibriSpeech \cite{panayotov2015librispeech}
+      & Plain ASR       & 281\,241  & English retention \\
+    CommonVoice~EN target-speaker
+      & TS-ASR          & 184\,747  & synthesised \\
+    MagicData target-speaker
+      & TS-ASR          & 106\,116  & synthesised \\
+    Multi-corpus target-speaker ASR
+      & TS-ASR          & 333\,640  & synthesised \\
+    \midrule
+    \textbf{Total}            &                 & \textbf{3\,737\,145} & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[t]
+  \caption{Public corpora that appear in the training mixture.
+    A corpus may contribute to multiple training sets (e.g.\
+    CommonVoice~EN feeds both hotword-conditioned and target-speaker
+    training); utterance counts are \emph{not} additive across rows.}
+  \label{tab:data_public}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{4.5cm}p{6.8cm}}
+    \toprule
+    Corpus & Role in SFT \\
+    \midrule
+    WhispEar \cite{fang2025whisperear}
+      & Whisper ASR ($222$\,k utterances) \\
+    Voice-in-the-Wild-2M \cite{xie2026mega}
+      & Degradation-robust ASR ($556$\,k) \\
+    CommonVoice EN (cleaned) \cite{ardila2020commonvoice}
+      & Hotword-conditioned ASR ($500$\,k cap) + target-speaker syntheses \\
+    MagicData Mandarin \cite{magicdata}
+      & Hotword-conditioned ASR ($350$\,k cap) + target-speaker syntheses \\
+    AISHELL-1 \cite{bu2017aishell}
+      & Hotword-conditioned ASR \\
+    AISHELL-2 \cite{du2018aishell2}
+      & Plain Mandarin ASR retention ($1.01$\,M) \\
+    AISHELL-3 \cite{shi2021aishell3}
+      & Hotword-conditioned ASR + target-speaker synthesis \\
+    LibriSpeech \cite{panayotov2015librispeech}
+      & Plain English ASR retention (train-clean-100/360 + train-other-500) \\
+    MLS English \cite{pratap2020mls}
+      & Target-speaker synthesis \\
+    THCHS-30 \cite{wang2015thchs30}
+      & Hotword-conditioned ASR + target-speaker synthesis \\
+    aidatatang\_200zh
+      & Target-speaker synthesis \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Whispered-Speech ASR}
+\label{subsec:whisper-data}
+
+The WhispEar training set covers the full bilingual training
+pool ($222{,}440$ utterances): $199{,}805$ English
+whisper clips from the Emilia-based subset, $18{,}588$ English
+whisper clips from the WTIMIT subset, and $4{,}047$ Mandarin whisper
+clips from the wEar subset~\cite{fang2025whisperear}.
+Section~\ref{sec:whisper-asr} reports evaluation on the wEar and
+WTIMIT whisper test sets.
+
+\subsection{Degradation-Robust ASR}
+\label{subsec:vitw-data}
+
+The Voice-in-the-Wild-2M training set provides $556{,}421$
+single-utterance examples covering far-field capture, additive noise,
+reverberation, clipping, dropout and their superpositions~\cite{xie2026mega}.
+
+\subsection{Hotword-Conditioned ASR}
+\label{subsec:hotword-sources}
+
+Hotword training data are materialised offline from five public
+ASR corpora whose transcripts carry mined entity lists
+(Table~\ref{tab:data_hw_train}).
+At conversion time each utterance receives a prompt-level hotword line
+with probability $0.8$; the line combines real hotwords with
+hard-negative and random distractors, with the total list size
+controlled in $[10, 50]$ (Section~\ref{subsec:hotword-pool}).
+The resulting training set contains only single-audio examples.
+
+\begin{table}[t]
+  \caption{Public corpora in the hotword-conditioned training set.
+    ``Cap'' is the utterance cap applied during offline preparation.}
+  \label{tab:data_hw_train}
+  \centering
+  \small
+  \begin{tabular}{lrr}
+    \toprule
+    Source & Cap & Utterances \\
+    \midrule
+    CommonVoice EN (cleaned) \cite{ardila2020commonvoice} & 500\,k & 500\,000 \\
+    MagicData Mandarin \cite{magicdata}                     & 350\,k & 349\,958 \\
+    AISHELL-1 \cite{bu2017aishell}                            & --     & 120\,098 \\
+    AISHELL-3 \cite{shi2021aishell3}                          & --     & 63\,261 \\
+    THCHS-30 \cite{wang2015thchs30}                            & --     & 10\,000 \\
+    \midrule
+    \textbf{Total}                                            &        & 1\,043\,317 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Two CommonVoice hotword \emph{test} splits (ZH and EN) with the same
+annotation protocol are reserved for evaluation
+(Table~\ref{tab:data_hotwords_eval}).
+
+\begin{table}[t]
+  \caption{Hotword evaluation splits (not used in SFT).}
+  \label{tab:data_hotwords_eval}
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Split & Underlying audio \\
+    \midrule
+    CommonVoice ZH hotwords & CommonVoice ZH test \\
+    CommonVoice EN hotwords & CommonVoice EN test \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Plain Transcription Retention}
+\label{subsec:plain-asr-retention}
+
+To limit catastrophic forgetting of plain transcription behaviour, the
+training mixture retains exposure to two large single-speaker corpora:
+the full AISHELL-2 training split ($1{,}009{,}223$ utterances) and
+LibriSpeech train-clean-100/360 plus train-other-500 ($281{,}241$
+utterances).
+
+\subsection{TS-ASR Synthesis}
+\label{subsec:tsasr-synth}
+
+Target-speaker training examples are produced by an offline
+synthesiser. From single-speaker source manifests, each output sample
+contains a target waveform mixed with $K$ interferers, an enrollment
+utterance from the same speaker but \emph{a different recording}, and
+the target's transcript; a fraction of \emph{anti-hallucination
+negatives}---empty-transcript samples whose target speaker is removed
+from the mixture---train the model to remain silent when the requested
+speaker is absent. The mixing equation, RIR/noise pools, and negative
+sub-types are detailed in Appendix~\ref{sec:appendix-tsasr-synth}.
+
+\paragraph{Target-speaker training sets.}
+Stage~2 of the SFT recipe includes three synthesised
+target-speaker partitions totalling $624{,}503$ examples
+(Table~\ref{tab:ts_training_sets}).
+The first two are built from single-corpus manifests (CommonVoice~EN
+and MagicData respectively); the third draws from six public corpora.
+Positive counts by underlying corpus in the multi-corpus partition
+are: CommonVoice~EN ($225{,}638$), MLS English ($40{,}184$), MagicData
+($10{,}119$), aidatatang\_200zh ($4{,}140$), AISHELL-3 ($1{,}425$),
+and THCHS-30 ($483$); negatives account for the remaining
+$51{,}651$ examples ($\approx\!15$\,\%).
+
+\begin{table}[t]
+  \caption{Target-speaker training sets in the training mixture.
+    ``Pos.'' counts positive (target-speaker-present) examples;
+    ``Neg.'' counts anti-hallucination negatives with empty
+    transcripts.}
+  \label{tab:ts_training_sets}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{llrr}
+    \toprule
+    Set & Primary source & Pos. & Neg. \\
+    \midrule
+    CommonVoice~EN & CommonVoice EN   & 175\,510 & 9\,237  \\
+    MagicData      & MagicData        & 100\,810 & 5\,306  \\
+    Multi-corpus   & 6 corpora        & 281\,989 & 51\,651 \\
+    \midrule
+    \textbf{Total} &                  & 558\,309 & 66\,194 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Section~\ref{sec:tsasr} reports evaluation on an in-house test set
+generated by the same pipeline with a held-out random seed.
+
+\subsection{Hotword Pool Construction at Training Time}
+\label{subsec:hotword-pool}
+
+For hotword-bearing training sets, training-time hotword lists are
+assembled per sample so that the total number of real hotwords and
+distractors is controlled in $[10, 50]$. Each list is built in three
+stages:
+
+\begin{enumerate}
+  \item \textbf{Real terms.} Each ground-truth hotword is
+        independently dropped with probability $0.05$ to simulate
+        imperfect retrieval recall.
+  \item \textbf{Hard negatives.} An online retriever fetches up to
+        $10$ confusable terms per sample using the weighted
+        score $0.6\cdot\text{char-overlap} +
+        0.4\cdot\text{bigram-Jaccard}$ over a per-corpus hotword
+        index, augmented for Mandarin by a syllable-level
+        nearest-neighbour search.
+  \item \textbf{Random distractors.} The remaining slots are filled
+        from the global hotword pool, with the hard-to-random ratio
+        set so that hard negatives saturate first and the list total
+        stays within $[10, 50]$.
+\end{enumerate}
+
+The whole hotword prompt line is then kept with probability $0.8$
+and dropped otherwise, training the same model to behave gracefully
+when no hotword side-channel is available at inference time.

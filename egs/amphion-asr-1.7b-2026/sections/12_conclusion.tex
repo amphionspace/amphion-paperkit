@@ -1,0 +1,33 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \textbf{AmphionASR}, an industrial-grade SpeechLLM for
+Mandarin and English speech recognition, built on the Qwen3-ASR-1.7B
+audio encoder and language backbone. Capability building is a
+three-stage all-linear LoRA SFT recipe initialised from
+Qwen3-ASR-1.7B over the eight training sets of
+Section~\ref{sec:data}.
+On Mandarin benchmarks AmphionASR reaches single-digit CER on
+every reported set, with AIShell-1 at $1.34$\,\% as the headline data
+point. On English it covers the LibriSpeech, GigaSpeech and
+CommonVoice grid, with LibriSpeech \texttt{test-clean} at $1.59$\,\%
+WER. A dual-encoder retrieval operator extends hotword conditioning
+to deployment-scale pools by reducing the prompt to a per-utterance
+top-$K$ subset, attaining Recall@$50$ above $94$\,\% on CommonVoice and
+strong entity B-WER / B-CER on GigaSpeechBench vertical
+domains~\cite{tu2026gigaspeechbench}. On target-speaker
+recognition the model reaches $13.02$\,\% WER on the positive
+sub-slice of our in-house target-speaker test set, roughly
+$4.1\times$ below the strongest open-source dual-audio baseline. On
+Voice-in-the-Wild-Bench the model is competitive against eight
+publicly reported systems, and on Mandarin wEar whisper test audio it
+reaches $0.58$\,\% CER.
+
+What still needs to be solved -- and is the explicit subject of the
+next iteration -- is closing the gap on the public multi-talker
+LibriMix benchmarks, narrowing the residual gaps to Mega-ASR on the
+Real Noise, Real Mixed, and Sim Transmission dropout subsets of
+Table~\ref{tab:vitw_bench}, and extending the training mixture with
+explicit anti-hallucination negatives for target-speaker deployment.
+The training pipeline is documented in
+Sections~\ref{sec:data}--\ref{sec:training}.

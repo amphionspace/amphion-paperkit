@@ -1,0 +1,147 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+\label{subsec:setup}
+
+\paragraph{Decoding.}
+Unless otherwise stated we report greedy-decoded results obtained
+through the vLLM~\cite{kwon2023vllm} batched inference server.
+
+\begin{table}[t]
+  \caption{Evaluation sets used in this report.}
+  \label{tab:eval}
+  \centering
+  \small
+  \begin{tabular}{lp{6.2cm}l}
+    \toprule
+    Task & Test sets & Metric \\
+    \midrule
+    ASR-zh           & AIShell-1/2, KeSpeech, CommonVoice ZH,
+                       WenetSpeech (net / meeting)                                & CER \\
+    ASR-en           & LibriSpeech (test-clean / -other), GigaSpeech,
+                       CommonVoice EN                                             & WER \\
+    Hotword ASR      & CommonVoice ZH / EN hotword splits                         & CER / WER \\
+    TS-ASR           & in-house target-speaker test set
+                       + LibriMix 2 / 3 \cite{cosentino2020librimix}
+                                                                                & WER \\
+    Degradation robustness & Voice-in-the-Wild-Bench \cite{xie2026mega}
+                       ($16$ subsets, $5{,}000$ clips)                            & WER \\
+    Entity ASR         & GigaSpeechBench vertical domains
+                       (12$\times$ZH + 12$\times$EN) \cite{tu2026gigaspeechbench}
+                                                                                & B-CER / B-WER \\
+    Whispered ASR    & wEar (zh) / WTIMIT (en) \cite{fang2025whisperear}          & CER / WER \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Normalization.}
+For English benchmarks we apply the Whisper English text normalizer
+\cite{radford2023whisper} to both reference and hypothesis before
+computing WER. For Mandarin we apply a stripped-down normalizer that
+removes punctuation, normalises full-width / half-width characters
+and maps Arabic numerals to their Mandarin equivalents before CER.
+
+\paragraph{Baselines.}
+We compare AmphionASR against eight recent open-source speech-LLM and
+dedicated ASR systems, organised loosely by training objective:
+audio-understanding / omni-modal LLMs --- Whisper-large-v3
+\cite{radford2023whisper}, Kimi-Audio-7B-Instruct \cite{kimiaudio2025},
+Step-Audio~2 \cite{stepaudio22025}, MiniCPM-o \cite{minicpm2025},
+MOSS-Audio \cite{moss2026audio} --- and dedicated ASR-oriented
+LLM-based systems --- Qwen3-ASR-1.7B \cite{qwen2025qwen3asr},
+FireRed-ASR2-LLM \cite{fireredasr2025}, and GLM-ASR-nano
+\cite{glmasr2025}. The baseline columns in
+Tables~\ref{tab:asr_en}--\ref{tab:asr_zh} are produced by us under the
+same normaliser as the AmphionASR column.
+
+\paragraph{Hotword conditioning setup.}
+We evaluate two conditions on the CommonVoice ZH/EN hotword splits:
+w/o RAG (no prompt hotwords) and w/ RAG, where the hotword list is the
+top-$K$ candidates retrieved from the full test-split pool by the
+retrieval operator of Section~\ref{subsec:hotword-rag}. CER is reported
+for Mandarin and WER for English; entity B-WER / B-CER is used for
+GigaSpeechBench.
+
+\paragraph{Target-speaker recognition setup.}
+Three test sets are used: an in-house target-speaker test set
+(synthesised by the same pipeline as training but on held-out
+speakers), Libri2Mix, and Libri3Mix. We report positive-slice WER
+on all three sets.
+Baselines are Qwen3-ASR-0.6B, Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
+and Qwen3-Omni~\cite{qwen2025qwen3omni}; all systems use the same
+dual-audio prompt template.
+
+\paragraph{Degradation robustness setup.}
+We evaluate on Voice-in-the-Wild-Bench~\cite{xie2026mega}, a
+$5{,}000$-clip English/Mandarin benchmark covering seven atomic
+acoustic degradations (additive noise, far-field propagation,
+obstruction, echo/reverberation, recording coloration, electronic
+distortion, transmission dropout) under both real-world recordings
+(\emph{Real}) and spectrogram-level simulation (\emph{Sim}), plus
+compound-degradation Mixed subsets --- $16$ subsets in total. Baseline
+numbers for eight comparison systems are reproduced
+from~\cite{xie2026mega}.
+
+\subsection{Evaluation Datasets and Metrics}
+\label{subsec:eval-data}
+
+All evaluations are dispatched through a unified evaluation harness,
+shared between the offline batch decoder and the online batched
+inference server, so that all numbers in the paper come from the same
+metric implementation. Table~\ref{tab:eval} lists the test sets
+reported in this paper.
+
+\subsection{Plain ASR}
+\label{subsec:plain-asr}
+
+The headline contribution of AmphionASR is its four deployment
+capabilities---hotword conditioning, target-speaker ASR, degradation
+robustness, and whispered-speech ASR---reported in the sections that
+follow. We report standard Mandarin and English ASR here only to
+confirm that the capability-oriented SFT does not regress baseline
+recognition: Tables~\ref{tab:asr_en}--\ref{tab:asr_zh} compare
+AmphionASR against eight open-source systems on six Mandarin and four
+English test sets.
+
+\input{tables/asr_en}
+
+\input{tables/asr_zh}
+
+\paragraph{Closest-scale comparison: Qwen3-ASR-1.7B.}
+We treat Qwen3-ASR-1.7B as the closest open-source comparison because
+its parameter scale ($1.7$\,B) matches our language backbone and
+because the encoder of AmphionASR is initialised from the Qwen3-ASR
+audio encoder. AmphionASR surpasses Qwen3-ASR-1.7B on LibriSpeech
+test-clean ($1.59$\,\% vs.\ $1.61$\,\% WER) and test-other
+($3.35$\,\% vs.\ $3.39$\,\%), on AIShell-1 ($1.34$\,\% vs.\ $1.58$\,\%
+CER), and on AIShell-2 ($2.65$\,\% vs.\ $2.77$\,\%). On the remaining
+six test sets Qwen3-ASR-1.7B leads by between $0.13$ and $0.85$
+absolute points.
+
+\paragraph{FireRed-ASR2-LLM dominates on Mandarin.}
+The recently introduced FireRed-ASR2-LLM~\cite{fireredasr2025}
+achieves the lowest CER on five of the six Mandarin test sets
+(AIShell-1 $0.65$\,\%, KeSpeech $3.19$\,\%, CV~zh $4.34$\,\%,
+WenetSpeech test-net $4.43$\,\%, test-meeting $4.49$\,\%); on
+AIShell-2 the leader is Step-Audio~2 at $2.35$\,\% CER. On the
+English side Kimi-Audio-7B-Instruct leads on the two LibriSpeech
+splits ($1.30$\,\% / $2.56$\,\% WER), Qwen3-ASR-1.7B on GigaSpeech
+($8.68$\,\%) and Step-Audio~2 on CV~en ($6.77$\,\%). AmphionASR is the
+best of the nine systems on no single test set of either table; on
+Mandarin it trails the per-column leader by $0.30$--$2.52$ CER points
+(FireRed-ASR2-LLM on five of the six columns, Step-Audio~2 on
+AIShell-2).
+
+\paragraph{AmphionASR-specific observations.}
+On the Mandarin grid AmphionASR reaches single-digit CER on every
+reported test set; AIShell-1 at $1.34$\,\% is the headline data point
+on read speech, AIShell-2 sits at $2.65$\,\%, CV~zh at $5.21$\,\%,
+KeSpeech~\cite{tang2021kespeech} (a multi-dialect Mandarin mixture) at
+$5.71$\,\%, and the spontaneous WenetSpeech splits at $5.17$\,\% /
+$6.30$\,\%, the latter being the worst Mandarin row. On the English
+grid the model is competitive on the read-speech LibriSpeech splits
+($1.59$\,\% / $3.35$\,\% WER on test-clean / test-other) and on CV~en
+($7.87$\,\%); GigaSpeech at $9.53$\,\% WER is the worst English row and
+corresponds to the more spontaneous broadcast / interview domain inside
+that benchmark~\cite{chen2021gigaspeech}.

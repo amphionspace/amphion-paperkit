@@ -1,0 +1,303 @@
+---
+description: AmphionASR-specific writing playbook distilled from 16 directly-comparable Audio-LLM technical reports.
+alwaysApply: true
+---
+
+# AmphionASR Writing Playbook
+
+> 仅作用于 `egs/amphion-asr-2026/`。公共层规则（[paper-writing.mdc](../../../.cursor/rules/paper-writing.mdc)、[asr-domain.mdc](../../../.cursor/rules/asr-domain.mdc)、[latex-engineering.mdc](../../../.cursor/rules/latex-engineering.mdc)、[reproducibility.mdc](../../../.cursor/rules/reproducibility.mdc)）是通用约束，本文件不复述，仅基于 16 篇直接对标技术报告补充本报告专属的句式 / 卖点 / 术语选用 / 表格组织细化。
+>
+> 16 篇 corpus（[refs/notes/papers/INDEX.md](../../refs/notes/papers/INDEX.md) 第 1 组）：Kimi-Audio、Qwen-Audio、Qwen2-Audio、Qwen2.5-Omni、Qwen3-Omni、Qwen3-ASR、Seed-ASR、Voxtral、Step-Audio 2、Phi-4-Mini、Phi-4-MM、MiMo-Audio、Baichuan-Audio、VITA-1.5、MOSS-TTSD、MOSS-Audio-Tokenizer。
+
+## 1. 同类报告速查
+
+每条按「论文 / abstract 是否点 backbone / 整体术语 / encoder 命名 / projector 命名 / failure mode 落点」六列拍平为 bullet。
+
+- Kimi-Audio (kimiteam2025) — abstract 不点 LLM / audio foundation model / Whisper encoder / adaptor / §8 "Challenges and Future Trends" p.21
+- Qwen-Audio (chu2023) — abstract 不点（Qwen-7B 在 §3.1 p.5）/ instruction-following audio-language model / audio encoder (Whisper-large-v2) / 无独立 projector 词 / 无独立 Limitations
+- Qwen2-Audio (chu2024) — abstract 不点（Qwen-7B 在 §2 p.3）/ LALM / audio encoder (Whisper-large-v3) / 无独立 projector 词 / 无独立 Limitations
+- Qwen2.5-Omni (xu2025) — abstract 写姊妹 SKU / end-to-end multimodal model / encoders for audio and image / adapters / §4.3 p.6 inline + §6 conclusion gap p.12
+- Qwen3-Omni (qwenteam2025) — abstract 写自家 SKU "30B-A3B" / unified end-to-end / AuT encoder / 无独立 projector / §5.1.3 p.11 inline limitation + appendix
+- Qwen3-ASR (qwenteam2026) — abstract 写自家全家桶 "Qwen3-Omni" / LALM / AuT encoder / projector / §5 results "degrades on long-tail" p.9
+- Seed-ASR (bai2024) — abstract 不点 / AcLLM / LUISE encoder / converter / 无独立 Limitations（hallucination 在 §3.4 p.5）
+- Voxtral (mistral2025) — abstract 不点 / multimodal audio chat model / audio encoder (Whisper large-v3) / audio-language adapter / 无独立 Limitations（trade-off 散在 §5 Analysis）
+- Step-Audio 2 (stepfun2025) — abstract 不点 / LALM / audio encoder (frozen 25 Hz) / audio adaptor (×2 → 12.5 Hz) / 无独立 Limitations
+- Phi-4-Mini (abouelenin2025) — abstract 全曝光 "3.8B" / SLM / audio encoder (Conformer) / audio adapter (= projector + LoRA) / §6 "Weaknesses and limitations" p.23
+- Phi-4-MM (microsoft2025) — abstract 全曝光 / multimodal LLM / speech encoder / audio adapter + LoRA on frozen LM / §5.2 audio safety enumerated p.22
+- MiMo-Audio (xiaomi2025) — abstract 写自家 SKU "MiMo-Audio-7B" / native audio language model / patch encoder / 无独立 projector / §6 "Limitations and Future Work" p.24
+- Baichuan-Audio (baichuan2025) — abstract 不点（"LLM"泛称） / end-to-end audio LLM / Whisper Large Encoder + RVQ / audio head / 无独立 Limitations（cap 在 §4.1 p.9）
+- VITA-1.5 (fu2025) — abstract 不点（Qwen2-7B 在 Table 2 p.8） / multimodal LLM / Vision/Speech Encoder / Vision/Speech Adapter / §5 "Conclusion and Future Work" p.9
+- MOSS-TTSD (openmoss2026) — abstract 不点（Qwen3-8B-base 在 §4.1 p.4） / spoken dialogue synthesis model / MOSS-Audio-Tokenizer / 无独立 projector / 无独立 Limitations
+- MOSS-Audio-Tokenizer (openmoss2026) — abstract 不点 / native audio foundation model / causal Transformer encoder–decoder / 无 / 无独立 Limitations
+
+## 2. Abstract 写法（本报告特化）
+
+公共层 paper-writing.mdc §2 规定 abstract 4-句模板（problem / why-now / our-result / implication）。本报告 abstract 在 4 句基础上扩为「问题域 → couple-架构句 → 三段式卖点 → 公共 benchmark 数字 → release」，**保持此结构**。
+
+### 2.1 LLM backbone 抽象度（强制）
+
+abstract 仅写 `4\,B-parameter pre-trained LLM`，**禁止**写 `Qwen3-4B-Instruct` 或任何完整版本号。
+
+理据：16 篇 corpus 中 11 篇 abstract 隐藏第三方 backbone；仅 Phi-4-Mini / Phi-4-MM / MiMo / Qwen3-Omni / Qwen3-ASR 在 abstract 点名，且全部是「自家产品 / 自家全家桶」报告。本报告用第三方 Qwen3-4B-Instruct，从多数派。
+
+错误（已于 2026-05-15 修复）：`bridges a Whisper-style audio encoder with the Qwen3-4B-Instruct LLM`。正确：`couples a Whisper-style audio encoder with a 4\,B-parameter pre-trained LLM`。
+
+### 2.2 三段式卖点句式（已落地，不要破坏）
+
+`\emph{(i)~Hotword conditioning.} ...with as few as K in-prompt hotwords, <Dataset> <Metric> drops from X to Y...`
+
+`\emph{(ii)~Target-speaker recognition.} Given a 3--5\,s reference utterance the model transcribes only the matching speaker..., with explicit anti-hallucination training that keeps the decoder silent when the requested speaker is absent.`
+
+`\emph{(iii)~Noise robustness.} Every target-speaker training cut passes through ..., so deployments inherit the same robustness without bespoke acoustic adaptation.`
+
+### 2.3 abstract 末尾必含
+
+公共 benchmark 数字（CER on AISHELL-1 / WER on LibriSpeech test-clean / MER on TALCS）→ 一句 release 声明 + GitHub URL → 一句 limitations 预告（仿 Voxtral abstract 的均衡感）。
+
+## 3. Introduction 写法（[01_introduction.tex](../../sections/01_introduction.tex)）
+
+### 3.1 开篇句
+
+从问题域起手，不从自家产品起手。模板：`Real-world ASR deployments routinely fail on three classes of inputs that benchmark numbers seldom capture: ...`。仿 Kimi-Audio p.1（"Audio plays an indispensable role in human daily life"）、Qwen2-Audio p.2（"Audio serves as a crucial medium for interaction"）、Baichuan-Audio p.1（cascade 对比）。
+
+避免「This report presents X」起手；那是 Phi-4 / MiMo / Qwen3-ASR 这种「自家产品报告」的口径。
+
+### 3.2 Contributions list
+
+4-5 条 bullet，每条「粗体主题词 + 冒号 + 一句」。主题词建议：
+
+- Three-component SpeechLLM architecture
+- Prompt-driven hotword conditioning
+- Target-speaker recognition with anti-hallucination silence
+- Joint noise / multi-talker curriculum via TS-ASR training cuts
+- Open release: weights, SFT recipe, and a batched vLLM endpoint
+
+仿 Kimi-Audio p.2 三大轴（Architecture / Data / Training）、Baichuan-Audio p.2-3 双条工程主题、MiMo-Audio p.4-5 五条工程 bullet（"• Tokenizer: ..."）、Phi-4-Mini p.2-3 numbered（"1. Unified Multi-Modality Support:"）。避免 Qwen2-Audio p.2-3 那种「无 contributions 枚举，靠段落叙述」的写法，本报告读者期望明确 bullet。
+
+## 4. Architecture（[04_model.tex](../../sections/04_model.tex)）
+
+### 4.1 §4 首段三模块句式
+
+```
+AmphionASR comprises three components: (i) a Whisper-style audio encoder that
+maps a 16\,kHz waveform to a 50\,Hz feature stream, (ii) a lightweight
+modality projector that downsamples and projects the audio embedding into
+the LLM's token space, and (iii) a 4\,B-parameter text LLM that consumes the
+projected tokens together with a natural-language prompt and emits the
+transcription token by token.
+```
+
+仿 Kimi-Audio §2.1 p.3 "three primary components: (1) ... (2) ... (3) ..."、Voxtral §2 p.2 "three components: an audio encoder ..., an adapter layer ..., and a language decoder ..."、Baichuan §3 p.3 "three foundational components: ..."、MiMo §2.2 p.11 "comprises three primary components: a patch encoder, an LLM backbone, and a patch decoder"。
+
+### 4.2 此节才点 backbone 全名
+
+`...a 4\,B-parameter text LLM initialised from Qwen3-4B-Instruct \cite{qwen3report}...`。然后在 4.2 子节展开层数 / hidden / attention head。
+
+仿 Qwen2-Audio §2 p.3 "Qwen-7B ... 8.2B total"、Voxtral §2.1 p.2 "based on Whisper large-v3"、Phi-4-MM §2.2.1 p.4-5 "Phi-4-Mini ... LoRA"。
+
+### 4.3 模块表（§4 末尾必须有）
+
+caption: `Module-by-module decomposition of AmphionASR. Trainable rows are LoRA-adapted unless marked otherwise.`。列：Module / Backbone / Parameters / Input rate / Output rate / Trainable。建议 3 行（encoder / projector / LLM）。
+
+仿 Voxtral Table 1 p.2（Audio Encoder / Audio Adapter / Text Embeddings / Language Decoder / Total）、Phi-4-MM §2.2.1 p.4-5 enumerated bullets。避免 Kimi / Seed / Step-Audio 2 那种「纯 prose + Figure」的描述，本报告读者需要可对照的 spec table。
+
+## 5. Methods 章节 ordering
+
+sections/ 已固定 03_data → 04_model → 05_training → 06_experiments → 07_hotwords → 08_ts_asr → 09_noise_robustness → 10_analysis → 11_limitations_ethics → 12_conclusion。约束：
+
+- §3 / §4 / §5 末段都要给「该模块的训练状态总结」（frozen / trainable / LoRA），避免读者翻回去查
+- §7 / §8 / §9 同构子节顺序：task definition → prompt template (literal `lstlisting`) → data construction → headline result → ablation → discussion。仿 Seed-ASR §4 各 capability 子节、Qwen-Audio §3 task family 叙述
+- §10 analysis 是 §7-9 的 cross-cutting 深度分析（per-language / per-SNR / per-utterance-length 切片），不重复 §7-9 的 headline 数字
+- §11 Limitations 必须独立小节（见 §7）
+
+## 6. Experiments 表格组织
+
+### 6.1 Headline 表（[06_experiments.tex](../../sections/06_experiments.tex)）
+
+caption 模板：`Speech recognition results on \textsc{<benchmark>}. Lower is better; CER (\%) for Mandarin, WER (\%) for English. \textbf{Bold} marks the best per-row result.`
+
+列：Dataset (Split) / Whisper-large-v3 / Canary-1B-v2 / Parakeet-TDT-0.6B-v3 / OWSM-v3.1 / Seed-ASR / Qwen3-ASR-1.7B / Ours (4 B)
+
+行：分语言块（Mandarin headline 多行 / English headline 多行 / Code-switch 多行）。每行一个 dataset / split。仿 Step-Audio 2 Table 1 p.9-10（按语言 / 方言切块）、Qwen3-ASR Table 3 p.7-8（多商业 API 列 + clean|other 子列）、Kimi-Audio Table 4 p.15-16（block-wise dataset rows）。
+
+bold：本系统行的最优值。**caption 必须显式声明 bold 含义**（仿 Kimi p.15-16 "Best results are in bold"），不要默认。数字一律两位小数。
+
+### 6.2 子任务表
+
+Hotword（[07_hotwords.tex](../../sections/07_hotwords.tex)）：caption `Contextual ASR with in-prompt hotwords.`。列 K=0 / K=5 / K=10 / K=20，行 Dataset × Metric（U-WER / B-WER 必须分列，仿 CTC-Assisted Yang 2024、BR-ASR Sun 2025）。
+
+Target-speaker（[08_ts_asr.tex](../../sections/08_ts_asr.tex)）：caption `Target-speaker ASR ...`。列 Method / MER on hot+TS / MER on Libri2Mix / ORC-WER on NOTSOFAR-1。**MER 是本报告 TS-ASR 主指标**，仿 SQ-Whisper Meng 2024 (Libri2Mix MER 14.6%)。
+
+Noise（[09_noise_robustness.tex](../../sections/09_noise_robustness.tex)）：caption `Performance under additive noise.`。列 clean / SNR=15 / SNR=10 / SNR=5 / SNR=0（仿 Whisper Radford 2022 §3.7）。
+
+### 6.3 Ablation 表命名
+
+独立 caption `Ablation: <factor>.`，每张表配一句 "<factor> contributes X% absolute on <metric>"。仿 Seed-ASR Table 9 p.12 "Ablation studies after different stages"、Qwen-Audio Table 4-5 p.10。
+
+## 7. Limitations（[11_limitations_ethics.tex](../../sections/11_limitations_ethics.tex)）
+
+### 7.1 必须独立小节
+
+仿 MiMo §6 "Limitations and Future Work" p.24、Phi-4-Mini §6 "Weaknesses and limitations" p.23、Phi-4-MM §5.2 enumerated audio safety p.22、Kimi §8 "Challenges and Future Trends" p.21。**避免** Voxtral §5 那种「散落在 Analysis」的做法（读者无法快速定位）。
+
+### 7.2 本报告至少要承认的 5 项
+
+1. LibriMix 多说话人公开 benchmark 偏弱（refs/docs/plan.md "libri2mix 较差未排查"）
+2. 无显式 plain-ASR noise curriculum（noise 来自 TS-ASR 通路副产品）
+3. Catastrophic forgetting on text-only tasks（speech 微调后 LLM 文本能力部分丢失）
+4. Hotword 列表长度上限 K≤20（K>20 时 prompt 噪声主导）
+5. 数据 license 边界（部分内部数据不可全部公开）
+
+### 7.3 句式模板（直接借鉴对照）
+
+- `<system> performs suboptimally in <scenario>.`（MiMo p.24）
+- `<system> suffers from <failure mode>.`（Seed-ASR p.5 hallucination）
+- `Performance degrades on <subset>; <reason>.`（Qwen3-ASR p.9-10 long-tail languages）
+- `<system> is highly prone to <error>.`（MiMo p.24 mispronouncing complex symbols）
+- `Including <A> in training may degrade performance on <B>.`（VITA-1.5 p.2 modality conflict）
+- `<system> yields a slight regression on <Y>.`（Voxtral p.9 Online DPO English short-form）
+
+### 7.4 量化承认
+
+至少一项 limitation 必须给数字（仿 Phi-4-MM Table 12 VPRR 26.4% p.21、Voxtral p.8 "0.5% WER degradation on French"）。避免只写定性的 limitations 段落。
+
+## 8. 术语约定（全篇统一）
+
+### 8.1 整体模型自称：SpeechLLM
+
+首字母大写，连写。统一全篇。避免下面这些（它们是同类系统对方的术语）：
+
+- LALM — Qwen3-ASR / Step-Audio 2 / Qwen2-Audio 用
+- AcLLM — Seed-ASR 自创
+- audio LLM — Kimi-Audio / Step-Audio 2 用
+- audio foundation model — Kimi-Audio / MOSS-Audio-Tokenizer 用
+- multimodal LLM — VITA-1.5 / Phi-4-MM / Qwen-Omni 用
+- audio language model — MiMo-Audio 用
+
+仅在 §2 Related Work 引用同类系统时使用对方原始术语（例：`the LALM-based Qwen3-ASR \cite{...}`）。
+
+### 8.2 Audio encoder：Whisper-style audio encoder
+
+首次写 `Whisper-style audio encoder`，后续简称 `audio encoder`。避免 `speech encoder` / `Whisper encoder` / `AuT` / `patch encoder`（这些是 VITA / Voxtral / Qwen3-Omni / MiMo 的术语）。
+
+### 8.3 Projector：modality projector
+
+首次 `lightweight modality projector`，后续 `modality projector` 或 `projector`。避免 `adapter` / `adaptor` / `converter` / `Q-Former` / `MLP connector` / `audio-language adapter`（这些是 Voxtral / Kimi / Seed-ASR / SALMONN / VITA / 等的术语）。
+
+### 8.4 训练阶段词
+
+`pre-training` / `supervised fine-tuning (SFT)` / `LoRA-adapted`。模块训练态用 `frozen` / `trainable` / `LoRA-adapted`（仿 Phi-4-MM §2.2.1 p.4 三选一标记）。
+
+### 8.5 第三方工具的内部抽象 / API 不出现在正文
+
+paper 正文中描述数据 / 训练 / 评测时，**不要使用第三方工具特定的内部抽象 / class 名 / API 名**。这是 [AGENTS.md 规则 4](../../../AGENTS.md)（不写实现细节）在第三方工具语境下的延伸：工具内部对象命名暴露在正文会让 paper 读起来像 SDK 使用手册，而不是研究报告。
+
+理据：16 篇 corpus 中 Kimi-Audio §3 / Voxtral §3 / Step-Audio 2 §3 描述数据时**没有一篇**写"using X library's Y abstraction"；它们要么直接描述数据规模与构成，要么把工程依赖收敛到 Acknowledgments / 一句话陈述（"we use Lhotse for data preparation"）。把 `recordings / supervisions / cuts` 这类 Lhotse 内部 class 命名当正文术语用，等于把数据章写成了 Lhotse tutorial 章，是典型"不专业"信号。
+
+| 不要写 | 改写成 |
+| --- | --- |
+| Lhotse's recordings / supervisions / cuts abstraction | 不需要解释数据格式；直接描述"the training mixture" |
+| organise data via Lhotse's mux operator | uniform multiplexing across data sources |
+| the synthesised TS-ASR cut set | the synthesised TS-ASR training set |
+| $\sim$3\,M positive cuts | $\sim$3\,M positive examples |
+| supervision-level language tag | per-utterance language tag |
+| shuffling cuts across recordings, supervisions, augmentation pools | shuffling examples across audio corpora, transcript annotations, augmentation pools |
+| Lhotse as the unifying data abstraction | Lhotse for unified data preparation |
+| an (icefall-style) decoder | the offline batch decoder |
+| PyTorch's DataLoader workers | data-loading workers |
+| SpeechBrain's DynamicItemDataset | an on-the-fly augmented dataset |
+| HuggingFace Trainer / Accelerate state-dict | the training framework's checkpoint state |
+| ESPnet's recipe stages | the training recipe |
+
+允许 / 鼓励：
+
+- 在 Related Work / Methods 中**陈述工程栈依赖**（"we rely on Lhotse / Emilia / MUSAN / SLR26 / SLR28"）并 cite —— 这是 paper 标准做法，仿 [02_related_work.tex](../../sections/02_related_work.tex) 现有 "Data infrastructure for SpeechLLMs" 段、Kimi-Audio §6、Voxtral §1
+- 已发表方法 / 系统名（LoRA / ZeRO-2 / GRPO / vLLM / ms-swift / DeepSpeed）—— 这些已落在 [AGENTS.md 规则 4](../../../AGENTS.md) 允许列表，本规则不重复约束
+- 公开数据集 key（LibriSpeech / GigaSpeech / FLEURS）—— 与 AGENTS.md 规则 4 允许列表一致
+- 概念性词如 `pipeline` / `manifest` / `registry` / `harness` —— 它们是通用工程概念词，非特定工具 API 名
+
+判定边界（不确定时的判据）：
+
+1. 该术语是否是某个开源库的 class / function / submodule 命名？（例：Lhotse `CutSet`、Lhotse `mux`、PyTorch `DataLoader`）→ 不要在正文出现
+2. 该术语是否是该工具特有的、文档之外读者难以解析的字眼？（例：`(icefall-style)` 隐含 K2/icefall 的 recipe 结构）→ 不要在正文出现
+3. 该术语是否是领域通用词，多个工具 / 多个工程实现都会用？（例：`mini-batch`、`data loader`、`augmentation pipeline`、`tokenizer`、`encoder`）→ 可以写
+
+### 触发：每次写 `*.tex` 后
+
+写完任何 `sections/*.tex` 后，除了跑 [`tools/fact-check-regex.sh`](../../../tools/fact-check-regex.sh)（[AGENTS.md 规则 4](../../../AGENTS.md) 触发器），还要 grep 第三方工具 class / API 名残留：
+
+```bash
+rg -n "Lhotse's|cut set|cuts abstraction|positive cuts|supervision-level|mux operator|icefall-style|DataLoader workers|DynamicItemDataset|recordings, supervisions" egs/amphion-asr-2026/sections/
+```
+
+命中即需改写。
+
+## 9. 卖点对照（每条卖点必须给与同类系统的差异化）
+
+公共层 paper-writing.mdc §1 规定 "one ping told as a story"。本报告有三个卖点，每个在 sections 中必须给「与具体同类系统的差异化句」。
+
+### 9.1 Hotword（§7）
+
+- 对照 Seed-ASR §4 context-aware ability p.4：基于历史对话 / 视频编辑历史的 retrieval。本报告无 retrieval，K≤20 prompt-supplied 列表
+- 对照 BR-ASR Sun 2025（200k entry retrieval, LS test-clean B-WER 2.8）：本报告无 retrieval 模块
+- 对照 Lakomkin-RL 2025（GLCLAP retrieval + GRPO）：本报告无 RL 阶段
+
+句式模板：`Unlike X which Y, AmphionASR Z.`
+
+### 9.2 Target-speaker（§8）
+
+- 对照 SQ-Whisper Meng 2024（Libri2Mix MER 14.6%, WSJ0-2Mix 4.4%）：本报告内部 hot+TS 测试集 MER 14.29%
+- 对照 Polok 2024 Target-Speaker-Whisper（diarization-conditioned, NOTSOFAR-1 ORC-WER 改善 12.9）
+- 对照 Ma 2023 prompt-tuning TS-ASR
+
+差异化卖点：anti-hallucination silent behaviour（speaker absent 时主动静默），仿 Seed-ASR hallucination 句式（"suffers from serious hallucination problem" p.5）但本报告**已解决**而非承认。
+
+### 9.3 Noise robustness（§9）
+
+- 对照 Whisper Radford 2022 §3.7（大规模弱监督隐式抗噪基线）
+- 对照 Qwen3-ASR-1.7B（plan 中明确"对标 Qwen3-ASR-1.7B 抗噪"）
+
+差异化卖点：noise robustness 来自 TS-ASR 训练通路的副产品（reverberation + MUSAN + AudioSet + competing-speaker），**无独立 noise curriculum** —— 这既是卖点（简洁）也是 limitation（plain-ASR 输入不增强，要在 §11 承认）。
+
+## 10. Anti-hallucination 强化
+
+公共层 paper-writing.mdc §5 已规定 fact-check block + lookup order。本报告补充：
+
+### 10.1 refs/notes/papers/ 已 cover 的事实（写 §2 Related Work / 实验 baseline 时直接用）
+
+- Whisper：680\,k h 弱监督训练（radford2022 abstract）
+- Conformer：一作 Anmol Gulati，Interspeech 2020（gulati2020 first page）
+- SLAM-ASR：HuBERT + 单层 linear projector + Vicuna，LibriSpeech test-clean WER 1.84（ma2024 abstract）
+- Qwen2-Audio：总 8.2 B，Qwen-7B + Whisper-large-v3 encoder，DPO 后训练（chu2024 §2 p.3）
+- Seed-ASR：LUISE encoder 近 2 B，MoE LLM tens of B，stage-wise SSL→SFT→Context SFT→RL（bai2024 abstract）
+- Kimi-Audio：12.5 Hz tokenizer，13 M h 音频预训练（kimiteam2025 abstract）
+- Step-Audio 2：audio adaptor ×2 → 12.5 Hz，audio encoder frozen 25 Hz（stepfun2025 §3.1 p.6）
+- Voxtral：Mini 参数分解 Audio Encoder 640\,M / Adapter 25\,M / Decoder 3.6\,B（Table 1 p.2）
+- Phi-4-MM：speech LoRA 460\,M on frozen Phi-4-Mini 3.8\,B base（abouelenin2025 abstract）
+- Qwen3-ASR：Qwen3-ASR-1.7B / 0.6B，AuT encoder，Qwen3-Omni 全家桶（qwenteam2026 abstract）
+- BR-ASR：200k entry retrieval，LS test-clean B-WER 2.8（sun2025 INDEX entry）
+- CTC-Assisted：LS test-clean B-WER 3.67（yang2024 INDEX entry）
+- SQ-Whisper：Libri2Mix MER 14.6%，WSJ0-2Mix 4.4%（meng2024 INDEX entry）
+- MiMo-Audio：tokenizer 1.6\,B params，3\,M h 训练（openmoss2026 abstract for tokenizer；MiMo own 7\,B）
+
+### 10.2 必须外部验证的事实（写完即标 TODO 或先 WebFetch）
+
+- AmphionASR 自家训练 hours（refs/internal/ 待补，目前 03_data.tex 有 TODO）
+- 自家 hot+TS 测试集规模 / 录制条件 / 说话人覆盖（refs/internal/ 待补）
+- 自家 vLLM 部署的吞吐 / 首 token 延迟数字（待测）
+- GitHub URL 是否真实可访问（已知 abstract 末行有 TODO: verify the public URL）
+
+### 10.3 一律不能凭印象写
+
+任何「X% improvement over Y」「first / fastest / largest」「state-of-the-art」必须在 reply 的 fact-check block 列出来源（公共层 paper-writing.mdc §6）。同类系统的数字若不在 refs/notes/papers/ 中，必须 WebFetch / WebSearch 验证后才能写入 sections。
+
+---
+
+## 11. Reply contract（与公共层 paper-writing.mdc §6 协同）
+
+每次改 `sections/*.tex` / `tables/*.tex` 后的回复必须含两块：
+
+1. fact-check（公共层规定）：列出新增 / 修改的每个具体数字 / 模型名 / 数据集名的来源
+2. 样板（本规范规定）：列出本次仿照的样板 paper 与具体小节，例：`样板：Kimi-Audio §2.1 p.3 三模块句式 + Voxtral Table 1 p.2 模块表`
+
+若本次修改既不涉及新事实也无明显仿照（例如纯排版调整），可省略两块但需在回复明确说明「无新事实 / 无仿照」。

@@ -1,0 +1,109 @@
+\section{Limitations and Broader Impact}
+\label{sec:limitations}
+
+\subsection{Limitations}
+
+\paragraph{Scope.}
+AmphionASR is optimised for Mandarin and English, with a small
+amount of Mandarin--English code-switching data. We do not claim
+broad multilingual coverage and we do not benchmark on languages
+outside those reported in Section~\ref{sec:experiments}.
+
+\paragraph{Open multi-talker benchmarks (positive WER).}
+The target-speaker path is substantially weaker on the public
+LibriMix test sets ($63.04$\,\% WER on Libri2Mix, $85.04$\,\% on
+Libri3Mix) than on the positive sub-slice of our in-house
+target-speaker test set ($13.02$\,\% WER, Table~\ref{tab:tsasr}). The underlying
+cause has not been investigated; until the next training
+iteration the public multi-talker numbers should be read as a
+known weakness, not a final result. The fact that Libri3Mix
+degrades more than Libri2Mix relative to the in-house target-speaker
+test set (an extra $+22.00$ WER points
+between two-speaker and three-speaker mixed audio) further
+suggests that AmphionASR's speaker selection is not yet robust to
+interferer count.
+
+\paragraph{Target-absent behaviour (not benchmarked here).}
+The in-house target-speaker test set includes target-absent
+samples, but we do not report false-alarm metrics in this revision
+because the training mixture lacks explicit empty-reference
+training data for target-absent cases. Extending the SFT recipe with
+anti-hallucination negatives is planned for the next iteration.
+
+\paragraph{Noise robustness: residual gap on Voice-in-the-Wild-Bench.}
+The Voice-in-the-Wild-Bench evaluation in
+Section~\ref{sec:noise} reports AmphionASR as the best of nine
+systems on eight of sixteen subsets; the remaining eight cells are
+led by Mega-ASR~\cite{xie2026mega} (three: Real Noise, Real Mixed,
+Sim Transmission dropout), Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
+(three: Real Electronic distortion, Sim Far-field, Sim
+Obstructed), GPT-4o-transcribe~\cite{openai2024gpt4o} (Real
+Far-field), and Kimi-Audio~\cite{kimiaudio2025} (Sim Electronic
+distortion). The three cells where AmphionASR trails Mega-ASR --
+Real Noise, Real Mixed, and Sim Transmission dropout -- are
+explicitly called out in Section~\ref{subsec:vitw-results}; the
+underlying cause has not been investigated and closing the
+residual is on the agenda for the next iteration.
+
+\paragraph{Retrieve operator.}
+The retrieval operator of
+Section~\ref{subsec:hotword-rag} has three known
+boundary-of-applicability assumptions:
+\begin{enumerate}
+  \item The CJK pronunciation channel is keyed on tone-stripped
+        Mandarin pinyin. Cantonese, Min, Hakka and the other
+        Mandarin dialects covered by KeSpeech are not supported by
+        this channel without replacing the pronunciation map; the
+        framework is unchanged but the syllable inventory is
+        Mandarin-only at present.
+  \item The alphabetic route assumes a content-word / stop-word
+        decomposition that works for Indo-European languages. It
+        has not been validated for agglutinative (Turkish,
+        Finnish) or inflective languages, where the content-word
+        overlap signal may degenerate.
+  \item The text retrieval $r$ acts on the no-hotword coarse
+        decode $\tilde{y}$. If $\tilde{y}$ contains a contiguous
+        drop-out (long missing span) rather than the local
+        substitution errors that the multi-signal score is
+        designed for, $r$ can no longer recover the missing
+        hotword and the operator degenerates to no-hotword ASR
+        (the discriminative-gap check exists precisely to make
+        this degeneration safe rather than catastrophic).
+\end{enumerate}
+
+\paragraph{Inherited LLM failure modes.}
+As discussed in Section~\ref{sec:analysis}, the model can repeat on
+long silences, drift between languages on code-switched content, and
+over-bias on prompt-supplied hotwords when a term is not actually
+spoken. These are well-known characteristics of LLM-based ASR.
+
+\paragraph{Latency and streaming.}
+The system is offline-batch, served via vLLM. Streaming inference
+and a measured first-token-latency report are out of scope for this
+version.
+
+\subsection{Broader Impact}
+
+\paragraph{Surveillance risk.}
+A target-speaker recognizer that operates from a short reference
+utterance lowers the technical barrier to selectively transcribing a
+designated person in multi-speaker audio. This capability has
+legitimate uses (transcribing one's own voice in a meeting,
+accessibility) but can also be misused for unconsented surveillance.
+We state that the intended use is
+user-initiated transcription with the consent of all recorded parties
+and explicitly call out unconsented surveillance as out-of-scope.
+
+\paragraph{Bias.}
+We have not yet measured per-accent WER systematically. KeSpeech is the
+natural starting point for Mandarin dialectal coverage and will be
+broken out in a follow-up.
+
+\paragraph{Data provenance.}
+Public sources are used under their stated licenses (Tables~\ref{tab:data_public}--\ref{tab:data_hotwords_eval}).
+In-house sources are subject to in-house data-governance review.
+
+\paragraph{LLM-assisted writing.}
+Portions of this report were drafted with the assistance of large
+language models. All technical claims, numbers, and citations were
+verified by the authors against the corresponding primary sources.

@@ -1,0 +1,112 @@
+\section{Training}
+\label{sec:training}
+
+\subsection{SFT Recipe Overview}
+
+AmphionASR is initialised from the public
+Qwen3-ASR-1.7B weights~\cite{qwen2025qwen3asr} and produced by a
+three-stage supervised fine-tuning (SFT) recipe with all-linear LoRA
+over the eight training sets of Table~\ref{tab:training_sets}.
+LoRA uses rank $64$ and $\alpha=128$, applied to every linear
+projection of each trainable module. All stages use
+ms-swift~\cite{msswift} with DeepSpeed ZeRO-1; each stage runs for
+one epoch at learning rate $1\!\times\!10^{-6}$ with cosine decay and
+a $5$\,\% warmup ratio, effective batch size $384$ on six GPUs, and
+$1$\,\% of examples held out for validation.
+
+\paragraph{Stage~1 -- degradation and whisper; encoder and LLM jointly tuned.}
+The audio encoder and the LLM are both trainable. Training uses the
+Voice-in-the-Wild-2M degradation set~\cite{xie2026mega} and the
+WhispEar whispered-speech set~\cite{fang2025whisperear}.
+Both domains expose acoustic conditions that differ from the
+clean-speech distribution on which the pretrained encoder was learned.
+We therefore unfreeze the audio encoder jointly with the LLM, so that
+the encoder adapts its acoustic representations to encode semantic
+content under these shifted acoustic conditions, and the two sides
+co-adapt before any prompt-driven biasing is introduced.
+
+\paragraph{Stage~2 -- hotword and target-speaker; encoder frozen.}
+The audio encoder is frozen and only the LLM is updated. Training uses
+the hotword-conditioned mixture from five public corpora
+(Table~\ref{tab:data_hw_train}) together with three synthesised
+target-speaker partitions (Table~\ref{tab:ts_training_sets}), installing
+prompt-driven hotword biasing and target-speaker conditioning on top
+of the Stage~1 representation.
+
+\paragraph{Stage~3 -- replay against catastrophic forgetting; encoder frozen.}
+The audio encoder remains frozen and only the LLM is updated. The
+training pool combines the Stage~1 and Stage~2 training sets with
+two plain-transcription corpora replayed to mitigate catastrophic
+forgetting: AISHELL-2~\cite{du2018aishell2} and
+LibriSpeech~\cite{panayotov2015librispeech}. Replaying the earlier
+capability data preserves unconditioned plain-transcription behaviour
+while consolidating the hotword and target-speaker capabilities
+acquired in Stage~2.
+
+\subsection{Hotword Retriever}
+\label{subsec:hotword-retriever}
+
+The hotword retriever is trained separately from the three-stage SFT
+recipe, on top of the merged Stage~2 checkpoint, optimising only the
+two small MLP adapters of Section~\ref{subsec:hotword-rag}; the audio
+encoder and the LLM token-embedding table remain frozen. Training is
+bilingual with per-language hotword pools: we collect the hotwords
+annotated in the CommonVoice Mandarin and English hotword splits,
+deduplicate them, and build a Mandarin pool and an English pool that
+serve as the candidate vocabulary for each language.
+
+We build the retrieval objective upon
+GLCLAP~\cite{kong2025glclap}, adopting its global--local bidirectional
+contrastive loss: a global term aligning pooled audio with the
+transcript and a local term aligning each hotword with per-frame audio
+via a max-over-time similarity, each summed over the
+speech$\to$text and text$\to$speech directions. Our only deviation is
+the positive/negative selection of the local branch. The positive for
+each utterance is its ground-truth hotword; instead of GLCLAP's
+in-batch negatives, we sample $N{=}4095$ negatives per utterance from the
+same-language hotword pool, excluding the batch's own hotwords and
+shared across the batch so that the negative embeddings are encoded
+only once per step. The text$\to$speech direction keeps in-batch audios
+as candidates. The temperature is learnable.
+Training runs for $10$ epochs at learning rate $3\!\times\!10^{-4}$
+with cosine decay, a $5$\,\% warmup ratio, a learnable temperature
+initialised at $0.07$, gradient clipping at $1.0$, and effective batch
+size $384$ on six GPUs under fp16. The checkpoint with the best
+validation Recall@$1$ on the CommonVoice hotword splits is shipped as
+the retrieval module.
+
+\subsection{Group Relative Policy Optimisation}
+\label{subsec:grpo}
+
+After the three-stage SFT recipe we apply a Group Relative Policy
+Optimisation (GRPO) pass to the language backbone, keeping the audio
+encoder frozen. The sequence-level reward signal targets two failure
+modes of teacher-forced SFT decoders that additional SFT epochs do not
+directly address: boundary discrimination on silent or
+hotword-negative samples, and the metric--train gap between
+cross-entropy and CER.
+
+\paragraph{Rewards.}
+The accuracy reward is the negative CER clipped to $[0, 1]$,
+\begin{equation}
+  R_\mathrm{asr}(\hat{y}, y) = \max(0,\, 1 - \cer(\hat{y}, y)),
+  \label{eq:reward-asr}
+\end{equation}
+with empty-reference boundary cases scored as full credit.
+The hotword match-accuracy reward averages per-candidate binary
+agreement between predicted and reference hotword presence,
+\begin{equation}
+  R_\mathrm{hw}(\hat{y}, y; C) = \frac{1}{|C|}\sum_{c \in C}
+    \mathbf{1}\!\left\{\mathbf{1}[c \in \mathrm{Pred}] = \mathbf{1}[c \in \mathrm{Ref}]\right\}.
+  \label{eq:reward-hw}
+\end{equation}
+The total reward is the weighted sum
+\begin{equation}
+  R = w_\mathrm{asr}\, R_\mathrm{asr} + w_\mathrm{hw}\, R_\mathrm{hw},
+  \qquad (w_\mathrm{asr}, w_\mathrm{hw}) = (1.0, 0.3).
+  \label{eq:reward-total}
+\end{equation}
+The GRPO run uses group size $G=16$, sampling temperature $0.6$, PPO
+clip $\varepsilon=0.2$, KL coefficient $\beta=1\!\times\!10^{-3}$,
+peak learning rate $1\!\times\!10^{-6}$ for one epoch, and a
+per-device prompt batch of $8$ with gradient accumulation of $2$.

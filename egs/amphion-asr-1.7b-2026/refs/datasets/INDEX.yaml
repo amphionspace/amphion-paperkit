@@ -1,0 +1,456 @@
+# refs/datasets/INDEX.yaml
+#
+# Single source of truth for dataset paper / datasheet PDFs.
+# PDFs are gitignored; download via:
+#
+#     uv run tools/fetch-refs.py egs/amphion-asr-2026
+#
+# (uv reads the PEP 723 inline metadata block in tools/fetch-refs.py.)
+#
+# Schema and conventions: same as refs/notes/papers/INDEX.yaml.
+
+groups:
+- id: chinese-asr
+  title: 中文 ASR 数据集
+  description: 中文 ASR 训练 / 评测语料（朗读 / 工业 / 大规模 / 方言 / 中英混合）。
+- id: english-multilingual-asr
+  title: 英文 / 多语 ASR 数据集
+  description: 英文与多语种 ASR 训练 / 评测语料（朗读 / 多语种 / 长音频 / 口音）。
+- id: multi-speaker-noise-aug
+  title: 多人 / 分离 / 噪声 / 增广
+  description: 多人 ASR、说话人分离、噪声增广、RIR 增广所用的源 corpus。
+- id: ser-sec
+  title: SER / SEC (语音情感 / 事件)
+  description: 语音情感识别与事件分类的训练 / 评测语料。
+papers:
+- file: bu2017-aishell1.pdf
+  url: https://arxiv.org/pdf/1709.05522.pdf
+  sha256: 8da60e618cbe1099c0896f9ac7747f33d1cd428b316942b76bdf1e60e54ce60c
+  arxiv: '1709.05522'
+  title: 'AISHELL-1: An Open-Source Mandarin Speech Corpus and a Speech Recognition Baseline'
+  authors: Bu et al.
+  date: 2017-09
+  venue: arXiv (O-COCOSDA 2017)
+  group: chinese-asr
+  tags:
+  - mandarin
+  - read
+  usage: 170 h 朗读 / 400 speakers；中文 ASR baseline test set 必引。
+- file: du2018-aishell2.pdf
+  url: https://arxiv.org/pdf/1808.10583.pdf
+  sha256: 600913bed3c2424eb69861cce59e0bb71ce6ce1f72bdb6fd2790792e0f8439c6
+  arxiv: '1808.10583'
+  title: 'AISHELL-2: Transforming Mandarin ASR Research Into Industrial Scale'
+  authors: Du et al.
+  date: 2018-08
+  venue: arXiv
+  group: chinese-asr
+  tags:
+  - mandarin
+  - industrial
+  usage: 1000 h iOS 朗读 / 1991 speakers；工业规模中文 ASR test set。
+- file: shi2020-aishell3.pdf
+  url: https://arxiv.org/pdf/2010.11567.pdf
+  sha256: c44e32767744ece1e7ded8a97e36c8d79c67e3b1a92f9ef8700933bf545c3b68
+  arxiv: '2010.11567'
+  title: 'AISHELL-3: A Multi-speaker Mandarin TTS Corpus'
+  authors: Shi et al.
+  date: 2020-10
+  venue: arXiv
+  group: chinese-asr
+  tags:
+  - mandarin
+  - tts
+  - multi-speaker
+  usage: 85 h 多说话人 TTS / 218 speakers；TTS / TS-ASR 合成源。
+- file: fu2021-aishell4.pdf
+  url: https://arxiv.org/pdf/2104.03603.pdf
+  sha256: 370a8bfb9379c2ec30f6a4d415dcf45ac3ccf75ffb4de8bbb0487e794e9ccc2a
+  arxiv: '2104.03603'
+  title: 'AISHELL-4: An Open Source Dataset for Speech Enhancement, Separation, Recognition and Speaker
+    Diarization in Conference Scenario'
+  authors: Fu et al.
+  date: 2021-04
+  venue: arXiv (Interspeech 2021)
+  group: chinese-asr
+  tags:
+  - mandarin
+  - meeting
+  - multi-channel
+  usage: 120 h 8-channel 会议 / 4–8 speakers per session；多人会议 ASR + diarization baseline 可引。
+- file: zhang2022-wenetspeech.pdf
+  url: https://arxiv.org/pdf/2110.03370.pdf
+  sha256: 2dfe26537e08eb73ce9c82087cde4d7264009ac2dbe294eacb14bce46b04b267
+  arxiv: '2110.03370'
+  title: 'WenetSpeech: A 10000+ Hours Multi-domain Mandarin Corpus for Speech Recognition'
+  authors: Zhang et al.
+  date: 2021-10
+  venue: arXiv (ICASSP 2022)
+  group: chinese-asr
+  tags:
+  - mandarin
+  - large-scale
+  - multi-domain
+  usage: 10000 h + 2400 h 弱标注 + 10000 h 无标注（22400 h 总）；中文 ASR 大规模数据。
+- file: ma2024-wenetspeech4tts.pdf
+  url: https://arxiv.org/pdf/2406.05763.pdf
+  sha256: 9d7aa3f3a85cfaf3ebe03d967e63f518d3c823f2f1f22fb6c85eac1525359aef
+  arxiv: '2406.05763'
+  title: 'WenetSpeech4TTS: A 12,800-hour Mandarin TTS Corpus for Large Speech Generation Model Benchmark'
+  authors: Ma et al.
+  date: 2024-06
+  venue: arXiv (Interspeech 2024)
+  group: chinese-asr
+  tags:
+  - mandarin
+  - tts
+  - large-scale
+  usage: 12800 h DNSMOS-filtered (Premium/Standard/Basic/Rest)；中文 TTS / TS-ASR 合成源。
+- file: tang2021-kespeech.pdf
+  url: https://arxiv.org/pdf/2110.06023.pdf
+  sha256: f420a72e37df1a8872d27ef052737bee3c36849376c82c23859417553cdaa4d8
+  arxiv: '2110.06023'
+  title: 'KeSpeech: An Open Source Speech Dataset of Mandarin and Its Eight Subdialects'
+  authors: Tang et al.
+  date: 2021-10
+  venue: arXiv (NeurIPS Datasets 2021)
+  group: chinese-asr
+  tags:
+  - mandarin
+  - dialect
+  - multi-speaker
+  usage: 1542 h / 27237 speakers / Mandarin + 8 dialects；多方言中文。
+- file: wang2015-thchs30.pdf
+  url: https://arxiv.org/pdf/1512.01882.pdf
+  sha256: e05f3e0e3d48c58638b07fc5cce6971c5e6105f9ce35d0650169ff7fd4054db5
+  arxiv: '1512.01882'
+  title: 'THCHS-30: A Free Chinese Speech Corpus'
+  authors: Wang and Zhang
+  date: 2015-12
+  venue: arXiv
+  group: chinese-asr
+  tags:
+  - mandarin
+  - read
+  - small
+  usage: 35 h Mandarin 朗读；中文 ASR 小数据集 baseline。
+- file: li2022-talcs.pdf
+  url: https://arxiv.org/pdf/2206.13135.pdf
+  sha256: 7e4a5bd63668a54077eebce8e073f538ac8fdce301198ee133c5c08de9c28463
+  arxiv: '2206.13135'
+  title: 'TALCS: An Open-source Mandarin-English Code-switching Corpus and a Speech Recognition Baseline'
+  authors: Li et al.
+  date: 2022-06
+  venue: arXiv (Interspeech 2022)
+  group: chinese-asr
+  tags:
+  - code-switch
+  - mandarin-english
+  usage: 587 h Mandarin-English code-switch；中英混合训练 + dev 集。
+- file: lyu2010-seame.pdf
+  url: https://www.isca-archive.org/interspeech_2010/lyu10_interspeech.pdf
+  sha256: 516d7ee7d8073dd629dbb0b2127d1f4bd85f591603fb2fe7144bf708c3557a73
+  title: 'SEAME: A Mandarin-English Code-switching Speech Corpus in South-East Asia'
+  authors: Lyu et al.
+  date: 2010-09
+  venue: Interspeech 2010
+  group: chinese-asr
+  tags:
+  - code-switch
+  - mandarin-english
+  - conversational
+  usage: 63–192 h Mandarin-English 自然口语 code-switch；Code-switch benchmark 补充。
+- file: panayotov2015-librispeech.pdf
+  url: https://www.danielpovey.com/files/2015_icassp_librispeech.pdf
+  sha256: 0e6ee6ace1a55631b54e8671c25203418f8af00dcec3273ca06b1945b7a8a953
+  title: 'LibriSpeech: An ASR Corpus Based on Public Domain Audio Books'
+  authors: Panayotov et al.
+  date: 2015-04
+  venue: ICASSP 2015
+  group: english-multilingual-asr
+  tags:
+  - english
+  - read
+  - must-cite
+  usage: '960 h 朗读 audiobook (train-clean-100/360 + train-other-500)；
+
+    英文 ASR baseline 必引；TS-ASR Libri2Mix/3Mix 之母。
+
+    '
+- file: pratap2020-mls.pdf
+  url: https://arxiv.org/pdf/2012.03411.pdf
+  sha256: c86b71dd99786a54228b407601c5228e419ed49c9302feea33d1a9df0dfcf15f
+  arxiv: '2012.03411'
+  title: 'MLS: A Large-Scale Multilingual Dataset for Speech Research'
+  authors: Pratap et al.
+  date: 2020-12
+  venue: arXiv (Interspeech 2020)
+  group: english-multilingual-asr
+  tags:
+  - english
+  - multilingual
+  - large-scale
+  usage: 44.5 k h EN + 6 k h × 7 其他语种；英文 ASR 大规模 + 多语。
+- file: ardila2020-commonvoice.pdf
+  url: https://arxiv.org/pdf/1912.06670.pdf
+  sha256: abda109167628b721e63a61a76f6701dd52a12b19a70cc1f8b3d66108b2dc03c
+  arxiv: '1912.06670'
+  title: 'Common Voice: A Massively-Multilingual Speech Corpus'
+  authors: Ardila et al.
+  date: 2019-12
+  venue: arXiv (LREC 2020)
+  group: english-multilingual-asr
+  tags:
+  - multilingual
+  - crowdsourced
+  - hotword-test
+  usage: 2500 h（2019 当时），现在已远超；100+ 语；多语 + 热词测试。
+- file: chen2021-gigaspeech.pdf
+  url: https://arxiv.org/pdf/2106.06909.pdf
+  sha256: cd21790d69372497ce28b01e85d16d41889105f80d3832ed3c7a08d8c06a9541
+  arxiv: '2106.06909'
+  title: 'GigaSpeech: An Evolving, Multi-domain ASR Corpus with 10,000 Hours of Transcribed Audio'
+  authors: Chen et al.
+  date: 2021-06
+  venue: arXiv (Interspeech 2021)
+  group: english-multilingual-asr
+  tags:
+  - english
+  - large-scale
+  - multi-domain
+  usage: 10000 h 标注 + 40000 h 总；英文 ASR 大规模。
+- file: conneau2022-fleurs.pdf
+  url: https://arxiv.org/pdf/2205.12446.pdf
+  sha256: 670824d0dfaa98f56b7f774116d5d70bdeb7990ce031ebe690e9c86c6053283f
+  arxiv: '2205.12446'
+  title: 'FLEURS: Few-shot Learning Evaluation of Universal Representations of Speech'
+  authors: Conneau et al.
+  date: 2022-05
+  venue: arXiv (SLT 2022)
+  group: english-multilingual-asr
+  tags:
+  - multilingual
+  - lid
+  - few-shot
+  usage: 102 语种 × ≈12 h；多语种 ASR / LID benchmark。
+- file: li2024-yodas.pdf
+  url: https://arxiv.org/pdf/2406.00899.pdf
+  sha256: 30a20e7cf1f74fa928f43188765b9d45e9def3cf94918172c200cfb4e3e061e1
+  arxiv: '2406.00899'
+  title: 'YODAS: Youtube-Oriented Dataset for Audio and Speech'
+  authors: Li et al.
+  date: 2024-06
+  venue: arXiv (ASRU 2023)
+  group: english-multilingual-asr
+  tags:
+  - multilingual
+  - youtube
+  - large-scale
+  usage: 500 k h 100+ 语种 YouTube；多语种大规模训练源。
+- file: he2024-emilia.pdf
+  url: https://arxiv.org/pdf/2407.05361.pdf
+  sha256: 5265cc368d39b7279b9a2c22b80c37e843f5a65d784f40dc573c18d5bacc772e
+  arxiv: '2407.05361'
+  title: 'Emilia: An Extensive, Multilingual, and Diverse Speech Dataset for Large-Scale Speech Generation'
+  authors: He et al.
+  date: 2024-07
+  venue: arXiv
+  group: english-multilingual-asr
+  tags:
+  - multilingual
+  - generation
+  - large-scale
+  usage: 101 k h 6 语 / 216 k h 扩展；训练前景源 + ESC 在线混合的前景。
+- file: koh2019-nsc.pdf
+  url: https://www.isca-archive.org/interspeech_2019/koh19_interspeech.pdf
+  sha256: faa0ab35004adced1c74b0bfa541920f8e69addef64a4394925e4f75b04f3787
+  title: Building the Singapore English National Speech Corpus
+  authors: Koh et al.
+  date: 2019-09
+  venue: Interspeech 2019
+  group: english-multilingual-asr
+  tags:
+  - english
+  - singapore
+  - accent
+  usage: '>2000 h 新加坡英语；仓库 singaporean / singapore_english 数据源。'
+- file: hernandez2018-tedlium3.pdf
+  url: https://arxiv.org/pdf/1805.04699.pdf
+  sha256: 31c8d5c8db75f03f8edf5544987156b3acd9be16dae4625f782436a9c921bb14
+  arxiv: '1805.04699'
+  title: 'TED-LIUM 3: Twice as Much Data and Corpus Repartition for Experiments on Speaker Adaptation'
+  authors: Hernandez et al.
+  date: 2018-05
+  venue: arXiv (SPECOM 2018)
+  group: english-multilingual-asr
+  tags:
+  - english
+  - long-form
+  - oratory
+  usage: 452 h TED talks；长音频 / oratory ASR benchmark。
+- file: delrio2021-earnings21.pdf
+  url: https://arxiv.org/pdf/2104.11348.pdf
+  sha256: 66fb85200d5c2e78cf0795c05a965d17f1c0b57242cdd4e0d2fec639fdf6543c
+  arxiv: '2104.11348'
+  title: 'Earnings-21: A Practical Benchmark for ASR in the Wild'
+  authors: Del Rio et al.
+  date: 2021-04
+  venue: arXiv (Interspeech 2021)
+  group: english-multilingual-asr
+  tags:
+  - english
+  - long-form
+  - ner
+  usage: 39 h earnings calls + NER 注释；长音频 + entity-dense benchmark。
+- file: delrio2022-earnings22.pdf
+  url: https://arxiv.org/pdf/2203.15591.pdf
+  sha256: 7a63639bce56b3ceded3c8ae109eee563914afa36b622cd7e1f7bd4282e3fc16
+  arxiv: '2203.15591'
+  title: 'Earnings-22: A Practical Benchmark for Accents in the Wild'
+  authors: Del Rio et al.
+  date: 2022-03
+  venue: arXiv
+  group: english-multilingual-asr
+  tags:
+  - english
+  - long-form
+  - accent
+  usage: 119 h 多口音 global earnings calls；长音频 + 口音 benchmark。
+- file: cosentino2020-librimix.pdf
+  url: https://arxiv.org/pdf/2005.11262.pdf
+  sha256: 664ec0ee8d5e362ef49a8f8c15af1093e14c75770611661bc34fe166c790ce77
+  arxiv: '2005.11262'
+  title: 'LibriMix: An Open-Source Dataset for Generalizable Speech Separation'
+  authors: Cosentino et al.
+  date: 2020-05
+  venue: arXiv
+  group: multi-speaker-noise-aug
+  tags:
+  - separation
+  - ts-asr
+  - libri-mix
+  usage: Libri2Mix / Libri3Mix；clean / both / single；TS-ASR 开源测试集。
+- file: wichern2019-wham.pdf
+  url: https://arxiv.org/pdf/1907.01160.pdf
+  sha256: 41bfbdb36f95115951e852da206cdb413fa8fffa70f75e4e8560972c21d9751e
+  arxiv: '1907.01160'
+  title: 'WHAM!: Extending Speech Separation to Noisy Environments'
+  authors: Wichern et al.
+  date: 2019-07
+  venue: arXiv (Interspeech 2019)
+  group: multi-speaker-noise-aug
+  tags:
+  - noise
+  - separation
+  usage: LibriMix `both` mode 的环境噪声源；噪声增广 / 分离。
+- file: gemmeke2017-audioset.pdf
+  url: https://research.google.com/pubs/archive/45857.pdf
+  sha256: afe56cf887db844ebff99f30a28be8e9088a02052a62e352fb0c429c689a7f53
+  title: 'Audio Set: An Ontology and Human-labeled Dataset for Audio Events'
+  authors: Gemmeke et al.
+  date: 2017-03
+  venue: ICASSP 2017
+  group: multi-speaker-noise-aug
+  tags:
+  - audio-event
+  - ontology
+  - large-scale
+  usage: 2.08 M × 10 s clips / 527 + 632 ontology；ESC 训练源（仓库 audioset_esc）。
+- file: snyder2015-musan.pdf
+  url: https://arxiv.org/pdf/1510.08484.pdf
+  sha256: d2322fc1cc9803449a01b4c8e3695c39bf3256e68e4cabb1867ceb31b1d5cf44
+  arxiv: '1510.08484'
+  title: 'MUSAN: A Music, Speech, and Noise Corpus'
+  authors: Snyder et al.
+  date: 2015-10
+  venue: arXiv
+  group: multi-speaker-noise-aug
+  tags:
+  - noise
+  - music
+  - augmentation
+  usage: 60 h 多语 speech + 多流派 music + noise；加性噪声训练。
+- file: carletta2007-ami.pdf
+  url: http://homepages.inf.ed.ac.uk/jeanc/carletta.LREC-keynote06.pdf
+  sha256: b2bf43594cf0c8a07dba93c83d10e9408792fa02cabb9544ebc14f4844f31700
+  title: 'Unleashing the Killer Corpus: Experiences in Creating the Multi-everything AMI Meeting Corpus'
+  authors: Carletta
+  date: 2007-04
+  venue: Language Resources and Evaluation 41(2)
+  group: multi-speaker-noise-aug
+  tags:
+  - meeting
+  - multi-speaker
+  - multimodal
+  usage: 100 h 会议录音 + 多模态注释；多人会议 ASR / TS-ASR 经典 benchmark。
+- file: busso2008-iemocap.pdf
+  url: https://www.carlosbusso.com/publications/Busso_2008.pdf
+  sha256: c9301ff323a269e05c03f488751fa0c1140440fcb41b0266c268d88dc1f6ee4a
+  title: 'IEMOCAP: Interactive Emotional Dyadic Motion Capture Database'
+  authors: Busso et al.
+  date: 2008-12
+  venue: Language Resources and Evaluation 42(4)
+  group: ser-sec
+  tags:
+  - english
+  - ser
+  - multimodal
+  usage: 12 h 10 演员 5 dyad sessions / 多模态；英文 SER baseline 必引。
+- file: busso2008-acted-emotional-databases.pdf
+  url: https://www.carlosbusso.com/publications/Busso_2008_3.pdf
+  sha256: 4bf7bf599591644483e8294bf6faecac284784360a0e79ddd741622f0d9e36ce
+  title: 'Recording Audio-Visual Emotional Databases from Actors: A Closer Look'
+  authors: Busso and Narayanan
+  date: 2008-05
+  venue: LREC 2008 Workshop
+  group: ser-sec
+  tags:
+  - methodology
+  - ser
+  usage: IEMOCAP 的 collection methodology 补充；方法学注释（可放 Appendix）。
+- file: lotfian2018-msp-podcast.pdf
+  url: https://www.isca-archive.org/interspeech_2018/lotfian18_interspeech.pdf
+  sha256: 1be40716d9b8cbf0c8c29d810cc0b13bbfc18aa99e6878a6ca3fee6c6bb6b235
+  title: Predicting Categorical Emotions by Jointly Learning Primary and Secondary Emotions through Multitask
+    Learning
+  authors: Lotfian and Busso
+  date: 2018-09
+  venue: Interspeech 2018
+  group: ser-sec
+  tags:
+  - english
+  - ser
+  - msp-podcast
+  usage: '用 MSP-Podcast 1.1 (22 630 句 / 39 h) 做 multitask 主/副情感分类；
+
+    MSP-Podcast 数据集 + SER 方法学引用入口。
+
+    '
+- file: poria2018-meld.pdf
+  url: https://arxiv.org/pdf/1810.02508.pdf
+  sha256: fabc3761768112d6ae8c1b591dfae926e1a52a100e7150b1d46569b2a3ee5878
+  arxiv: '1810.02508'
+  title: 'MELD: A Multimodal Multi-Party Dataset for Emotion Recognition in Conversations'
+  authors: Poria et al.
+  date: 2018-10
+  venue: arXiv (ACL 2019)
+  group: ser-sec
+  tags:
+  - english
+  - ser
+  - multi-party
+  usage: 13 k utterances / Friends TV / 7 emotion；多人对话 SER（仅 test）。
+- file: zhao2022-m3ed.pdf
+  url: https://arxiv.org/pdf/2205.10351.pdf
+  sha256: 95f15d7ea381ebd9e3ebf5411689f6a954b3c495d682fb8e2d5cbd1549aeadb6
+  arxiv: '2205.10351'
+  title: 'M3ED: Multi-modal Multi-scene Multi-label Emotional Dialogue Database'
+  authors: Zhao et al.
+  date: 2022-05
+  venue: arXiv (ACL 2022)
+  group: ser-sec
+  tags:
+  - mandarin
+  - ser
+  - multimodal
+  usage: 990 dialogues × 24449 utterances / 7 emotion；中文多模态 SER。

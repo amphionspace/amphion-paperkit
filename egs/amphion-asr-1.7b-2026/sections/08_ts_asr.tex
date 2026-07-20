@@ -1,0 +1,43 @@
+\subsection{Target-Speaker Recognition}
+\label{sec:tsasr}
+
+\begin{table}[t]
+  \caption{Target-speaker recognition results. Lower WER is better.
+    WER is computed on the positive sub-slice of each test set.
+    AmphionASR denotes our model.
+    Bold marks the best entry in each column.}
+  \label{tab:tsasr}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{lccc}
+    \toprule
+    System & In-house TS-ASR & Libri2Mix WER & Libri3Mix WER \\
+    \midrule
+    Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 156.49 & 153.95 \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 167.16 & 172.81 \\
+    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 135.91 & 138.41 \\
+    \midrule
+    \textbf{AmphionASR}               & \textbf{13.02} & \textbf{63.04} & \textbf{85.04} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Strong positive-WER improvement over the open baselines.}
+On the positive sub-slice of our in-house target-speaker test set,
+AmphionASR reaches $13.02$\,\% WER, roughly $4.1\times$ below the
+strongest open-source dual-audio baseline (Qwen3-Omni, $52.90$\,\%) and
+about $6.5\times$ below Qwen3-ASR-0.6B. The improvement is consistent
+on the public LibriMix tests: $63.04$\,\% on Libri2Mix ($2.2\times$
+below Qwen3-Omni's $135.91$\,\%) and $85.04$\,\% on Libri3Mix
+($1.6\times$ below Qwen3-Omni's $138.41$\,\%). The LibriMix WER values
+exceed $100$\,\% for the three open baselines because their hypothesis
+on mixed-both audio contains the transcripts of all speakers
+concatenated together (the WER is
+$\text{insertions}/|\text{ref}| \approx 100$--$200$\,\% when the
+reference is the target speaker only); none of the three open systems
+exhibits any speaker selection. AmphionASR brings these two columns
+under $100$\,\%, but with a larger Libri2Mix $\to$ Libri3Mix
+degradation ($+22.00$ WER points) than the open baselines (at most
+$5.65$ points, Qwen3-ASR-1.7B), indicating that speaker selection
+degrades more steeply as the interferer count grows.
