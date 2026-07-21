@@ -32,8 +32,8 @@
 
 证据：
 
-- 正文将系统描述为 Qwen3-ASR-1.7B、约 2.0B 参数：[`../../sections/04_model.tex`](../../sections/04_model.tex)。
-- 内部架构文档记录的是约 4.735B 的 Qwen3-AuT + Qwen3-4B-Instruct：[`model_arch.md`](model_arch.md)。
+- 正文将系统描述为 Qwen3-ASR-1.7B、约 2.0B 参数：`[../../sections/04_model.tex](../../sections/04_model.tex)`。
+- 内部架构文档记录的是约 4.735B 的 Qwen3-AuT + Qwen3-4B-Instruct：`[model_arch.md](model_arch.md)`。
 - 官方 Qwen3-ASR-1.7B 配置为 24 层、`d_model=1024` 的音频编码器，`output_dim=2048`，以及 28 层、`hidden_size=2048` 的语言模型：[Qwen3-ASR-1.7B config](https://huggingface.co/Qwen/Qwen3-ASR-1.7B/blob/main/config.json)。
 
 验收标准：论文、figure、内部真相源和最终 checkpoint 的模型身份及全部架构数字一致。
@@ -48,9 +48,9 @@
 
 证据：
 
-- 本地论文清单已将其标为“GLCLAP 检索 + GRPO RL”的强对照：[`../notes/papers/INDEX.md`](../notes/papers/INDEX.md)。
-- 该文采用 GLCLAP top-\(K\) 检索、文本 prompt 注入和同时优化热词及转写的 GRPO reward：[arXiv:2512.21828](https://arxiv.org/abs/2512.21828)。
-- 当前正文只引用 GLCLAP，没有引用上述最接近工作：[`../../sections/04_model.tex`](../../sections/04_model.tex)。
+- 本地论文清单已将其标为“GLCLAP 检索 + GRPO RL”的强对照：`[../notes/papers/INDEX.md](../notes/papers/INDEX.md)`。
+- 该文采用 GLCLAP top-K 检索、文本 prompt 注入和同时优化热词及转写的 GRPO reward：[arXiv:2512.21828](https://arxiv.org/abs/2512.21828)。
+- 当前正文只引用 GLCLAP，没有引用上述最接近工作：`[../../sections/04_model.tex](../../sections/04_model.tex)`。
 
 验收标准：审稿人能从 Introduction 的贡献列表和 Related Work 中直接回答“AmphionASR 相比 GLCLAP+GRPO 工作新增了什么，以及证据在哪里”。
 
@@ -58,17 +58,17 @@
 
 - [ ] 确认最终 GRPO 是两项 reward，还是包含 format reward 的三项 reward。
 - [ ] 确认最终 SFT 使用 ZeRO-1 还是 ZeRO-2，并以训练日志或最终配置为准。
-- [ ] 修正正文中“negative CER clipped to \([0,1]\)”的表述；公式实际是 \(\max(0,1-\mathrm{CER})\)。
+- [ ] 修正正文中“negative CER clipped to [0,1]”的表述；公式实际是 \max(0,1-\mathrm{CER})。
 - [ ] 明确空 reference 的边界规则：只有 reference 与 hypothesis 同为空时得 1，否则得 0。
-- [ ] 定义候选集为空时的 \(R_\mathrm{hw}\)，避免公式出现 \(|C|=0\) 的未定义情况。
+- [ ] 定义候选集为空时的 R_\mathrm{hw}，避免公式出现 |C|=0 的未定义情况。
 - [ ] 解释或消融 match accuracy 的类别不平衡风险：当候选列表较大且真热词很少时，true negatives 可能主导该 reward。
 - [ ] 增加 SFT 与 SFT+GRPO 的对照，至少报告普通转写误差、hotword entity error、hotword match 指标和负样本行为。
 
 证据：
 
-- 正文只写两项 reward 和权重 `1.0/0.3`：[`../../sections/05_training.tex`](../../sections/05_training.tex)。
-- `task_prompts.md` 写三项 reward 和权重 `1.0/0.3/0.1`，并记录 ZeRO-2：[`task_prompts.md`](task_prompts.md)。
-- `gpro_method.md` 将 GRPO 前后差值列为主要实验数据点：[`gpro_method.md`](gpro_method.md)。
+- 正文只写两项 reward 和权重 `1.0/0.3`：`[../../sections/05_training.tex](../../sections/05_training.tex)`。
+- `task_prompts.md` 写三项 reward 和权重 `1.0/0.3/0.1`，并记录 ZeRO-2：`[task_prompts.md](task_prompts.md)`。
+- `gpro_method.md` 将 GRPO 前后差值列为主要实验数据点：`[gpro_method.md](gpro_method.md)`。
 
 验收标准：正文配方与最终训练日志一致，并有直接实验说明 GRPO 对最终结果的增量。
 
@@ -78,13 +78,13 @@
 - [ ] 至少包含：无 hotword、oracle hotword、retrieved hotword、random/frequency-matched hotword。
 - [ ] 若论文保留 GRPO 贡献，再分别报告 SFT 与 SFT+GRPO。
 - [ ] 在相同 hotword 输入条件下比较 contextual-ASR baselines；不得把 plain-ASR baseline 与有额外上下文的 AmphionASR 当作同输入排名。
-- [ ] 报告 candidate-pool coverage、Recall@\(K\) 和下游 entity error，区分“目标词不在候选池”“retriever 未召回”和“decoder 未使用召回词”。
+- [ ] 报告 candidate-pool coverage、Recall@K 和下游 entity error，区分“目标词不在候选池”“retriever 未召回”和“decoder 未使用召回词”。
 - [ ] 说明 CommonVoice candidate pool 使用 test-split transcript 生成的协议边界，并补充自动热词标注的人工质量抽查或 annotation precision/recall。
 
 证据：
 
-- 当前两个条件同时改变了上下文是否存在和检索器是否启用：[`../../sections/06_experiments.tex`](../../sections/06_experiments.tex)。
-- 当前 GigaSpeechBench baselines 均为 plain ASR，无 hotword 输入：[`../../sections/07_hotwords.tex`](../../sections/07_hotwords.tex)。
+- 当前两个条件同时改变了上下文是否存在和检索器是否启用：`[../../sections/06_experiments.tex](../../sections/06_experiments.tex)`。
+- 当前 GigaSpeechBench baselines 均为 plain ASR，无 hotword 输入：`[../../sections/07_hotwords.tex](../../sections/07_hotwords.tex)`。
 
 验收标准：每一个 headline hotword claim 都能对应一个只改变单一因素的对照。
 
@@ -98,9 +98,9 @@
 
 证据：
 
-- 训练数据包含 target-absent empty-transcript negatives：[`../../sections/03_data.tex`](../../sections/03_data.tex)。
-- 当前实验明确只报告 positive slice：[`../../sections/06_experiments.tex`](../../sections/06_experiments.tex) 与 [`../../sections/08_ts_asr.tex`](../../sections/08_ts_asr.tex)。
-- 本地 refs 已收录 SQ-Whisper、Target Speaker ASR with Whisper 等专用工作：[`../notes/papers/INDEX.md`](../notes/papers/INDEX.md)。
+- 训练数据包含 target-absent empty-transcript negatives：`[../../sections/03_data.tex](../../sections/03_data.tex)`。
+- 当前实验明确只报告 positive slice：`[../../sections/06_experiments.tex](../../sections/06_experiments.tex)` 与 `[../../sections/08_ts_asr.tex](../../sections/08_ts_asr.tex)`。
+- 本地 refs 已收录 SQ-Whisper、Target Speaker ASR with Whisper 等专用工作：`[../notes/papers/INDEX.md](../notes/papers/INDEX.md)`。
 
 验收标准：论文对“目标存在时转写正确”和“目标不存在时保持静音”两个训练目标都有直接证据。
 
@@ -116,10 +116,10 @@
 
 涉及位置：
 
-- [`../../main.tex`](../../main.tex)
-- [`../../sections/00_abstract.tex`](../../sections/00_abstract.tex)
-- [`../../sections/01_introduction.tex`](../../sections/01_introduction.tex)
-- [`../../sections/12_conclusion.tex`](../../sections/12_conclusion.tex)
+- `[../../main.tex](../../main.tex)`
+- `[../../sections/00_abstract.tex](../../sections/00_abstract.tex)`
+- `[../../sections/01_introduction.tex](../../sections/01_introduction.tex)`
+- `[../../sections/12_conclusion.tex](../../sections/12_conclusion.tex)`
 
 验收标准：标题、摘要、贡献列表、teaser、实验主表和结论共同讲同一个主要研究增量。
 
@@ -163,7 +163,7 @@
 - [ ] 为 `aidatatang_200zh`、AudioSet road-traffic subset 等数据源补充直接引用。
 - [x] 删除或迁移会直接打印进 bibliography 的内部说明性 `note` 字段。
 - [ ] 补齐参考文献的完整作者、标题、年份和 venue，避免 `others` 与错误作者。
-- [x] 将 [`../../ack/llm-usage.md`](../../ack/llm-usage.md) 中的披露落实到最终 Acknowledgments。
+- [x] 将 `[../../ack/llm-usage.md](../../ack/llm-usage.md)` 中的披露落实到最终 Acknowledgments。
 - [ ] 增加代码、模型、数据与 model card 的 release-status 声明。
 
 验收标准：每个引用直接支持相邻 claim；最终 bibliography 不包含内部工作备注；投稿披露与实际 agent 使用记录一致。
@@ -182,17 +182,19 @@
 
 ### 剩余代办快照
 
-| 类别 | 剩余事项 | 下一步 / 解除条件 |
-| --- | --- | --- |
-| 作者确认（阻塞） | 最终 checkpoint 身份、1.7B/4B 冲突、模型参数表与 architecture figure 的一致性 | 以最终评测 checkpoint 的配置和权重形状为真相源；确认前不改模型数字或图 |
-| 作者确认（阻塞） | 最终 SFT/GRPO 配方、reward 项、ZeRO 版本、各 headline table 对应 checkpoint | 提供最终配置或训练日志后统一正文与内部文档 |
-| 需要实验/数据 | contextual-ASR 同协议 baseline、oracle/retrieved/random hotword 消融、SFT vs GRPO | 取得结果后再恢复任何独立 retrieval 或 RL 增量 claim |
-| 需要实验/数据 | target-absent 指标、专用 TS-ASR baseline、LibriMix 协议核对 | 取得结果前只保留 positive-slice speaker-selection 结论 |
-| 需要实验/数据 | candidate-pool coverage、自动热词标注质量、baseline 复现配置与 normaliser 细节 | 提供评测日志、人工抽查或 release material 后补充 |
-| 图表与版面（deferred） | teaser TikZ 化与 scope 对齐、architecture 源码、hotword/degradation 表可读性、Appendix 留白 | 单独开图表修订；本轮所有 figure/table 保持冻结 |
-| 可继续无数据修订 | 补 TS-ASR Related Work、压缩泛化 ASR 历史、补 GPT-4o endpoint 与数据源直接引用 | 仅需文献核对，可作为下一轮文字与引用修订 |
-| 可继续无数据修订 | 说明 degradation 使用 plain-ASR prompt、统一 Mandarin/Chinese/ZH、复查 evaluative modifiers | 不改实验内容即可完成 |
-| 发布材料 | 代码、模型、数据与 model card 的 release-status 声明 | 作者确定实际发布范围与链接后补充 |
+
+| 类别              | 剩余事项                                                                              | 下一步 / 解除条件                                   |
+| --------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| 作者确认（阻塞）        | 最终 checkpoint 身份、1.7B/4B 冲突、模型参数表与 architecture figure 的一致性                       | 以最终评测 checkpoint 的配置和权重形状为真相源；确认前不改模型数字或图    |
+| 作者确认（阻塞）        | 最终 SFT/GRPO 配方、reward 项、ZeRO 版本、各 headline table 对应 checkpoint                    | 提供最终配置或训练日志后统一正文与内部文档                        |
+| 需要实验/数据         | contextual-ASR 同协议 baseline、oracle/retrieved/random hotword 消融、SFT vs GRPO        | 取得结果后再恢复任何独立 retrieval 或 RL 增量 claim         |
+| 需要实验/数据         | target-absent 指标、专用 TS-ASR baseline、LibriMix 协议核对                                 | 取得结果前只保留 positive-slice speaker-selection 结论 |
+| 需要实验/数据         | candidate-pool coverage、自动热词标注质量、baseline 复现配置与 normaliser 细节                     | 提供评测日志、人工抽查或 release material 后补充            |
+| 图表与版面（deferred） | teaser TikZ 化与 scope 对齐、architecture 源码、hotword/degradation 表可读性、Appendix 留白      | 单独开图表修订；本轮所有 figure/table 保持冻结               |
+| 可继续无数据修订        | 补 TS-ASR Related Work、压缩泛化 ASR 历史、补 GPT-4o endpoint 与数据源直接引用                      | 仅需文献核对，可作为下一轮文字与引用修订                         |
+| 可继续无数据修订        | 说明 degradation 使用 plain-ASR prompt、统一 Mandarin/Chinese/ZH、复查 evaluative modifiers | 不改实验内容即可完成                                   |
+| 发布材料            | 代码、模型、数据与 model card 的 release-status 声明                                          | 作者确定实际发布范围与链接后补充                             |
+
 
 以上未完成项继续保留在原 P0/P1/P2 checklist 中；本表只提供依赖关系和下一步，不将 deferred 事项误标为完成。
 
@@ -231,3 +233,4 @@
 - 最近相关工作已确认采用 GLCLAP retrieval、prompt injection 和 GRPO；论文必须正面讨论该重合，而不能只引用 GLCLAP 前置工作。
 - 所有 why、归因和机理修改仍需回查 `refs/docs/`；无内部证据时只描述观察与证据边界，不新增 hypothesis。
 - 写任何 `sections/*.tex` 后必须重新运行 fact-check regex 和全文编译，并在修改回复中附 Fact check、仿照样板与自作聪明 audit。
+

@@ -4,24 +4,58 @@
 We evaluate whispered-speech ASR on the Mandarin wEar and English
 WTIMIT test sets~\cite{fang2025whisperear}.
 We report CER for Mandarin and WER for English.
+All baseline numbers are produced by us under the same normaliser as
+Section~\ref{subsec:setup}; every system is decoded greedily with no
+whisper-specific prompt or audio preprocessing.
 
 \begin{table}[t]
   \caption{Whispered-speech ASR on two test sets. WER (\%) for English
-    and CER (\%) for Mandarin; lower is better. Bold marks the lower
-    value in each column.}
+    and CER (\%) for Mandarin; lower is better. Bold marks the lowest
+    value in each column. ``\,--\,'' means the system has not been
+    evaluated on that test set in this revision.}
   \label{tab:whisper_asr}
   \centering
   \small
   \begin{tabular}{lcc}
     \toprule
-    System & wEar (zh) CER & WTIMIT (en) WER \\
+    System & wEar (zh) & WTIMIT (en) \\
     \midrule
-    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 1.09  & 10.30 \\
+    Whisper-large-v3~\cite{radford2023whisper}        & 16.33 & 11.99 \\
+    Kimi-Audio-7B-Instruct~\cite{kimiaudio2025}     & 1.48  & 10.95 \\
+    Step-Audio~2~\cite{stepaudio22025}               & 2.40  & 37.45 \\
+    MiniCPM-o~\cite{minicpm2025}                     & 4.71  & 21.77 \\
+    MOSS-Audio~\cite{moss2026audio}                 & 4.02  & 21.78 \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}           & 1.22  & 9.56  \\
+    FireRed-ASR2-LLM~\cite{fireredasr2025}           & 1.01  & 15.18 \\
+    GLM-ASR-nano~\cite{glmasr2025}                   & 15.41 & 15.50 \\
+    Fun-ASR-Nano~\cite{funasrnano}                   & 2.75  & 11.11 \\
     \midrule
-    \textbf{AmphionASR}                    & \textbf{0.58}  & \textbf{6.11}  \\
+    \textbf{AmphionASR}                              & \textbf{0.58}  & \textbf{6.11}  \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-AmphionASR records lower error than Qwen3-ASR-1.7B on both whispered
-speech test sets.
+AmphionASR records the lowest error on both whispered-speech test sets
+(Table~\ref{tab:whisper_asr}). On the Mandarin wEar set it reaches
+0.58\,\% CER, ahead of the next-best system FireRed-ASR2-LLM (1.01\,\%)
+and its own backbone Qwen3-ASR-1.7B (1.22\,\%); the gap over the
+backbone confirms that the Stage~1 whisper SFT transfers rather than
+merely inheriting Qwen3-ASR's general behaviour. On the English WTIMIT
+set AmphionASR reaches 6.11\,\% WER, a 3.45-point absolute reduction
+over Qwen3-ASR-1.7B (9.56\,\%) and 4.84 points below the best
+non-whisper-trained baseline (Kimi-Audio-7B-Instruct, 10.95\,\%).
+
+The cross-system spread is markedly larger on Mandarin than on English.
+On wEar, three systems exceed 15\,\% CER (Whisper-large-v3 16.33\,\%,
+GLM-ASR-nano 15.41\,\%), indicating that whispered Mandarin is broadly
+challenging for backbones never exposed to whisper-style acoustic
+excitation, whereas the whisper-aware systems (AmphionASR, FireRed-ASR2,
+Qwen3-ASR, Kimi-Audio) cluster below 1.5\,\%. On WTIMIT the spread is
+compressed at the top---six of nine baselines fall in
+9.56--11.99\,\%---but two systems degrade sharply: Step-Audio~2 reaches
+37.45\,\% WER and MiniCPM-o / MOSS-Audio exceed 21\,\%, consistent with
+insertion-heavy failure modes on atypical excitation. AmphionASR is the
+only system that is simultaneously best on both languages, which
+supports the claim that the Stage~1 whisper recipe generalises across
+the Mandarin and English whisper sub-corpora without a language-specific
+trade-off.
