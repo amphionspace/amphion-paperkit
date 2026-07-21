@@ -129,6 +129,13 @@ The selected hotwords are inserted into the prompt line before a
 \emph{single} ASR forward pass, with no second
 transcription~\cite{an2025funasr}.
 
+This retrieval-and-prompt pattern follows recent contextual-ASR work.
+In particular, Kong et al.~\cite{lakomkin2025contextual} already combine
+GLCLAP top-$K$ retrieval, prompt injection, and GRPO. Our contribution
+boundary is their integration into the shared AmphionASR model and its
+broader set of evaluated recognition settings, rather than a new
+retrieval or reinforcement-learning principle.
+
 \subsection{Chat Template}
 \label{subsec:prompt}
 
@@ -171,10 +178,10 @@ spans (enrollment first, mixed audio second).
 Hotword conditioning is applied through the prompt: the retrieved
 hotwords are inserted as a single comma-separated hotword
 line after the instruction, biasing the decoder toward the listed
-entities without any architectural change. Hotword SFT thus turns the
-retrieved list into a contextual-bias signal that the LLM exploits via
-in-context learning to correct rare entities and domain-specific
-terms. The list carries no dedicated delimiter, so the LLM must learn
-the \verb|Hotwords:| literal as part of the prompt grammar.
+entities without any architectural change. Hotword SFT exposes the
+model to the retrieved list as a contextual-bias signal for rare
+entities and domain-specific terms. The list carries no dedicated
+delimiter; the \verb|Hotwords:| literal is therefore part of the
+prompt grammar presented during training.
 
 \FloatBarrier

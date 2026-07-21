@@ -36,8 +36,16 @@ on mixed-both audio contains the transcripts of all speakers
 concatenated together (the WER is
 $\text{insertions}/|\text{ref}| \approx 100$--$200$\,\% when the
 reference is the target speaker only); none of the three open systems
-exhibits speaker selection.
+demonstrates speaker selection under this prompt and positive-slice
+protocol.
 
 AmphionASR brings both public columns below $100$\,\%, but its WER
 increases by $22.00$ points from Libri2Mix to Libri3Mix.
 The cause of this difference is not established here.
+
+These results support speaker-selection capability when the requested
+speaker is present. They do not evaluate target-absent silence
+behaviour or establish competitiveness with dedicated TS-ASR systems.
+The available experiments also do not isolate corpus, synthesis, or
+interferer-count effects behind the gap between the in-house and public
+mixtures.

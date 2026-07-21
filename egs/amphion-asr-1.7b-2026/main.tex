@@ -12,18 +12,18 @@
 
 % --- PDF metadata (theme + page styles owned by template/amphion.cls) ---
 \hypersetup{
-  pdftitle={AmphionASR: A Unified SpeechLLM for Context-Aware Mandarin-English Speech Recognition},
+  pdftitle={AmphionASR: A Unified SpeechLLM for Context-Aware Speech Recognition},
   pdfsubject={cs.CL, cs.SD, eess.AS},
   pdfauthor={Amphion ASR Team},
   pdfkeywords={Speech Recognition, SpeechLLM, LLM-based ASR,
                Context-Aware ASR, Unified ASR, Personalised ASR,
                Hotword Biasing, Contextual Biasing, Target-Speaker ASR,
-               Degradation Robustness, Code-switching, Mandarin-English ASR,
+               Degradation Robustness,
                Qwen3, Modality Boundary Prompt},
 }
 
 % --- Title, author, affiliation, abstract -----------------------------------
-\title{AmphionASR: A Unified SpeechLLM for Context-Aware Mandarin--English Speech Recognition}
+\title{AmphionASR: A Unified SpeechLLM for Context-Aware Speech Recognition}
 
 \author{Amphion Team}
 
@@ -60,6 +60,7 @@
 
 % --- Body sections ----------------------------------------------------------
 \input{sections/01_introduction}
+\input{sections/02_related_work}
 \input{sections/03_data}
 \input{sections/04_model}
 \input{sections/05_training}
@@ -68,8 +69,8 @@
 \input{sections/08_ts_asr}
 \input{sections/09_noise_robustness}
 \input{sections/09b_whisper_asr}
-\input{sections/10_analysis}
 \input{sections/12_conclusion}
+\input{sections/11_acknowledgments}
 
 % --- Bibliography (xlance/IEEEtran2 + venues.bib + our references.bib) ------
 \bibliographystyle{template/IEEEtran2}

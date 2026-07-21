@@ -1,0 +1,8 @@
+\section{Related Work}
+\label{sec:related}
+
+SpeechLLMs connect acoustic encoders to autoregressive language models for instruction-conditioned recognition~\cite{chu2023qwenaudio,tang2024salmonn,bai2024seedasr,qwen2025qwen3asr}. AmphionASR adopts this shared-model framing.
+
+Contextual ASR has progressed from end-to-end biasing to retrieval-assisted prompting~\cite{pundak2018deep,yang2024ctc,sun2025br,kong2025glclap}. These methods separate candidate selection from recognition conditioning.
+
+The closest work combines GLCLAP top-$K$ retrieval, prompt injection, and GRPO~\cite{lakomkin2025contextual}. AmphionASR integrates this pattern across the recognition settings evaluated here; we do not claim new retrieval or RL principles.

@@ -1,15 +1,18 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented \textbf{AmphionASR}, a Mandarin--English SpeechLLM that
+We presented \textbf{AmphionASR}, a SpeechLLM built on Qwen3-ASR-1.7B that
 uses a shared model for general, hotword-conditioned, target-speaker,
 degradation-robust, and whispered-speech ASR.
 The system combines staged fine-tuning with optional task conditions
 and retrieval from larger hotword vocabularies.
+The current evaluation covers Mandarin and English benchmarks.
 
-The evaluation shows that hotword retrieval provides the clearest
-improvement over the corresponding unconditioned setting, while the
+The complete retrieval-conditioned hotword pipeline provides the clearest
+observed improvement over the no-hotword-context setting, while the
 plain-ASR results characterise retention of the backbone's general
 recognition quality.
-Target-speaker transfer across mixture conditions and unmeasured
-generation failures remain the main limits of the current evidence.
+This comparison does not isolate the retriever's contribution.
+The target-speaker evidence covers only positive slices, leaving
+target-absent behaviour and transfer across mixture conditions outside
+the conclusions supported by the current experiments.

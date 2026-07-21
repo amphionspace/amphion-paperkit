@@ -80,12 +80,12 @@
   year    = {2025}
 }
 
-@misc{qwen2025qwen3asr,
-  title        = {{Qwen3-ASR} and {Qwen3-ASR-Flash}: Robust Multilingual Speech Recognition Built on {Qwen3-Omni}},
-  author       = {{Qwen Team}},
-  howpublished = {\url{https://github.com/QwenLM/Qwen3-ASR}},
-  year         = {2025},
-  note         = {Qwen3-ASR-1.7B and Qwen3-ASR-0.6B released under Apache-2.0; Qwen3-ASR-Flash available as a cloud API}
+@article{qwen2025qwen3asr,
+  title   = {{Qwen3-ASR} Technical Report},
+  author  = {Shi, Xian and Wang, Xiong and Guo, Zhifang and Wang, Yongqi and Zhang, Pei and Zhang, Xinyu and Guo, Zishan and Hao, Hongkun and Xi, Yu and Yang, Baosong and Xu, Jin and Zhou, Jingren and Lin, Junyang},
+  journal = {arXiv preprint arXiv:2601.21337},
+  year    = {2026},
+  url     = {https://github.com/QwenLM/Qwen3-ASR}
 }
 
 @article{chu2023qwenaudio,
@@ -113,7 +113,6 @@
   title     = {Zipformer: A Faster and Better Encoder for Automatic Speech Recognition},
   author    = {Yao, Zengwei and Guo, Liyong and Yang, Xiaoyu and Kang, Wei and Kuang, Fangjun and Yang, Yifan and Jin, Zengrui and Lin, Long and Povey, Daniel},
   booktitle = {ICLR},
-  note      = {Oral; introduces SwooshR/SwooshL activations and BiasNorm; code at \url{https://github.com/k2-fsa/icefall}},
   year      = {2024}
 }
 
@@ -156,24 +155,21 @@
   title        = {{GPT-4o} System Card},
   author       = {{OpenAI}},
   journal      = {arXiv preprint arXiv:2410.21276},
-  year         = {2024},
-  note         = {Includes \texttt{gpt-4o-transcribe} as the speech transcription endpoint}
+  year         = {2024}
 }
 
 @article{xie2026mega,
   title   = {{Mega-ASR}: Towards In-the-Wild$^2$ Speech Recognition via Scaling Up Real-World Acoustic Simulation},
   author  = {Xie, Yu and others},
   journal = {arXiv preprint arXiv:2605.19833},
-  year    = {2026},
-  note    = {Introduces the Voices-in-the-Wild-Bench, a 5{,}000-clip English/Mandarin evaluation set spanning seven atomic acoustic effects (Noise / Far-field / Obstructed / Echo \& reverberation / Recording coloration / Electronic distortion / Transmission dropout) plus a Mixed subset in real and simulated splits}
+  year    = {2026}
 }
 
 @misc{minicpm2025,
   title        = {{MiniCPM-o}~4.5 Technical Report},
   author       = {{OpenBMB Team}},
   howpublished = {\url{https://huggingface.co/papers/2604.27393}},
-  year         = {2026},
-  note         = {End-to-end omni-modal language model (vision + speech + text); $\approx\!9$\,B parameters built on SigLip2 + Whisper-medium + CosyVoice2 + Qwen3-8B; predecessor MiniCPM-o~2.6 (arXiv 2408.01800) released 2025-01}
+  year         = {2026}
 }
 
 @article{mimo2025audio,
@@ -187,24 +183,21 @@
   title   = {{FireRedASR2S}: A State-of-the-Art Industrial-Grade All-in-One Automatic Speech Recognition System},
   author  = {Xu, Kaituo and Jia, Yan and Huang, Kai and Chen, Junjie and Li, Wenpeng and Liu, Kun and Xie, Feng-Long and Tang, Xu and Hu, Yao},
   journal = {arXiv preprint arXiv:2603.10420},
-  year    = {2026},
-  note    = {Xiaohongshu Super Intelligence Team; FireRedASR2-LLM is the LLM-based variant with $8$\,B+ parameters}
+  year    = {2026}
 }
 
 @misc{glmasr2025,
   title        = {{GLM-ASR-nano}},
   author       = {{Z.ai (Zhipu AI) Team}},
   howpublished = {\url{https://huggingface.co/zai-org/GLM-4.6}},
-  year         = {2026},
-  note         = {Z.ai compact ASR model released alongside the GLM-4-Voice line (Zeng et al., arXiv 2412.02612); no separate paper at the time of writing; retrieved on 2026-05-27}
+  year         = {2026}
 }
 
 @misc{moss2026audio,
   title        = {{MOSS-Audio} Technical Report},
   author       = {{OpenMOSS Team}},
   howpublished = {\url{https://github.com/OpenMOSS/MOSS-Audio}},
-  year         = {2026},
-  note         = {$4.6$\,B / $8.6$\,B audio understanding models built on a custom MOSS-Audio-Encoder $+$ Qwen3 backbone; four variants (4B/8B $\times$ Instruct/Thinking) released 2026-04-13}
+  year         = {2026}
 }
 
 % --- Contextual / hotword biasing ---
@@ -218,7 +211,7 @@
 
 @article{lakomkin2025contextual,
   title   = {Contextual Biasing for {LLM}-Based {ASR} with Hotword Retrieval and {RL}},
-  author  = {Lakomkin, Egor and others},
+  author  = {Kong, YuXiang and Hou, JunFeng and Tang, Jian and Zhu, Bingqing and Zhang, Jicheng and Xue, Shaofei},
   journal = {arXiv preprint arXiv:2512.21828},
   year    = {2025}
 }
@@ -241,16 +234,14 @@
   title     = {Speech Retrieval-Augmented Generation without Automatic Speech Recognition},
   author    = {Min, Do June and Mundnich, Karel and Lapastora, Andy and Soltanmohammadi, Erfan and Ronanki, Srikanth and Han, Kyu},
   booktitle = {ICASSP},
-  year      = {2025},
-  note      = {arXiv preprint arXiv:2412.16500}
+  year      = {2025}
 }
 
 @misc{funasrnano,
   title        = {{Fun-ASR-Nano-2512}: End-to-End Real-Time {ASR} Model},
   author       = {{FunAudioLLM Team}},
   howpublished = {\url{https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512}},
-  year         = {2025},
-  note         = {800\,M parameters; released 2025-12-15; retrieved 2026-05-20}
+  year         = {2025}
 }
 
 % --- Reinforcement learning ---
@@ -326,8 +317,7 @@
   title        = {{MagicData-RAMC}: A Rich Annotated {Mandarin} Conversational Speech Dataset},
   author       = {{MagicData Tech}},
   howpublished = {\url{https://www.magicdatatech.com/}},
-  year         = {2019},
-  note         = {Dataset release; see also follow-up corpus releases by the same provider}
+  year         = {2019}
 }
 
 @inproceedings{tang2021kespeech,
@@ -383,7 +373,6 @@
   title     = {A Study on Data Augmentation of Reverberant Speech for Robust Speech Recognition},
   author    = {Ko, Tom and Peddinti, Vijayaditya and Povey, Daniel and Seltzer, Michael L. and Khudanpur, Sanjeev},
   booktitle = {ICASSP},
-  note      = {Companion release: OpenSLR SLR26 (simulated RIRs) and SLR28 (sim+real RIRs+noises)},
   year      = {2017}
 }
 
@@ -407,24 +396,21 @@
   title        = {{ms-swift}: Scalable lightWeight Infrastructure for Fine-Tuning},
   author       = {{ModelScope Team}},
   howpublished = {\url{https://github.com/modelscope/ms-swift}},
-  year         = {2024},
-  note         = {Apache-2.0; published as a system paper at AAAI 2025}
+  year         = {2024}
 }
 
 @misc{tu2026gigaspeechbench,
   title       = {{GigaSpeechBench}: A real-world multilingual speech-to-text benchmark},
   author      = {Y. Tu and Y. Yang and T. Wang and others},
   year        = {2026},
-  howpublished = {\url{https://github.com/SpeechColab/GigaSpeechBench}},
-  note        = {vertical-domain B-WER/B-CER Tables 7--8; HF dataset speechcolab/GigaSpeechBench}
+  howpublished = {\url{https://github.com/SpeechColab/GigaSpeechBench}}
 }
 
 @inproceedings{fang2025whisperear,
   title     = {{WhispEar}: A bi-directional framework for scaling whispered speech conversion via pseudo-parallel whisper generation},
   author    = {Z. Fang and Y. Shen and Z. Guan and others},
   booktitle = {Proc.\ Interspeech},
-  year      = {2025},
-  note      = {bilingual whispered--normal parallel corpus; training data source for whisper ASR SFT}
+  year      = {2025}
 }
 
 @inproceedings{elizalde2023clap,

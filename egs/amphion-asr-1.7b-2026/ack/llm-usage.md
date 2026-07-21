@@ -9,6 +9,7 @@
 <!-- 在下方追加 entries，最新的放最上面 -->
 | 日期 | 范围 | 模型 | 摘要 |
 | --- | --- | --- | --- |
+| 2026.07.21 | positioning and claim audit | GPT-5 | tightened the system positioning, added related work and ownership boundaries, narrowed hotword and target-speaker claims, corrected references, and added the disclosure; figures, tables, reported values, and training settings were not changed |
 | 2026.07.21 | full-report prose revision | GPT-5 | rewrote title, abstract, introduction, methods narration, results discussion, analysis, limitations, and conclusion for academic tone; tables and reported values were not changed |
 | 2026.05.14 | report relocation | claude-opus-4.7 | git-mv main.tex / sections / figures / refs/docs into egs/amphion-asr-2026/; no prose was modified in this PR |
 | 2026.05.14 | template fork | claude-opus-4.7 | preamble overrides absorbed into template/amphion.cls (PR 1) |

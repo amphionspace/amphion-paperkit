@@ -1,12 +1,13 @@
 Practical speech recognition often requires more than unconditioned transcription: users may provide domain vocabulary or reference speech, while the input may contain degradations or whispered speech.
-We present \textbf{AmphionASR}, a Mandarin--English SpeechLLM built on Qwen3-ASR-1.7B that supports these conditions through a shared model and task-specific inputs.
-The system's central capability is \emph{context-aware, personalised
-recognition}: a retrieval-based hotword channel attains Recall@$50$
+We present \textbf{AmphionASR}, a SpeechLLM built on Qwen3-ASR-1.7B
+that supports these conditions through a shared model and
+task-specific inputs.
+We evaluate the system on Mandarin and English benchmarks.
+Its integrated large-vocabulary hotword-conditioning pipeline attains Recall@$50$
 above $94$\,\% on CommonVoice and reduces entity error on
 GigaSpeechBench vertical domains~\cite{tu2026gigaspeechbench}, while the
 same shared model also serves target-speaker ASR, degradation-robust
 ASR, and whispered-speech ASR within a unified study of four
 recognition settings.
-While the focus is personalised recognition, plain transcription is
-retained as a competitive sanity check across multiple standard ASR
+Plain transcription is retained as a retention check across multiple standard ASR
 benchmarks rather than as a state-of-the-art claim.

@@ -2,7 +2,7 @@
 
 - 日期：2026-07-21
 - 范围：`egs/amphion-asr-1.7b-2026/`
-- 状态：待作者确认关键事实后执行
+- 状态：无图、无新增数据修订已完成；实验与 checkpoint 阻塞项继续 deferred
 - 属性：内部审阅记录，不是论文草稿，不应直接翻译进正文
 
 ## 1. 审阅结论
@@ -12,6 +12,12 @@
 建议将论文收束为：以大词表 contextual/hotword ASR 为主要研究增量，以 target-speaker、degradation robustness 和 whispered ASR 展示同一模型的能力范围，以 plain ASR 作为能力保留检查。Mandarin 和 English 只用于限定当前实验范围，不作为系统身份或优势。
 
 在完成第 2 节的阻塞项之前，不建议大规模润色标题、摘要和引言，以免因模型身份或实验口径变化而返工。
+
+### 本轮执行状态
+
+- 已完成：系统定位、评测范围表述、Related Work、ownership 边界、claim 收窄、引用修正、Acknowledgments 与 agent 使用记录。
+- 明确 deferred：全部 figure/table 修改、任何新增消融或指标、checkpoint 身份冲突、模型参数表和训练配方冲突。
+- 冻结范围：实验数值、数据集统计、训练超参、reward 权重和评测协议均未修改。
 
 ## 2. 阻塞项（P0）
 
@@ -34,11 +40,11 @@
 
 ### P0-2：建立与最近相关工作的差异边界
 
-- [ ] 在 Related Work 和 Introduction 中加入 *Contextual Biasing for LLM-Based ASR with Hotword Retrieval and Reinforcement Learning*（arXiv:2512.21828）。
+- [x] 在 Related Work 和 Introduction 中加入 *Contextual Biasing for LLM-Based ASR with Hotword Retrieval and Reinforcement Learning*（arXiv:2512.21828）。
 - [ ] 明确列出该工作与 AmphionASR 在 retriever、candidate construction、prompt injection、RL reward、训练数据和评测协议上的相同点与差异。
 - [ ] 将真正由本工作拥有且经过实验验证的差异写入贡献列表；无法通过实验隔离的设计不作为 headline contribution。
 - [ ] 在同一评测协议下加入最接近的 contextual-ASR baseline，或明确说明无法直接比较的协议差异。
-- [ ] 修正 `references.bib` 中该论文的错误作者信息；arXiv 页面列出的作者为 YuXiang Kong 等人，而当前条目写成 Egor Lakomkin。
+- [x] 修正 `references.bib` 中该论文的错误作者信息；arXiv 页面列出的作者为 YuXiang Kong 等人，而当前条目写成 Egor Lakomkin。
 
 证据：
 
@@ -102,11 +108,11 @@
 
 ### P1-1：重设论文主线和语言范围
 
-- [ ] 从 title、PDF metadata、abstract 系统定义和 conclusion 系统定义中移除将 `Mandarin--English` 当作身份的写法。
-- [ ] 在 abstract 或 Experiments 中保留一次清晰范围声明：当前研究在 Mandarin 和 English benchmarks 上验证。
-- [ ] 不把 degradation robustness 和 whispered ASR 统称为 personalised recognition 或 context-aware ASR。
-- [ ] 决定统一口径：hotword/contextual ASR 是主要研究贡献，其余任务是 shared-model capability breadth；或为更宽泛的统一任务主张补充相应消融。
-- [ ] 将 plain ASR 始终称为 retention check，不使用 `competitive sanity check`。
+- [x] 从 title、PDF metadata、abstract 系统定义和 conclusion 系统定义中移除将 `Mandarin--English` 当作身份的写法。
+- [x] 在 abstract 或 Experiments 中保留一次清晰范围声明：当前研究在 Mandarin 和 English benchmarks 上验证。
+- [x] 不把 degradation robustness 和 whispered ASR 统称为 personalised recognition 或 context-aware ASR。
+- [x] 决定统一口径：hotword/contextual ASR 是主要研究贡献，其余任务是 shared-model capability breadth；或为更宽泛的统一任务主张补充相应消融。
+- [x] 将 plain ASR 始终称为 retention check，不使用 `competitive sanity check`。
 
 涉及位置：
 
@@ -131,9 +137,9 @@
 
 - [ ] 将核心 Model/Method 提前到 Data 之前，避免 retrieval 方法到第 7 页才首次完整出现。
 - [ ] 将逐语料计数、hotword pool 细节和 TS-ASR 合成参数更多地移入 Appendix。
-- [ ] 新增 Related Work，重点覆盖 contextual ASR、hotword retrieval/RL 和 TS-ASR；压缩泛化的 ASR 历史回顾。
-- [ ] 删除或合并 `Cross-Task Observations`：当前内容主要重复结果和证据边界，应分别回到 Plain ASR 与 TS-ASR 结果小节。
-- [ ] 在 Conclusion 中删除未定义的 `unmeasured generation failures`，改成具体、已在正文说明的证据边界。
+- [ ] 新增 Related Work，重点覆盖 contextual ASR、hotword retrieval/RL 和 TS-ASR；本轮已覆盖前两项，TS-ASR 相关工作与历史回顾压缩继续 deferred。
+- [x] 删除或合并 `Cross-Task Observations`：当前内容主要重复结果和证据边界，应分别回到 Plain ASR 与 TS-ASR 结果小节。
+- [x] 在 Conclusion 中删除未定义的 `unmeasured generation failures`，改成具体、已在正文说明的证据边界。
 
 验收标准：读者在前两页即可理解问题、主要方法、相对最近工作的差异和最重要证据。
 
@@ -151,21 +157,21 @@
 
 ### P1-5：清理引用与披露
 
-- [ ] 将 Qwen3-ASR 条目改为权威论文/官方仓库信息，并核对 2026 年份与作者。
-- [ ] 修正 Gemini 3-Flash baseline 当前引用 Gemini 2.5 论文的问题。
+- [x] 将 Qwen3-ASR 条目改为权威论文/官方仓库信息，并核对 2026 年份与作者。
+- [x] 修正 Gemini 3-Flash baseline 当前引用 Gemini 2.5 论文的问题。
 - [ ] 为 GPT-4o Transcribe 使用能直接支持该 endpoint 的官方来源。
 - [ ] 为 `aidatatang_200zh`、AudioSet road-traffic subset 等数据源补充直接引用。
-- [ ] 删除或迁移会直接打印进 bibliography 的内部说明性 `note` 字段。
+- [x] 删除或迁移会直接打印进 bibliography 的内部说明性 `note` 字段。
 - [ ] 补齐参考文献的完整作者、标题、年份和 venue，避免 `others` 与错误作者。
-- [ ] 将 [`../../ack/llm-usage.md`](../../ack/llm-usage.md) 中的披露落实到最终 Acknowledgments。
+- [x] 将 [`../../ack/llm-usage.md`](../../ack/llm-usage.md) 中的披露落实到最终 Acknowledgments。
 - [ ] 增加代码、模型、数据与 model card 的 release-status 声明。
 
 验收标准：每个引用直接支持相邻 claim；最终 bibliography 不包含内部工作备注；投稿披露与实际 agent 使用记录一致。
 
 ## 4. 次要优化（P2）
 
-- [ ] 将 `production-grade audio` 替换为具体声学条件。
-- [ ] 将 `trains the model to remain silent`、`the decoder learns to ignore` 等无直接消融支持的效果表述改为设计意图。
+- [x] 将 `production-grade audio` 替换为具体声学条件。
+- [x] 将 `trains the model to remain silent`、`the decoder learns to ignore` 等无直接消融支持的效果表述改为设计意图。
 - [ ] 简化摘要：保留一个主要结果，不罗列全部能力。
 - [ ] 在 prompt table 中说明 degradation robustness 使用 plain-ASR prompt，而不是让读者误以为遗漏任务。
 - [ ] 在 architecture caption 中区分三阶段 SFT、独立 retriever training 和 GRPO，避免把不同训练阶段写成同时更新。
@@ -173,6 +179,22 @@
 - [ ] 检查所有 evaluative modifiers，只有存在明确比较标准时才保留 `strong`、`competitive`、`leading` 等词。
 
 ## 5. 推荐执行顺序
+
+### 剩余代办快照
+
+| 类别 | 剩余事项 | 下一步 / 解除条件 |
+| --- | --- | --- |
+| 作者确认（阻塞） | 最终 checkpoint 身份、1.7B/4B 冲突、模型参数表与 architecture figure 的一致性 | 以最终评测 checkpoint 的配置和权重形状为真相源；确认前不改模型数字或图 |
+| 作者确认（阻塞） | 最终 SFT/GRPO 配方、reward 项、ZeRO 版本、各 headline table 对应 checkpoint | 提供最终配置或训练日志后统一正文与内部文档 |
+| 需要实验/数据 | contextual-ASR 同协议 baseline、oracle/retrieved/random hotword 消融、SFT vs GRPO | 取得结果后再恢复任何独立 retrieval 或 RL 增量 claim |
+| 需要实验/数据 | target-absent 指标、专用 TS-ASR baseline、LibriMix 协议核对 | 取得结果前只保留 positive-slice speaker-selection 结论 |
+| 需要实验/数据 | candidate-pool coverage、自动热词标注质量、baseline 复现配置与 normaliser 细节 | 提供评测日志、人工抽查或 release material 后补充 |
+| 图表与版面（deferred） | teaser TikZ 化与 scope 对齐、architecture 源码、hotword/degradation 表可读性、Appendix 留白 | 单独开图表修订；本轮所有 figure/table 保持冻结 |
+| 可继续无数据修订 | 补 TS-ASR Related Work、压缩泛化 ASR 历史、补 GPT-4o endpoint 与数据源直接引用 | 仅需文献核对，可作为下一轮文字与引用修订 |
+| 可继续无数据修订 | 说明 degradation 使用 plain-ASR prompt、统一 Mandarin/Chinese/ZH、复查 evaluative modifiers | 不改实验内容即可完成 |
+| 发布材料 | 代码、模型、数据与 model card 的 release-status 声明 | 作者确定实际发布范围与链接后补充 |
+
+以上未完成项继续保留在原 P0/P1/P2 checklist 中；本表只提供依赖关系和下一步，不将 deferred 事项误标为完成。
 
 1. 作者确认实际 checkpoint、最终 SFT/GRPO 配方和各表格对应 checkpoint。
 2. 修正 references 与最近相关工作，确定可防御的 owned delta。
@@ -200,7 +222,8 @@
 - `latexmk -pdf -interaction=nonstopmode main.tex`：通过。
 - LaTeX warning、未解析 citation/reference：未发现。
 - `tools/fact-check-regex.sh egs/amphion-asr-1.7b-2026`：通过。
-- 视觉检查：teaser 文字偏小且缺少 whispered ASR；GigaSpeechBench 与 degradation 表在 100% 缩放下偏小；Appendix 末页留白明显。
+- 冻结范围检查：`figures/` 与 `tables/` 无 diff；实验数值、数据集统计、训练超参与 reward 权重未修改。
+- 视觉检查：首页、Related Work、Conclusion/Acknowledgments 和 bibliography 无新增版面回归；teaser scope、宽表字号与 Appendix 留白等既有问题按本轮约束继续 deferred。
 
 ## 8. Fact check 与写作约束
 

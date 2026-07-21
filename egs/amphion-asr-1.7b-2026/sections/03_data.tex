@@ -181,8 +181,8 @@ contains a target waveform mixed with $K$ interferers, an enrollment
 utterance from the same speaker but \emph{a different recording}, and
 the target's transcript; a fraction of \emph{anti-hallucination
 negatives}---empty-transcript samples whose target speaker is removed
-from the mixture---train the model to remain silent when the requested
-speaker is absent. The mixing equation, RIR/noise pools, and negative
+from the mixture---are intended to expose the model to cases where the
+requested speaker is absent. The mixing equation, RIR/noise pools, and negative
 sub-types are detailed in Appendix~\ref{sec:appendix-tsasr-synth}.
 
 \paragraph{Target-speaker training sets.}
@@ -243,15 +243,15 @@ stages:
         0.4\cdot\text{bigram-Jaccard}$ over a per-corpus hotword
         index, augmented for Mandarin by a syllable-level
         nearest-neighbour search. These phonetically or
-        orthographically similar distractors train the model to
-        distinguish among look-alike hotwords rather than blindly
+        orthographically similar distractors are intended to expose the
+        model to distinctions among look-alike hotwords rather than
         favouring any listed term.
   \item \textbf{Random distractors.} The remaining slots are filled
         from the global hotword pool, with the hard-to-random ratio
         set so that hard negatives saturate first and the list total
         stays within $[10, 50]$. Random fillers expose the model to
-        irrelevant hotwords and control the prompt list length, so
-        the decoder learns to ignore non-matching candidates.
+        irrelevant hotwords and control the prompt list length; this is
+        intended to discourage reliance on non-matching candidates.
 \end{enumerate}
 
 The whole hotword prompt line is then kept with probability $0.8$

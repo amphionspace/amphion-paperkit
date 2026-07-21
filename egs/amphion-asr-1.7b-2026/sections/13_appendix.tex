@@ -146,8 +146,8 @@ Five to fifteen percent of each target-speaker partition is replaced by
 \emph{negative} samples whose ground-truth transcript is the empty
 string. Two sub-types (Table~\ref{tab:tsasr_negatives}) are sampled
 with equal weight; both preserve a real enrollment but remove the
-target speaker from the mixed channel, training the model to remain
-silent when the requested speaker is absent.
+target speaker from the mixed channel. These samples are intended to
+expose the model to cases where the requested speaker is absent.
 
 \begin{table}[!htbp]
   \caption{Anti-hallucination negative sub-types.}

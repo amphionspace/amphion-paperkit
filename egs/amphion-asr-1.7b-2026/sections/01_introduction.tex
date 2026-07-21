@@ -36,7 +36,7 @@ inheriting the comprehension and instruction-following ability of
 large language models.
 
 General transcription is only one part of practical ASR. A recogniser
-may also face four personalised-recognition settings that go beyond
+may also face four recognition settings beyond
 unconditioned transcription.
 \emph{Hotword-conditioned ASR} addresses the recognition difficulty of
 rare entities and domain-specific terminology---proper nouns, product
@@ -49,7 +49,7 @@ only that speaker's content from overlapping speech, rather than
 concatenating all talkers.
 \emph{Degradation-robust ASR} handles real-world capture conditions
 such as far-field pickup, additive noise, reverberation, and
-transmission dropout that degrade production-grade audio.
+transmission dropout that degrade captured speech.
 \emph{Whispered-speech ASR} transcribes atypical, low-energy whispered
 phonation that deviates from normal speech.
 These settings differ in their side information and acoustic
@@ -64,6 +64,10 @@ model to atypical acoustic inputs.
 This formulation separates the recognition backbone from the
 information that specifies what and under which conditions to
 transcribe.
+The hotword path follows prior work that already combines GLCLAP
+top-$K$ retrieval, prompt injection, and GRPO~\cite{lakomkin2025contextual};
+our scope is integration into the shared model and evaluation across
+the recognition settings studied here.
 
 Our contributions are:
 
@@ -72,13 +76,11 @@ Our contributions are:
         We formulate hotword-conditioned, target-speaker,
         degradation-robust, and whispered-speech ASR within one model,
         using task instructions and optional reference inputs.
-  \item \textbf{Retrieval-based hotword conditioning.}
-        A fine-grained dual encoder retrieves a top-$K$ subset from a
+  \item \textbf{An integrated large-vocabulary hotword-conditioning pipeline.}
+        We use a fine-grained dual encoder to retrieve a top-$K$ subset from a
         larger vocabulary before decoding (Recall@$50$ above $94$\,\% on
-        CommonVoice). The retrieved hotwords are injected into the prompt
-        as contextual bias, so that hotword SFT teaches the LLM to exploit
-        its in-context learning ability to correct rare entities and
-        domain-specific terms, reducing entity error on
+        CommonVoice) and inject the selected terms into the prompt as
+        contextual bias. The resulting pipeline reduces entity error on
         GigaSpeechBench~\cite{tu2026gigaspeechbench}.
   \item \textbf{A multi-condition evaluation.}
         We evaluate the shared model on standard ASR, contextual ASR,
