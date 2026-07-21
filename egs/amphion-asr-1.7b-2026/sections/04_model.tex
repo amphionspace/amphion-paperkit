@@ -10,9 +10,9 @@
     instruction and optional hotword lines.
     The audio placeholder is replaced by the audio embedding
     span before next-token prediction.
-  A parallel \textbf{RAG} branch retrieves a top-$K$ hotword
-    subset from a deployment-scale database and injects it into the
-    prompt line; the RAG adapters and the LLM are updated at
+  A parallel \textbf{retrieval} branch selects a top-$K$ hotword
+    subset from a large candidate vocabulary and inserts it into the
+    prompt line; the retrieval adapters and the LLM are updated at
     fine-tuning time, and the AuT encoder is also updated in Stage~1
     only and frozen thereafter.}
   \label{fig:architecture}
@@ -25,7 +25,7 @@
     Frozen acoustic and text features pass through two small trainable
     adapters into a shared embedding space; inner-product scores rank
     the global hotword pool $\mathcal{H}$ and the top-$K$ subset
-    $\mathcal{H}'$ is written into the hotword prompt line
+    $\mathcal{H}'$ is inserted into the hotword prompt line
     before a \emph{single} ASR forward pass.}
   \label{fig:retrieve}
 \end{figure}
@@ -35,8 +35,8 @@
 AmphionASR adopts the Qwen3-ASR architecture
 \cite{qwen2025qwen3asr}: an AuT audio encoder feeds frame
 embeddings directly into the Qwen3-ASR-1.7B language backbone.
-At inference time a RAG module retrieves a top-$K$ hotword subset
-from a deployment-scale database and writes it into the prompt before
+At inference time, a hotword retriever selects a top-$K$ subset
+from a large candidate vocabulary and inserts it into the prompt before
 decoding, as shown in Figure~\ref{fig:architecture}.
 
 Component-level parameter counts are summarised in
@@ -55,9 +55,9 @@ backbone plus $0.3$\,B in the audio encoder).
     \midrule
     AuT encoder               & $300$\,M     & Qwen3-ASR 24-layer AuT encoder \\
     Language model             & $1.7$\,B & Qwen3-ASR-1.7B text backbone (28 layers, 2048-d) \\
-    RAG adapter                & $2.6$\,M & two MLP adapters \\
+    Retrieval adapters         & $2.6$\,M & two MLP adapters \\
     \midrule
-    Total                      & $2.0$\,B & AuT encoder + language backbone + RAG adapter \\
+    Total                      & $2.0$\,B & AuT encoder + language backbone + retrieval adapters \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -85,25 +85,23 @@ states and a 64\,K native context length. The language backbone is
 updated during fine-tuning as described in
 Section~\ref{sec:training}.
 
-\subsection{Hotword RAG}
+\subsection{Hotword Retrieval}
 \label{subsec:hotword-rag}
 
-LLM-based ASR can exploit in-prompt contextual biasing---injecting a
-hotword list into the prompt---to lift recognition of rare or
-domain-specific entities. At deployment scale this naively fails:
-writing the whole hotword pool into the prompt overflows the context
-window---at which point decoding degrades sharply---and, short of
-that, floods the prompt with distractors that the decoder wrongly
-inserts, lowering rather than improving accuracy. The remedy is to
-first retrieve a small, utterance-relevant hotword subset.
+LLM-based ASR can use a prompt-level hotword list to bias recognition
+towards rare or domain-specific entities.
+Directly inserting a large candidate vocabulary can exceed the context
+budget and exposes the decoder to many irrelevant terms.
+We therefore retrieve a compact, utterance-relevant subset before
+decoding.
 
 CLAP~\cite{elizalde2023clap} establishes the contrastive
 language-audio recipe: two encoders align audio and text in a shared
 embedding space, and an audio--text inner product scores relevance.
-Applied to hotword retrieval, however, pooling the whole utterance
-into a single audio token yields one global query, which loses
-temporal locality and performs poorly on long audio or on utterances
-that contain several hotwords appearing in short spans.
+Applied to hotword retrieval, pooling the whole utterance into one
+audio token yields a global query without explicit temporal locality.
+This representation can obscure hotwords that occupy only short spans
+of a longer utterance.
 
 Following GLCLAP~\cite{kong2025glclap}, AmphionASR retrieves hotwords
 with a fine-grained local scoring module (\Cref{fig:retrieve}) that
@@ -125,23 +123,21 @@ where $g_{\mathrm{audio}}$ and $g_{\mathrm{text}}$ are the two
 adapters, $\mathbf{a}_t$ is the per-frame audio embedding,
 $\mathbf{E}_{\mathrm{tok}}$ is the LLM token embedding table, and
 $\mathcal{H}'$ is the retrieved top-$K$ subset. The max-over-time
-reduction $s_h$ lets an entity that appears only in a short span still
-score strongly, and the top-$K$ over hotwords keeps the prompt compact.
-The selected hotwords are written into the prompt line before a
+reduction $s_h$ retains the strongest frame-level match for each
+entity, while top-$K$ selection bounds the number of prompt terms.
+The selected hotwords are inserted into the prompt line before a
 \emph{single} ASR forward pass, with no second
 transcription~\cite{an2025funasr}.
 
 \subsection{Chat Template}
 \label{subsec:prompt}
 
-Each task is exposed to the LLM as a short instruction line followed
-by the audio placeholder (Table~\ref{tab:tasks}). AmphionASR
-distinguishes plain ASR, hotword ASR, target-speaker ASR, and
-whispered ASR purely through this instruction and the presence of
-optional prompt fields---the model itself is unchanged. Whispered
-speech simply swaps the instruction to ``\textit{Transcribe the
-following whispered audio.}''; the other two non-trivial tasks add
-prompt fields as below.
+Each task is represented by a short instruction followed by the audio
+placeholder (Table~\ref{tab:tasks}).
+All tasks share the same model parameters and differ only in their
+instructions and optional reference inputs.
+Whispered-speech ASR changes the instruction, while hotword-conditioned
+and target-speaker ASR add task-specific fields.
 
 \begin{table}[t]
   \caption{Task prompt templates used by AmphionASR. \texttt{\{speech\}}
@@ -159,7 +155,7 @@ prompt fields as below.
     Plain ASR        & \texttt{Transcribe the following audio.\{speech\}} \\
     Hotword ASR      & \texttt{Transcribe the following audio.[Hotwords:...].\{speech\}} \\
     TS-ASR           & \texttt{Given the speaker's voice:\{enroll\} Transcribe what this speaker says in the following audio.\{speech\}} \\
-    Whisper ASR      & \texttt{Transcribe the following whispered audio.\{speech\}} \\
+    Whispered-speech ASR & \texttt{Transcribe the following whispered audio.\{speech\}} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -172,8 +168,8 @@ AuT encoder path and reach the LLM as two ordered audio-embedding
 spans (enrollment first, mixed audio second).
 
 \paragraph{Hotword conditioning.}
-Hotword conditioning is applied purely through the prompt: the
-retrieved hotwords are injected as a single comma-separated hotword
+Hotword conditioning is applied through the prompt: the retrieved
+hotwords are inserted as a single comma-separated hotword
 line after the instruction, biasing the decoder toward the listed
 entities without any architectural change. The list carries no
 dedicated delimiter, so the LLM must learn the \verb|Hotwords:|

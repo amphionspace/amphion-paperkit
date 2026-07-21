@@ -56,21 +56,12 @@ Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}, and Mega-ASR~\cite{xie2026mega}
 \end{table}
 
 \paragraph{Subset-level results.}
-On the \emph{Real} split AmphionASR achieves the lowest WER on
-Obstructed ($1.38$\,\%), Echo \& reverberation ($7.91$\,\%),
-Recording coloration ($6.32$\,\%), and Transmission dropout
-($2.32$\,\%). On the \emph{Sim} split it leads on Noise ($7.24$\,\%),
-Echo \& reverberation ($11.49$\,\%), Recording coloration
-($11.55$\,\%), and Mixed ($4.19$\,\%). The remaining rows are led
-primarily by Mega-ASR or Qwen3-ASR-1.7B.
+AmphionASR records the lowest WER on four \emph{Real} subsets and four
+\emph{Sim} subsets.
+Its leading conditions include obstruction, echo and reverberation,
+recording coloration, transmission dropout, and simulated noise.
 
-\paragraph{Mixed subsets.}
-On the Mixed subsets AmphionASR reaches $2.85$\,\% WER on Real-Mixed,
-second to Mega-ASR's $2.63$\,\%, and $4.19$\,\% WER on Sim-Mixed, the
-lowest in the column (below Mega-ASR's $4.53$\,\%).
-
-\paragraph{Echo and recording coloration.}
-AmphionASR leads both Sim-Echo \& reverberation ($11.49$\,\% vs.\
-Mega-ASR's $12.22$\,\%) and Sim-Recording coloration ($11.55$\,\%
-vs.\ Mega-ASR's $13.23$\,\%); these remain the highest-WER Sim rows
-for AmphionASR in absolute terms.
+On the Mixed subsets, AmphionASR is second on Real-Mixed and first on
+Sim-Mixed.
+Echo and recording coloration remain its highest-error simulated
+conditions despite leading the corresponding rows.

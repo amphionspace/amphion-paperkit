@@ -1,13 +1,9 @@
 \subsection{Whispered-Speech ASR}
 \label{sec:whisper-asr}
 
-We evaluate whispered-speech recognition on two test sets: the
-Mandarin wEar split and the English WTIMIT
-split~\cite{fang2025whisperear}. CER is reported for Mandarin and WER
-for English. On the Mandarin wEar test set AmphionASR reaches
-$0.58$\,\% CER, below Qwen3-ASR-1.7B's $1.09$\,\%; on the English
-WTIMIT split it reaches $6.11$\,\% WER, below Qwen3-ASR-1.7B's
-$10.30$\,\%.
+We evaluate whispered-speech ASR on the Mandarin wEar and English
+WTIMIT test sets~\cite{fang2025whisperear}.
+We report CER for Mandarin and WER for English.
 
 \begin{table}[t]
   \caption{Whispered-speech ASR on two test sets. WER (\%) for English
@@ -26,3 +22,6 @@ $10.30$\,\%.
     \bottomrule
   \end{tabular}
 \end{table}
+
+AmphionASR records lower error than Qwen3-ASR-1.7B on both whispered
+speech test sets.

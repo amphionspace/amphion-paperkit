@@ -7,10 +7,10 @@ three-stage LoRA supervised fine-tuning (SFT) recipe
 over eight curated training sets
 (Table~\ref{tab:training_sets}), totalling $3.74$\,million utterances
 built from eleven public corpora (Table~\ref{tab:data_public}).
-The sets map directly onto the deployment-facing capabilities of
+The sets map directly onto the recognition settings introduced in
 Section~\ref{sec:intro}: whispered-speech ASR, degradation-robust
 ASR, hotword-conditioned ASR, target-speaker ASR (TS-ASR), and
-plain transcription training data retained to limit catastrophic
+plain transcription data included to reduce the risk of catastrophic
 forgetting.
 The eight sets are distributed across the three SFT stages:
 degradation and whisper data in Stage~1, hotword and target-speaker
@@ -33,7 +33,7 @@ documents the per-stage optimiser settings.
     Training set & Task & Utterances & Notes \\
     \midrule
     WhispEar \cite{fang2025whisperear}
-      & Whisper ASR     & 222\,440  & bilingual whisper corpus \\
+      & Whispered-speech ASR & 222\,440  & bilingual whisper corpus \\
     Voice-in-the-Wild-2M \cite{xie2026mega}
       & Degradation     & 556\,421  & real-world degradations \\
     Five-corpus hotword mixture
@@ -68,7 +68,7 @@ documents the per-stage optimiser settings.
     Corpus & Role in SFT \\
     \midrule
     WhispEar \cite{fang2025whisperear}
-      & Whisper ASR ($222$\,k utterances) \\
+      & Whispered-speech ASR ($222$\,k utterances) \\
     Voice-in-the-Wild-2M \cite{xie2026mega}
       & Degradation-robust ASR ($556$\,k) \\
     CommonVoice EN (cleaned) \cite{ardila2020commonvoice}
@@ -247,5 +247,5 @@ stages:
 \end{enumerate}
 
 The whole hotword prompt line is then kept with probability $0.8$
-and dropped otherwise, training the same model to behave gracefully
-when no hotword side-channel is available at inference time.
+and dropped otherwise. This exposes the model to inputs both with and
+without a hotword side channel during training.

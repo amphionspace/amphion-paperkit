@@ -1,49 +1,24 @@
-\section{Analysis}
+\section{Cross-Task Observations}
 \label{sec:analysis}
 
-This section consolidates cross-cutting observations that did not fit
-naturally inside any single capability section.
+\subsection{Variation across General-ASR Conditions}
 
-\subsection{Worst-Slice WER on the Headline Grid}
+AmphionASR's highest general-ASR errors occur on GigaSpeech and the
+WenetSpeech meeting split (Tables~\ref{tab:asr_en}--\ref{tab:asr_zh}).
+Both contain more spontaneous speech than the read-speech sets.
 
-In the English grid of Table~\ref{tab:asr_en} the worst single point
-is GigaSpeech at $9.53$\,\% WER, a more spontaneous broadcast /
-interview test set than the LibriSpeech and CommonVoice rows. On the
-Mandarin grid (Table~\ref{tab:asr_zh}) the worst point is the
-WenetSpeech meeting split at $6.30$\,\% CER. We treat these as the
-natural residual on spontaneous / meeting-style data rather than as
-failure modes, and reserve a controlled error-type breakdown for the
-next iteration.
+The current evaluation does not separate acoustic, linguistic, and
+segmentation errors within these conditions.
+We therefore report the variation without assigning a mechanism.
 
-\subsection{Libri2Mix vs In-House TS-ASR}
+\subsection{Variation across Target-Speaker Mixtures}
 
-The gap between $13.02$\,\% WER on the positive sub-slice of the
-in-house target-speaker test set and $63.04$\,\% / $85.04$\,\% WER on
-Libri2Mix / Libri3Mix (Table~\ref{tab:tsasr}) is the main
-positive-sample open issue in this work. The underlying causes have
-not been diagnosed and controlled ablations are on the agenda for the
-next training iteration.
+Target-speaker WER differs substantially between the in-house test set
+and the public Libri2Mix and Libri3Mix tests
+(Table~\ref{tab:tsasr}).
+The gap is the main unresolved cross-condition result in this report.
 
-\subsection{Inherited Failure Modes}
-
-LLM-based ASR is known to inherit characteristic LLM failure modes
-\cite{radford2023whisper, chu2023qwenaudio}; the next iteration will
-measure how strongly each of the following manifests in AmphionASR:
-
-\begin{itemize}
-  \item Repetition loops on long silences or stationary noise. The
-        noise-only negative branch of the TS-ASR pipeline explicitly
-        trains the model to terminate on silence under the
-        target-speaker prompt; our model additionally
-        extends this augmentation exposure to the plain-ASR branch
-        through the degradation-robustness SFT stage of
-        Section~\ref{sec:training}. A per-condition qualitative
-        breakdown of residual repetition-loop behaviour is left to
-        future work.
-  \item Language drift on Mandarin--English code-switching, where
-        short English phrases inside a Mandarin utterance can be
-        ``corrected'' into Mandarin transcriptions of
-        similar-sounding words.
-  \item Occasional over-bias on supplied hotwords when the audio does
-        not actually contain the term.
-\end{itemize}
+The available experiments do not isolate corpus, synthesis, or
+interferer-count effects.
+Explaining the gap requires controlled comparisons beyond the current
+evaluation.
