@@ -6,6 +6,23 @@
 
 ---
 
+## v0.6 — 2026-07-21 — 学术语域与结果叙事规则
+
+将 AmphionASR 全文写作审阅中发现的非数据问题抽象为公共写作约束。**非破坏性**：仅增强 `.cursor/rules/paper-writing.mdc`，不修改 class、macro、TeX 接口或默认样式，因此不需要更新各 egs 的 `depends_on_template`。
+
+公共层的具体变更：
+
+- Abstract 改为 4--6 个短句，每句只承担一个修辞功能，禁止把能力、方法、数据集和结果压成目录式长句。
+- Contribution bullets 必须处于相同抽象层次并使用平行语法；方法、任务、训练阶段和数据集不能混列为同级贡献。
+- 新增 canonical terminology、英美拼写一致、少用斜杠，以及 `industrial-grade` / `competitive` 等评价词必须有可检验判据的约束。
+- 新增“设计意图”和“观察效果”的动词强度区分；无受控证据时不得使用 `ensures` / `preserves` / `enables` 等结果性动词。
+- 新增 Results / Analysis / Limitations / Conclusion 专项规则：禁止逐格朗读表格、宣传式段落标题、无分析证据的独立 Analysis，以及 `next iteration` 等项目管理措辞；Conclusion 只做综合，不重复表格或章节导航。
+- Caption 必须自包含但简洁，不能用 caption 补偿图中缺失的信息。
+
+每 egs 影响：规则适用于所有 active egs，但不自动重写既有正文；现有 TeX 接口和渲染结果不变。
+
+---
+
 ## v0.5 — 2026-07-20 — 批注驱动的 claim / narrative / evidence gates
 
 根据 `main-ymd.pdf` 对 AmphionASR 草稿的 20 条人工批注，将反复出现的问题抽象为公共写作规则，而不直接修改单份报告内容。**非破坏性**：仅增强 agent 的写作与审阅 gate，不改 class、macro、TeX 接口或现有 egs 源码，因此不需要更新 `depends_on_template`。

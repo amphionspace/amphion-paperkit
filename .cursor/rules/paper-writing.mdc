@@ -18,12 +18,15 @@ Sources distilled from: Simon Peyton Jones (How to write a great research paper)
 
 ## 2. Section formulas
 
-Abstract (4 sentences):
+Abstract (4--6 short sentences):
 
 1. The problem we tackle.
 2. Why it matters / why current approaches are insufficient.
 3. What new capability or research delta our solution provides and what it achieves (one representative number if possible).
 4. What this implies for the field / what we release.
+
+- Give each sentence one rhetorical job. Do not compress several capabilities, methods, datasets, and results into a semicolon-separated catalogue.
+- Prefer one representative claim over a list of every benchmark. The abstract is an argument, not a miniature results table.
 
 Introduction (about 1 page):
 
@@ -35,6 +38,7 @@ Contribution bullets:
 
 - Name a capability, finding, resource, or method whose novelty is owned by this work. Generic operations such as "SFT", "LoRA", or "training on dataset X" are not contributions by themselves.
 - Use the order `capability / claim → distinguishing design choice → representative evidence`. Move implementation detail and full recipes to Methods.
+- Keep all bullets at the same abstraction level and use parallel grammar. Do not mix a method, a task name, a training stage, and a dataset inclusion as four peer contributions.
 - If a dataset or curation pipeline is the actual novelty, say how it was collected or constructed and what capability it unlocks; do not hide it behind the name of the fine-tuning procedure.
 
 Section ordering and depth: each successive section is read by fewer readers. Title → Abstract → Intro → Problem → Solution → Details → Related Work → Appendix.
@@ -48,6 +52,10 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - Every inserted paragraph must connect explicitly to the one before and the one after via a transition sentence — no orphan paragraphs.
 - Every sentence must earn its place by defining a term, advancing the argument, specifying a method, reporting evidence, or delimiting scope. Remove project-management prose ("on the agenda for the next iteration"), redundant navigation, and backend names that do not change the scientific protocol.
 - Avoid LLM-ish writing tells: triple-rhyme rhetorical lists, "delve", "tapestry", "in the realm of", "pivotal", "leverage" (use "use"), "crucial" (use "important" or remove), "comprehensive" without measurement.
+- Use one canonical term per concept. Define the full term once, introduce its abbreviation, and do not alternate among near-synonyms such as "target-speaker recognition", "target-speaker ASR", and "speaker-conditioned transcription" unless a distinction is intended.
+- Choose either British or American English for each report and apply it consistently, including `normaliser / normalizer`, `optimised / optimized`, and `behaviour / behavior`.
+- Avoid slash-heavy prose (`A / B`, `with / without`). Use conjunctions in sentences; reserve compact slash notation for tables when space is constrained.
+- Evaluative modifiers must be testable. Replace "industrial-grade", "production-oriented", "deployment-scale", "strong", "competitive", and "low-error" with the concrete constraint or comparison unless the paper defines a criterion for the label.
 
 ## 4. Endorsement awareness
 
@@ -59,9 +67,19 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - When adapting a public backbone, use neutral, precise ownership language: "`System`, built on `Backbone`, adds `owned delta`." Avoid both minimising the work as "a variant" and implying that inherited capabilities or components were introduced here.
 - Before making a headline claim, compare it with the backbone's documented capability envelope. A narrowed language/domain scope is a limitation or specialisation, not an advantage by itself.
 - For each non-obvious design choice, use the chain `choice → intended purpose → measured evidence`. If there is no controlled evidence, state the design fact and motivation only; do not claim that it improves performance or "works as intended".
+- Distinguish intent from observed effect in the verb itself. Without controlled evidence, use "is intended to", "allows", or "we include X to reduce the risk of Y"; do not use "ensures", "preserves", "installs", "enables", or "trains the model to behave gracefully".
 - Do not use vague labels such as "production problem", "industrial-grade", or "deployment-scale" as substitutes for a scenario. Name the concrete constraint: vocabulary size, overlap, latency, noise condition, memory limit, or operational interface.
 
-## 6. Anti-hallucination (hard rules)
+## 6. Results, analysis, limitations, and conclusion
+
+- Do not narrate a table cell by cell. A results paragraph should state the main trend, the comparison that supports the section's claim, and the largest exception or boundary. Readers can retrieve the remaining values from the table.
+- Paragraph headings must describe the question or comparison, not advertise the outcome. Prefer "Target-speaker ASR results" to "Strong improvement over open baselines".
+- An Analysis section must add a cross-cutting finding, controlled decomposition, or evidence-backed explanation. If it only repeats results or lists work planned for later, move observed limitations to the relevant result section and remove the standalone analysis.
+- Limitations describe the boundary of the current evidence. Do not use project-roadmap language such as "next iteration", "on the agenda", "follow-up plan", or "not a final result". Use "not evaluated in this study", "remains outside scope", or "requires further analysis".
+- The conclusion synthesises the problem, owned research delta, overall evidence, and main boundary. It must not repeat every table value, restate the section roadmap, or end with navigation such as "the pipeline is documented in Sections X--Y".
+- Keep captions self-contained but concise. A caption may define inputs, conditions, and metrics; it should not become a second Methods paragraph or compensate for an element missing from the figure.
+
+## 7. Anti-hallucination (hard rules)
 
 - Every concrete number, dataset name, model name, dataset size, year, author name, conference name, arXiv ID, license, and benchmark score must trace to a citable source. If you can't find one, write `?` or `% TODO: verify ...` rather than a plausible-sounding fabrication.
 - Never invent a citation. If a `\citep{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
@@ -71,7 +89,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
   3. If still uncertain → `% TODO: verify ...`
 - ICLR 2026 / NeurIPS 2026 require disclosure of significant LLM use in writing. Keep an `ack/llm-usage.md` log noting which sections were drafted with agent assistance, so the disclosure can be written truthfully later.
 
-## 7. Reply contract for every content edit
+## 8. Reply contract for every content edit
 
 The reply must include a short "Fact check" block, e.g.:
 
