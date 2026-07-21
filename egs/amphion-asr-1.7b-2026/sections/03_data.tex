@@ -233,17 +233,25 @@ stages:
 \begin{enumerate}
   \item \textbf{Real terms.} Each ground-truth hotword is
         independently dropped with probability $0.05$ to simulate
-        imperfect retrieval recall.
+        imperfect retrieval recall. Keeping most real hotwords lets
+        the model use them as contextual bias to correct rare entities
+        and domain-specific terms that an unconditioned decoder would
+        mis-transcribe.
   \item \textbf{Hard negatives.} An online retriever fetches up to
         $10$ confusable terms per sample using the weighted
         score $0.6\cdot\text{char-overlap} +
         0.4\cdot\text{bigram-Jaccard}$ over a per-corpus hotword
         index, augmented for Mandarin by a syllable-level
-        nearest-neighbour search.
+        nearest-neighbour search. These phonetically or
+        orthographically similar distractors train the model to
+        distinguish among look-alike hotwords rather than blindly
+        favouring any listed term.
   \item \textbf{Random distractors.} The remaining slots are filled
         from the global hotword pool, with the hard-to-random ratio
         set so that hard negatives saturate first and the list total
-        stays within $[10, 50]$.
+        stays within $[10, 50]$. Random fillers expose the model to
+        irrelevant hotwords and control the prompt list length, so
+        the decoder learns to ignore non-matching candidates.
 \end{enumerate}
 
 The whole hotword prompt line is then kept with probability $0.8$
