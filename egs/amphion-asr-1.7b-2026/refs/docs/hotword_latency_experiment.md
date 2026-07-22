@@ -1,10 +1,12 @@
 # 热词召回时延实验需求
 
-状态：待执行
+状态：已执行初步实验（2026-07-22，共享 GPU）
 
 范围：AmphionASR-1.7B 帧级 hotword tower retriever
 
 目标交付：论文主表中的效果—时延对照，以及附录中的候选池伸缩实验
+
+初步结果归档：`../internal/hotword-latency-2026-07-22.md`。原始 JSONL、summary 和 provenance 尚未进入本 paperkit 工作区，因此正式发布前仍需按第 10 节验收标准补齐原始产物，并在独占 GPU 上复跑。
 
 ## 1. 要回答的问题
 

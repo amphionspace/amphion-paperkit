@@ -90,3 +90,88 @@ With the complete retrieval-conditioned pipeline, Recall@$50$ exceeds
 $94$\,\% in both languages and entity error is lower than in the
 corresponding no-hotword-context setting. This comparison does not
 isolate retrieval from the effect of supplying hotword context.
+
+\paragraph{Latency protocol.}
+We next measure the cost of the frame-level retriever, pairing
+recognition quality with inference efficiency as in recent ASR and
+large-pool contextual-biasing evaluations~\cite{srivastav2025open,gong2025br}.
+For each language, we select $30$ utterances stratified equally across
+short, medium, and long duration bands. All requests run serially on
+one NVIDIA H20 shared with other services, after three warm-up
+requests. The audio projection path is identical in all conditions,
+and each decoding request uses a unique identifier to prevent
+multimodal-cache reuse. We compare (i) no hotword context,
+(ii) a precomputed Top-$50$ list frozen outside the timed region, and
+(iii) online frame-level retrieval followed by the same Top-$50$
+prompt. The latter two conditions therefore differ only in whether
+candidate scoring is timed. The $10{,}000$-entry English pool contains
+$7{,}566$ corpus-derived terms and deterministic fillers; the
+$10{,}112$-entry Mandarin pool contains $10{,}088$ corpus-derived terms
+and $24$ fillers. The fillers do not occur in the references, so this
+experiment supports within-system latency comparisons rather than
+cross-system quality comparisons.
+
+\begin{table}[t]
+  \caption{Steady-state end-to-end latency with full candidate pools
+    and $K{=}50$. Each condition contains $30$ utterances per language
+    and runs as single requests on a shared H20. Values are in ms;
+    Precomputed freezes the online Top-$50$ list outside timing.}
+  \label{tab:hotword_latency}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{llrrrr}
+    \toprule
+    Lang. & Condition & Mean & P50 & P95 & P99 \\
+    \midrule
+    EN & No hotword  & 67.80 & 67.63 & 85.63 & 88.15 \\
+    EN & Precomputed & 72.67 & 72.54 & 87.89 & 133.36 \\
+    EN & Online      & 71.11 & 72.46 & 89.24 & 94.21 \\
+    \midrule
+    ZH & No hotword  & 66.68 & 64.40 & 88.26 & 100.09 \\
+    ZH & Precomputed & 70.15 & 66.74 & 95.04 & 107.64 \\
+    ZH & Online      & 72.07 & 69.00 & 96.23 & 105.52 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Latency results.}
+Relative to precomputed Top-$50$, online retrieval adds a paired
+median of $1.37$\,ms for English and $3.25$\,ms for Mandarin; the
+paired P95 increments are $7.92$ and $7.17$\,ms, respectively.
+Relative to no hotword context, the paired median increments of the
+complete online path are $2.82$\,ms and $5.61$\,ms. The English online
+mean is lower than the precomputed mean because one precomputed
+request raises its P99 to $133.36$\,ms; we therefore base the isolated
+retrieval comparison on paired percentiles rather than a difference
+of marginal means. Within this shared-GPU run, the measured online
+overhead is thus on the order of a few milliseconds, but the observed
+tail includes shared-resource variation.
+
+\paragraph{Candidate-pool and Top-$K$ scaling.}
+On a fixed $30$-utterance subset with $K{=}50$, increasing the pool
+from $100$ to approximately $10{,}000$ entries changes the complete
+audio-projection-and-retrieval segment mean from $19.43$ to
+$20.46$\,ms in English and from $18.94$ to $19.58$\,ms in Mandarin.
+Recall@$50$ rises from $55.56$\,\% to $94.44$\,\% and from
+$43.66$\,\% to $97.18$\,\%, respectively, largely reflecting the
+greater target-term coverage of the larger pools. Because this timing
+segment also includes the audio tower and projector, it is not a
+measurement of similarity scoring alone. With the full pools,
+increasing $K$ from $10$ to $50$ raises retrieval recall from
+$83.33$\,\% to $93.75$\,\% in English and from $75.93$\,\% to
+$92.59$\,\% in Mandarin; latency is not monotonic over the three
+tested values ($K\in\{10,25,50\}$). A cold retriever request measures
+$800.91$\,ms versus $18.04$\,ms for the immediately repeated request,
+so all values in \Cref{tab:hotword_latency} exclude cold start.
+
+These measurements are an initial latency characterisation rather
+than a serving-capacity result: each configuration has only $30$
+utterances, no concurrent requests are tested, the GPU is shared, and
+the deployed default retriever remains the utterance-pooled variant.
+The available summary does not provide aggregate audio duration for
+an RTF calculation. An exclusive-GPU run with the frame-level
+retriever and a larger evaluation slice is required before making a
+production-latency or throughput claim.
+
+\FloatBarrier
