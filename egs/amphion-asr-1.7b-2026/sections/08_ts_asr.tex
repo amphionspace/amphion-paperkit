@@ -2,31 +2,31 @@
 \label{sec:tsasr}
 
 \begin{table}[t]
-  \caption{Target-speaker ASR results. Lower is better for WER and FA.
-    WER is computed on the positive sub-slice of each test set.
-    FA (false-alarm rate, \%) is computed on the target-absent negative
-    sub-slice of the in-house test set ($n_\text{neg}=328$) and applies
-    only to that set; Libri2Mix and Libri3Mix are all-positive and have
-    no FA column. The three open baselines have no target-absent
-    silence supervision and always emit a non-empty transcript on
-    target-absent audio, giving $\text{FA}=100.00$\,\%.
+  \caption{Target-speaker ASR results. All values are percentages;
+    lower is better. WER is computed on the positive sub-slice of each
+    test set. $\text{FA}_\text{sil}$ and $\text{FA}_\text{dist}$ are
+    utterance-level false-alarm rates on the target-absent silence and
+    distractor conditions, respectively ($n=164$ each), and apply only
+    to the in-house set. The three open baselines emit a non-empty
+    transcript on every target-absent sample, giving $100.00$\,\% in
+    both FA columns.
     AmphionASR denotes our model.
     Bold marks the best entry in each column.}
   \label{tab:tsasr}
   \centering
   \small
-  \setlength{\tabcolsep}{4.5pt}
-  \begin{tabular}{lcccc}
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{lccccc}
     \toprule
-    & \multicolumn{2}{c}{In-house TS-ASR} & \multicolumn{2}{c}{LibriMix} \\
-    \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-    System & WER (\%) & FA (\%) & Libri2Mix WER & Libri3Mix WER \\
+    & \multicolumn{3}{c}{In-house TS-ASR} & \multicolumn{2}{c}{LibriMix} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-6}
+    System & WER & $\text{FA}_\text{sil}$ & $\text{FA}_\text{dist}$ & Libri2Mix WER & Libri3Mix WER \\
     \midrule
-    Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 100.00 & 156.49 & 153.95 \\
-    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 100.00 & 167.16 & 172.81 \\
-    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 100.00 & 135.91 & 138.41 \\
+    Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 100.00 & 100.00 & 156.49 & 153.95 \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 100.00 & 100.00 & 167.16 & 172.81 \\
+    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 100.00 & 100.00 & 135.91 & 138.41 \\
     \midrule
-    \textbf{AmphionASR}                    & \textbf{13.02} & \textbf{35.67} & \textbf{63.04} & \textbf{85.04} \\
+    \textbf{AmphionASR}                    & \textbf{13.02} & \textbf{6.10} & \textbf{65.24} & \textbf{63.04} & \textbf{85.04} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -62,15 +62,11 @@ always emit a non-empty transcript even when the requested speaker is
 absent. AmphionASR reduces the overall false-alarm rate to $35.67$\,\%,
 i.e.\ it correctly stays silent on $64.33$\,\% of the target-absent
 samples, providing a non-trivial improvement over the baseline floor.
-The two sub-types behave very differently: on the silence condition
-the false-alarm rate is only $6.10$\,\% ($93.90$\,\% correct silence),
-whereas on the distractor condition it rises to $65.24$\,\%
-($34.76$\,\% correct silence) -- when the target speaker is absent but
-an interfering speaker is talking, the model frequently transcribes the
-interferer instead of remaining silent.
-This indicates that the model has learned the target-absent silence
-objective in the easier silence condition, but distractor rejection
-remains the limiting factor for target-speaker selection.
+As separated in Table~\ref{tab:tsasr}, the false-alarm rate is
+$6.10$\,\% ($93.90$\,\% correct silence) in the silence condition and
+$65.24$\,\% ($34.76$\,\% correct silence) in the distractor condition.
+Most remaining false alarms therefore occur when another speaker is
+active rather than when the input is silent.
 The public Libri2Mix and Libri3Mix sets contain no target-absent
 negatives, so FA is not applicable there.
 
