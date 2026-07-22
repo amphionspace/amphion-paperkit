@@ -3,6 +3,14 @@
 > 写作约束：只描述算法原理与奖励设计动机，不涉及 vLLM 部署、KL 调度、显存优化、checkpoint 管理等工程细节。仅覆盖 ASR Accuracy 与 Hotword Match Accuracy 两条奖励；格式兜底奖励见 integrations_tasks_and_prompts.md 第 6.2.3 节。
 > 算法实现挂载点（reward 注册、external_plugins、超参表）见 integrations_tasks_and_prompts.md 第 6 节；本文档专注 RL 目标与奖励函数的第一性原理推导。
 
+## 已确认的训练数据口径
+
+作者于 2026-07-22 确认：GRPO 数据是 SFT 训练数据的一个子集，由热词识别数据和通用识别数据按 4:1 混合；抽取后保持组成数据原有的任务与语言比例。
+
+GRPO 沿用 SFT 的数据预处理和 prompt 构造，专属覆盖参数以论文 Training 章节为准。
+
+<!-- TODO: recover the exact prompt count, sampling rule/seed, and archived run manifest before making a stronger reproducibility claim. Do not infer these values. -->
+
 ## 1. 问题动机：SFT 极限与 RL 的必要性
 
 SFT 在 ASR 上是 teacher-forced 训练：每一步条件分布都基于真实前缀 token，模型从未见过自己采样路径下的状态分布。这一不匹配在解码时表现为三类典型失败：
