@@ -2,23 +2,31 @@
 \label{sec:tsasr}
 
 \begin{table}[t]
-  \caption{Target-speaker ASR results. Lower WER is better.
+  \caption{Target-speaker ASR results. Lower is better for WER and FA.
     WER is computed on the positive sub-slice of each test set.
+    FA (false-alarm rate, \%) is computed on the target-absent negative
+    sub-slice of the in-house test set ($n_\text{neg}=328$) and applies
+    only to that set; Libri2Mix and Libri3Mix are all-positive and have
+    no FA column. The three open baselines have no target-absent
+    silence supervision and always emit a non-empty transcript on
+    target-absent audio, giving $\text{FA}=100.00$\,\%.
     AmphionASR denotes our model.
     Bold marks the best entry in each column.}
   \label{tab:tsasr}
   \centering
   \small
   \setlength{\tabcolsep}{4.5pt}
-  \begin{tabular}{lccc}
+  \begin{tabular}{lcccc}
     \toprule
-    System & In-house TS-ASR & Libri2Mix WER & Libri3Mix WER \\
+    & \multicolumn{2}{c}{In-house TS-ASR} & \multicolumn{2}{c}{LibriMix} \\
+    \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+    System & WER (\%) & FA (\%) & Libri2Mix WER & Libri3Mix WER \\
     \midrule
-    Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 156.49 & 153.95 \\
-    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 167.16 & 172.81 \\
-    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 135.91 & 138.41 \\
+    Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 100.00 & 156.49 & 153.95 \\
+    Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 100.00 & 167.16 & 172.81 \\
+    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 100.00 & 135.91 & 138.41 \\
     \midrule
-    \textbf{AmphionASR}               & \textbf{13.02} & \textbf{63.04} & \textbf{85.04} \\
+    \textbf{AmphionASR}                    & \textbf{13.02} & \textbf{35.67} & \textbf{63.04} & \textbf{85.04} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -43,9 +51,34 @@ AmphionASR brings both public columns below $100$\,\%, but its WER
 increases by $22.00$ points from Libri2Mix to Libri3Mix.
 The cause of this difference is not established here.
 
+\paragraph{Target-absent silence behaviour.}
+The in-house test set additionally contains $n_\text{neg}=328$
+target-absent negatives, split evenly into a silence condition (no
+speaker active, $164$ samples) and a distractor condition (an
+interfering speaker active, $164$ samples).
+On these negatives the three open baselines all yield
+$\text{FA}=100.00$\,\%: with no target-absent silence supervision they
+always emit a non-empty transcript even when the requested speaker is
+absent. AmphionASR reduces the overall false-alarm rate to $35.67$\,\%,
+i.e.\ it correctly stays silent on $64.33$\,\% of the target-absent
+samples, providing a non-trivial improvement over the baseline floor.
+The two sub-types behave very differently: on the silence condition
+the false-alarm rate is only $6.10$\,\% ($93.90$\,\% correct silence),
+whereas on the distractor condition it rises to $65.24$\,\%
+($34.76$\,\% correct silence) -- when the target speaker is absent but
+an interfering speaker is talking, the model frequently transcribes the
+interferer instead of remaining silent.
+This indicates that the model has learned the target-absent silence
+objective in the easier silence condition, but distractor rejection
+remains the limiting factor for target-speaker selection.
+The public Libri2Mix and Libri3Mix sets contain no target-absent
+negatives, so FA is not applicable there.
+
 These results support speaker-selection capability when the requested
-speaker is present. They do not evaluate target-absent silence
-behaviour or establish competitiveness with dedicated TS-ASR systems.
-The available experiments also do not isolate corpus, synthesis, or
-interferer-count effects behind the gap between the in-house and public
-mixtures.
+speaker is present, and the in-house negatives provide a first
+target-absent silence measurement. They do not yet establish
+competitiveness with dedicated TS-ASR systems, which we leave to future
+work with matched-protocol baselines. The available experiments also do
+not isolate corpus, synthesis, or interferer-count effects behind the
+gap between the in-house and public mixtures, or behind the
+silence-versus-distractor false-alarm gap.
