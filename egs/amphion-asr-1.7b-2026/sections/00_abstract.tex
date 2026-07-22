@@ -2,16 +2,18 @@ Practical speech recognition often requires more than unconditioned transcriptio
 We present \textbf{AmphionASR}, a SpeechLLM built on Qwen3-ASR-1.7B
 that supports these conditions through a shared model and
 task-specific inputs.
-We evaluate the system on Mandarin and English benchmarks.
-Its integrated large-vocabulary hotword-conditioning pipeline attains Recall@$50$
-above $94$\,\% on CommonVoice and reduces entity error on
-GigaSpeechBench vertical domains by $55$\,\% in Mandarin and $37$\,\%
-in English relative to no hotword context~\cite{tu2026gigaspeechbench}.
-In a single-request, steady-state experiment, online frame-level
-retrieval adds a paired median of $1.37$\,ms in English and $3.25$\,ms
-in Mandarin relative to precomputed Top-$50$ prompts. The
-same shared model also serves target-speaker ASR, degradation-robust
-ASR, and whispered-speech ASR within a unified study of four
-recognition settings.
+We evaluate four conditioned recognition settings on Mandarin and
+English benchmarks. For large-vocabulary hotword conditioning, the
+fine-grained retriever attains Recall@$50$ above $94$\,\%, and the
+complete pipeline reduces average entity error by $37$--$55$\,\%
+relative to no hotword context~\cite{tu2026gigaspeechbench}. Online
+retrieval adds a paired median of $1.37$--$3.25$\,ms relative to
+precomputed Top-$50$ prompts in the measured single-request,
+steady-state setting. The shared model also demonstrates target-speaker
+selection when the requested speaker is present, records the lowest WER
+among the compared systems on eight of sixteen Voice-in-the-Wild
+degradation subsets~\cite{xie2026mega}, and obtains the lowest error on
+both the Mandarin wEar and English WTIMIT whispered-speech tests
+($0.58$\,\% CER and $6.11$\,\% WER, respectively)~\cite{fang2025whisperear}.
 Plain transcription is retained as a retention check across multiple standard ASR
 benchmarks rather than as a state-of-the-art claim.
