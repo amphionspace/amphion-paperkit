@@ -80,8 +80,12 @@ Our contributions are:
         We use a fine-grained dual encoder to retrieve a top-$K$ subset from a
         larger vocabulary before decoding (Recall@$50$ above $94$\,\% on
         CommonVoice) and inject the selected terms into the prompt as
-        contextual bias. The resulting pipeline reduces entity error on
-        GigaSpeechBench~\cite{tu2026gigaspeechbench}.
+        contextual bias. On GigaSpeechBench, the complete pipeline reduces
+        average entity error by $55$\,\% in Mandarin and $37$\,\% in English
+        relative to no hotword context~\cite{tu2026gigaspeechbench}. In the
+        measured single-request, steady-state setting, online retrieval adds
+        median overheads of $1.37$\,ms in English and $3.25$\,ms in Mandarin
+        relative to precomputed Top-$50$ prompts.
   \item \textbf{A multi-condition evaluation.}
         We evaluate the shared model on standard ASR, contextual ASR,
         target-speaker ASR, acoustic degradations, and whispered

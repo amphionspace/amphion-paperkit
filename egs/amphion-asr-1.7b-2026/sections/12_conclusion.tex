@@ -9,10 +9,18 @@ and retrieval from larger hotword vocabularies.
 The current evaluation covers Mandarin and English benchmarks.
 
 The complete retrieval-conditioned hotword pipeline provides the clearest
-observed improvement over the no-hotword-context setting, while the
-plain-ASR results characterise retention of the backbone's general
+observed improvement over the no-hotword-context setting. It attains
+Recall@$50$ above $94$\,\% on CommonVoice and reduces average entity
+error on GigaSpeechBench by $55$\,\% in Mandarin and $37$\,\% in English.
+Under the measured single-request, steady-state protocol, online retrieval
+adds a paired median of $1.37$\,ms in English and $3.25$\,ms in Mandarin
+relative to precomputed Top-$50$ prompts. These results pair substantial contextual
+benefit with a few milliseconds of measured retrieval cost, but do not
+isolate the retriever's contribution to accuracy or establish production
+serving capacity.
+
+The plain-ASR results characterise retention of the backbone's general
 recognition quality.
-This comparison does not isolate the retriever's contribution.
 The target-speaker evidence covers only positive slices, leaving
 target-absent behaviour and transfer across mixture conditions outside
 the conclusions supported by the current experiments.

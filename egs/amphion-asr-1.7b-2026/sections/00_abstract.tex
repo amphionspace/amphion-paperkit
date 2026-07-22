@@ -5,7 +5,11 @@ task-specific inputs.
 We evaluate the system on Mandarin and English benchmarks.
 Its integrated large-vocabulary hotword-conditioning pipeline attains Recall@$50$
 above $94$\,\% on CommonVoice and reduces entity error on
-GigaSpeechBench vertical domains~\cite{tu2026gigaspeechbench}, while the
+GigaSpeechBench vertical domains by $55$\,\% in Mandarin and $37$\,\%
+in English relative to no hotword context~\cite{tu2026gigaspeechbench}.
+In a single-request, steady-state experiment, online frame-level
+retrieval adds a paired median of $1.37$\,ms in English and $3.25$\,ms
+in Mandarin relative to precomputed Top-$50$ prompts. The
 same shared model also serves target-speaker ASR, degradation-robust
 ASR, and whispered-speech ASR within a unified study of four
 recognition settings.

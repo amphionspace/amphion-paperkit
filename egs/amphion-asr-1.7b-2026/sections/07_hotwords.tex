@@ -165,6 +165,13 @@ tested values ($K\in\{10,25,50\}$). A cold retriever request measures
 $800.91$\,ms versus $18.04$\,ms for the immediately repeated request,
 so all values in \Cref{tab:hotword_latency} exclude cold start.
 
+Taken together, the evaluated pipeline pairs substantial entity-level
+accuracy gains with a measured warm-state retrieval cost of a few
+milliseconds. The accuracy claim applies to the complete
+retrieval-conditioned pipeline, whereas the isolated latency claim
+compares online retrieval with identical precomputed Top-$50$ prompts;
+it does not assign the complete quality gain to the retriever alone.
+
 These measurements are an initial latency characterisation rather
 than a serving-capacity result: each configuration has only $30$
 utterances, no concurrent requests are tested, the GPU is shared, and
