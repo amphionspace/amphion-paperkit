@@ -114,3 +114,7 @@ The GRPO run uses group size $G=16$, sampling temperature $0.6$, PPO
 clip $\varepsilon=0.2$, KL coefficient $\beta=1\!\times\!10^{-3}$,
 peak learning rate $1\!\times\!10^{-6}$ for one epoch, and a
 per-device prompt batch of $8$ with gradient accumulation of $2$.
+
+The evaluation reports the resulting model as a complete training
+recipe. Without an SFT-only control, it does not isolate the
+contribution of GRPO from the preceding supervised stages.
