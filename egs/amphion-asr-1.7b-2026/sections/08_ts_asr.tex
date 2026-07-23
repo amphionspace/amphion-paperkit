@@ -7,9 +7,10 @@
     test set. $\text{FA}_\text{sil}$ and $\text{FA}_\text{dist}$ are
     utterance-level false-alarm rates on the target-absent silence and
     distractor conditions, respectively ($n=164$ each), and apply only
-    to the in-house set. The three open baselines emit a non-empty
-    transcript on every target-absent sample, giving $100.00$\,\% in
-    both FA columns.
+    to the in-house set. The Qwen3-ASR baselines emit a non-empty
+    transcript on every target-absent sample. $^\dagger$Qwen3-Omni is
+    evaluated zero-shot with the instruction-enhanced prompt in
+    Listing~\ref{lst:qwen3-omni-tsasr-prompt}.
     AmphionASR denotes our model.
     Bold marks the best entry in each column.}
   \label{tab:tsasr}
@@ -24,28 +25,40 @@
     \midrule
     Qwen3-ASR-0.6B~\cite{qwen2025qwen3asr} & 84.97 & 100.00 & 100.00 & 156.49 & 153.95 \\
     Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr} & 78.99 & 100.00 & 100.00 & 167.16 & 172.81 \\
-    Qwen3-Omni~\cite{qwen2025qwen3omni}     & 52.90 & 100.00 & 100.00 & 135.91 & 138.41 \\
+    Qwen3-Omni-30B-A3B$^\dagger$~\cite{qwen2025qwen3omni} & 31.91 & 9.15 & 75.00 & 72.58 & 91.57 \\
     \midrule
     \textbf{AmphionASR}                    & \textbf{13.02} & \textbf{6.10} & \textbf{65.24} & \textbf{63.04} & \textbf{85.04} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
+\paragraph{Zero-shot Qwen3-Omni protocol.}
+We evaluate Qwen3-Omni-30B-A3B-Instruct without task-specific
+fine-tuning. Each request provides an enrollment utterance followed by
+a mixture and uses the instruction in
+Listing~\ref{lst:qwen3-omni-tsasr-prompt}. The prompt assigns the two
+audio roles explicitly and requests
+\mbox{\texttt{<NO\_TARGET\_SPEECH>}} when
+the target is absent. This sentinel is deterministically mapped to an
+empty hypothesis before scoring. Decoding is greedy and capped at
+$200$ output tokens.
+
 \paragraph{Comparison with open baselines.}
 On the positive sub-slice of our in-house target-speaker test set,
-AmphionASR reaches $13.02$\,\% WER, compared with $52.90$\,\% for
-Qwen3-Omni and $84.97$\,\% for Qwen3-ASR-0.6B.
-On the public LibriMix tests, AmphionASR reaches $63.04$\,\% on
-Libri2Mix and $85.04$\,\% on Libri3Mix.
+AmphionASR reaches $13.02$\,\% WER, compared with $31.91$\,\% for
+zero-shot Qwen3-Omni and $84.97$\,\% for Qwen3-ASR-0.6B.
+On Libri2Mix and Libri3Mix, Qwen3-Omni obtains $72.58$\,\% and
+$91.57$\,\% WER, while AmphionASR obtains $63.04$\,\% and
+$85.04$\,\%, respectively.
 
-The LibriMix WER values
-exceed $100$\,\% for the three open baselines because their hypothesis
-on mixed-both audio contains the transcripts of all speakers
+The LibriMix WER values exceed $100$\,\% for the two Qwen3-ASR
+baselines because their hypotheses
+on mixed-both audio contain the transcripts of all speakers
 concatenated together (the WER is
 $\text{insertions}/|\text{ref}| \approx 100$--$200$\,\% when the
-reference is the target speaker only); none of the three open systems
-demonstrates speaker selection under this prompt and positive-slice
-protocol.
+reference is the target speaker only). The instruction-enhanced
+Qwen3-Omni baseline brings both public-set WERs below $100$\,\% without
+task-specific fine-tuning.
 
 AmphionASR brings both public columns below $100$\,\%, but its WER
 increases by $22.00$ points from Libri2Mix to Libri3Mix.
@@ -56,12 +69,13 @@ The in-house test set additionally contains $n_\text{neg}=328$
 target-absent negatives, split evenly into a silence condition (no
 speaker active, $164$ samples) and a distractor condition (an
 interfering speaker active, $164$ samples).
-On these negatives the three open baselines all yield
-$\text{FA}=100.00$\,\%: with no target-absent silence supervision they
-always emit a non-empty transcript even when the requested speaker is
-absent. AmphionASR reduces the overall false-alarm rate to $35.67$\,\%,
-i.e.\ it correctly stays silent on $64.33$\,\% of the target-absent
-samples, providing a non-trivial improvement over the baseline floor.
+On these negatives, both Qwen3-ASR baselines yield
+$\text{FA}=100.00$\,\%. Zero-shot Qwen3-Omni lowers overall FA to
+$42.07$\,\%, with $9.15$\,\% on silence and $75.00$\,\% on distractor
+mixtures. Its positive-slice miss rate is $4.13$\,\%, so its WER and FA
+should be read jointly. AmphionASR reaches an overall FA of
+$35.67$\,\% and correctly stays silent on $64.33$\,\% of target-absent
+samples.
 As separated in Table~\ref{tab:tsasr}, the false-alarm rate is
 $6.10$\,\% ($93.90$\,\% correct silence) in the silence condition and
 $65.24$\,\% ($34.76$\,\% correct silence) in the distractor condition.
@@ -72,9 +86,7 @@ negatives, so FA is not applicable there.
 
 These results support speaker-selection capability when the requested
 speaker is present, and the in-house negatives provide a first
-target-absent silence measurement. They do not yet establish
-competitiveness with dedicated TS-ASR systems, which we leave to future
-work with matched-protocol baselines. The available experiments also do
-not isolate corpus, synthesis, or interferer-count effects behind the
-gap between the in-house and public mixtures, or behind the
-silence-versus-distractor false-alarm gap.
+target-absent silence measurement. They do not establish competitiveness
+with dedicated TS-ASR systems under a matched protocol. The available
+experiments also do not isolate corpus, synthesis, or interferer-count
+effects behind the in-house/public or silence/distractor gaps.

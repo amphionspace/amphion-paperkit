@@ -66,6 +66,35 @@ Return a JSON object with key "hotwords" and value as a list of strings (List[st
 If no hotwords are found, return {"hotwords": []}.
 \end{lstlisting}
 
+\section{Zero-Shot Qwen3-Omni TS-ASR Prompt}
+\label{sec:appendix-qwen3-omni-tsasr-prompt}
+
+The zero-shot Qwen3-Omni baseline in Table~\ref{tab:tsasr} receives
+the enrollment and mixture as two ordered audio inputs. The language
+placeholder is set to \texttt{zh} or \texttt{en} from sample metadata.
+The exact sentinel is mapped to an empty hypothesis before scoring.
+
+\begin{lstlisting}[style=plain,
+    caption={Instruction-enhanced prompt used for zero-shot
+    target-speaker ASR with Qwen3-Omni-30B-A3B-Instruct.},
+    label={lst:qwen3-omni-tsasr-prompt}]
+Target-speaker transcription task. You will receive exactly two audio clips.
+
+Audio 1 -- ENROLLMENT REFERENCE: Use it only to learn the target speaker's voice identity (timbre, pitch, accent, and speaking style). Do not transcribe or copy any words from Audio 1.
+Audio 1:
+<AUDIO_1_ENROLLMENT>
+
+Audio 2 -- MIXTURE TO TRANSCRIBE: Identify the same speaker by voice characteristics, then transcribe only that speaker's intelligible words from Audio 2. Ignore every other speaker, background speech, noise, music, and overlap.
+
+Output rules:
+1. Output only the verbatim transcript; no explanation, label, speaker name, quotation marks, or markdown.
+2. Never include words spoken only in Audio 1 or by a different speaker in Audio 2.
+3. If the target speaker is absent or says nothing intelligible in Audio 2, output exactly <NO_TARGET_SPEECH>.
+Expected transcript language: <LANGUAGE>.
+Audio 2:
+<AUDIO_2_MIXTURE>
+\end{lstlisting}
+
 \section{TS-ASR Synthesis Recipe}
 \label{sec:appendix-tsasr-synth}
 

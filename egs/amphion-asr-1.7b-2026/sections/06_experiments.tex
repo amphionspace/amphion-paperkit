@@ -63,10 +63,13 @@ GigaSpeechBench.
 Three test sets are used: an in-house target-speaker test set
 (synthesised by the same pipeline as training but on held-out
 speakers), Libri2Mix, and Libri3Mix. We report positive-slice WER
-on all three sets.
+on all three sets and false-alarm rates on the silence and distractor
+negative sub-slices of the in-house set.
 Baselines are Qwen3-ASR-0.6B, Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
-and Qwen3-Omni~\cite{qwen2025qwen3omni}; all systems use the same
-dual-audio prompt template.
+and Qwen3-Omni~\cite{qwen2025qwen3omni}. Qwen3-Omni is evaluated
+zero-shot with the instruction-enhanced dual-audio prompt described in
+Section~\ref{sec:tsasr}; the other systems retain the project evaluation
+prompt.
 
 \paragraph{Degradation robustness setup.}
 We evaluate on Voice-in-the-Wild-Bench~\cite{xie2026mega}, a
