@@ -48,7 +48,8 @@ MOSS-Audio \cite{moss2026audio} --- and dedicated ASR-oriented
 LLM-based systems --- Qwen3-ASR-1.7B \cite{qwen2025qwen3asr},
 FireRed-ASR2-LLM \cite{fireredasr2025}, and GLM-ASR-nano
 \cite{glmasr2025}. The baseline columns in
-Tables~\ref{tab:asr_en}--\ref{tab:asr_zh} are produced by us under the
+Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh}
+(Appendix~\ref{sec:appendix-general-asr}) are produced by us under the
 same normaliser as the AmphionASR column.
 
 \paragraph{Hotword conditioning setup.}
@@ -88,38 +89,3 @@ from~\cite{xie2026mega}.
 All evaluations use the same metric implementation for offline and
 batched inference.
 Table~\ref{tab:eval} summarises the test sets reported in this paper.
-
-\subsection{Plain ASR}
-\label{subsec:plain-asr}
-
-We first evaluate general Mandarin and English ASR to examine whether
-multi-condition fine-tuning retains the backbone's transcription
-quality.
-Tables~\ref{tab:asr_en}--\ref{tab:asr_zh} compare AmphionASR with eight
-open-source systems on six Mandarin and four English test sets.
-
-\input{tables/asr_en}
-
-\input{tables/asr_zh}
-
-\paragraph{Comparison with the Qwen3-ASR backbone.}
-Qwen3-ASR-1.7B is the closest comparison because AmphionASR reuses its
-audio encoder and language backbone.
-AmphionASR leads on four of the ten test sets, while Qwen3-ASR-1.7B
-leads on the remaining six by $0.13$--$0.85$ absolute points.
-
-\paragraph{Comparison with other open systems.}
-FireRed-ASR2-LLM~\cite{fireredasr2025} leads five Mandarin columns,
-and Step-Audio~2 leads AIShell-2.
-The English column leaders vary across Kimi-Audio, Qwen3-ASR-1.7B, and
-Step-Audio~2.
-
-AmphionASR does not lead any column in these two tables.
-We therefore use the plain-ASR grid as a retention check rather than
-as a state-of-the-art claim.
-
-The highest AmphionASR errors occur on GigaSpeech and the WenetSpeech
-meeting split, both of which contain more spontaneous speech than the
-read-speech sets~\cite{chen2021gigaspeech}.
-Their error composition is not analysed in this report.
-We therefore report this variation without assigning a mechanism.

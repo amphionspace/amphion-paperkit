@@ -34,11 +34,11 @@ while retaining the Stage~1 encoder.
 \paragraph{Stage~3 -- replay against catastrophic forgetting; encoder frozen.}
 The audio encoder remains frozen and only the LLM is updated. The
 training pool combines the Stage~1 and Stage~2 training sets with
-two plain-transcription corpora replayed to mitigate catastrophic
+two general-transcription corpora replayed to mitigate catastrophic
 forgetting: AISHELL-2~\cite{du2018aishell2} and
 LibriSpeech~\cite{panayotov2015librispeech}.
 The replay mixture includes both conditioned and unconditioned
-examples to reduce the risk of forgetting plain transcription while
+examples to reduce the risk of forgetting general transcription while
 continuing training on the Stage~2 tasks.
 
 \subsection{Hotword Retriever}
@@ -77,13 +77,13 @@ the retrieval module.
 \label{subsec:grpo}
 
 After the three-stage SFT recipe, we apply Group Relative Policy
-Optimisation (GRPO) to the language backbone while keeping the audio
+Optimisation (GRPO) to the LLM while keeping the audio
 encoder frozen.
 The sequence-level reward combines transcription accuracy with
 agreement on whether each candidate hotword appears in the output.
 
 \paragraph{Training data.}
-GRPO uses a subset of the hotword-conditioned and plain-transcription
+GRPO uses a subset of the hotword-conditioned and general-transcription
 SFT data, mixed at a $4{:}1$ ratio. Sampling preserves the task and
 language proportions of the corresponding SFT data.
 

@@ -10,12 +10,12 @@ built from eleven public corpora (Table~\ref{tab:data_public}).
 The sets map directly onto the recognition settings introduced in
 Section~\ref{sec:intro}: whispered-speech ASR, degradation-robust
 ASR, hotword-conditioned ASR, target-speaker ASR (TS-ASR), and
-plain transcription data included to reduce the risk of catastrophic
+general transcription data included to reduce the risk of catastrophic
 forgetting.
 The eight sets are distributed across the three SFT stages:
 degradation and whisper data in Stage~1, hotword and target-speaker
 data in Stage~2, and a replay of the Stage~1--2 sets together with
-plain-transcription corpora in Stage~3. Section~\ref{sec:training}
+general-transcription corpora in Stage~3. Section~\ref{sec:training}
 documents the per-stage optimiser settings.
 
 \begin{table}[t]
@@ -39,9 +39,9 @@ documents the per-stage optimiser settings.
     Five-corpus hotword mixture
       & Hotword ASR     & 1\,043\,317 & single-audio \\
     AISHELL-2 \cite{du2018aishell2}
-      & Plain ASR       & 1\,009\,223 & Mandarin retention \\
+      & General ASR      & 1\,009\,223 & Mandarin retention \\
     LibriSpeech \cite{panayotov2015librispeech}
-      & Plain ASR       & 281\,241  & English retention \\
+      & General ASR      & 281\,241  & English retention \\
     CommonVoice~EN target-speaker
       & TS-ASR          & 184\,747  & synthesised \\
     MagicData target-speaker
@@ -78,11 +78,11 @@ documents the per-stage optimiser settings.
     AISHELL-1 \cite{bu2017aishell}
       & Hotword-conditioned ASR \\
     AISHELL-2 \cite{du2018aishell2}
-      & Plain Mandarin ASR retention ($1.01$\,M) \\
+      & General Mandarin ASR retention ($1.01$\,M) \\
     AISHELL-3 \cite{shi2021aishell3}
       & Hotword-conditioned ASR + target-speaker synthesis \\
     LibriSpeech \cite{panayotov2015librispeech}
-      & Plain English ASR retention (train-clean-100/360 + train-other-500) \\
+      & General English ASR retention (train-clean-100/360 + train-other-500) \\
     MLS English \cite{pratap2020mls}
       & Target-speaker synthesis \\
     THCHS-30 \cite{wang2015thchs30}
@@ -163,10 +163,10 @@ annotation protocol are reserved for evaluation
   \end{tabular}
 \end{table}
 
-\subsection{Plain Transcription Retention}
-\label{subsec:plain-asr-retention}
+\subsection{General Transcription Retention}
+\label{subsec:general-asr-retention}
 
-To limit catastrophic forgetting of plain transcription behaviour, the
+To limit catastrophic forgetting of general transcription behaviour, the
 training mixture retains exposure to two large single-speaker corpora:
 the full AISHELL-2 training split ($1{,}009{,}223$ utterances) and
 LibriSpeech train-clean-100/360 plus train-other-500 ($281{,}241$

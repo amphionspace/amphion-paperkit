@@ -27,7 +27,7 @@ twelve vertical domains (agriculture, AI technology, arts, biology,
 e-commerce, engineering, entertainment, finance, humanities, law,
 medicine, military) provides an in-the-wild test split, and retrieval
 uses the corresponding per-domain pool. Every baseline is
-reported under plain ASR (no prompt hotwords). We add two AmphionASR
+reported under general ASR (no prompt hotwords). We add two AmphionASR
 protocols on the same entity metric: without retrieval and with
 retrieval ($K{=}50$, per-domain pool). Baseline numbers are reproduced
 from the benchmark~\cite{tu2026gigaspeechbench}.
@@ -46,7 +46,7 @@ B-CER falls to $10.39$\,\% and AVG entity B-WER to $9.35$\,\%,
 relative reductions of $55$\,\% and $37$\,\%, respectively, relative
 to the no-hotword-context condition.
 
-The retrieval condition outperforms every listed plain-ASR baseline
+The retrieval condition outperforms every listed general-ASR baseline
 on both language averages.
 Because those baselines receive no hotword input, this comparison
 measures the complete retrieval-conditioned pipeline with added

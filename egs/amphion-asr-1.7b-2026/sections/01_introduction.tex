@@ -3,15 +3,17 @@
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/capabilities-v4.png}
-  \caption{Three recognition settings illustrated for
-    AmphionASR.
+  \includegraphics[width=0.92\linewidth]{figures/cap.png}
+  \caption{Four recognition capabilities of AmphionASR.
     \emph{Top-left:} hotword conditioning with retrieval-based
-    contextual biasing.
-    \emph{Top-right:} target-speaker ASR with a $3$--$5$\,s
-    enrollment utterance.
-    \emph{Bottom:} degradation-robust ASR via SFT on
-    Voice-in-the-Wild-2M~\cite{xie2026mega}.}
+    contextual biasing, prioritising key names in the transcript.
+    \emph{Top-right:} target-speaker ASR that transcribes only the
+    $3$--$5$\,s enrolled speaker from a multi-speaker mixture,
+    robust to overlap and crosstalk.
+    \emph{Bottom-left:} degradation-robust ASR that remains accurate
+    under various real-world audio degradations.
+    \emph{Bottom-right:} whispered-speech ASR that transcribes
+    low-amplitude whispered input.}
   \label{fig:teaser}
 \end{figure}
 

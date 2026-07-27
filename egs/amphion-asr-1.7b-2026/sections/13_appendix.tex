@@ -193,3 +193,42 @@ expose the model to cases where the requested speaker is absent.
     \bottomrule
   \end{tabular}
 \end{table}
+
+\section{General ASR Retention Details}
+\label{sec:appendix-general-asr}
+
+This appendix details the general-ASR retention results motivated by
+Section~\ref{subsec:general-asr-retention}: we examine whether the
+added personalisation capabilities --- hotword conditioning,
+target-speaker selection, degradation robustness, and whispered-speech
+recognition --- come at the cost of general transcription quality.
+Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh} compare AmphionASR with
+eight open-source systems on four English and six Mandarin test sets
+under the normalisers of Section~\ref{subsec:setup}.
+AmphionASR remains within $0.85$ absolute WER/CER points of the
+Qwen3-ASR-1.7B backbone on every test set and leads on four of the ten,
+indicating that multi-condition fine-tuning preserves general
+recognition quality rather than materially degrading it; we therefore
+treat this grid as a retention check rather than a state-of-the-art
+claim.
+
+\input{tables/asr_en}
+
+\input{tables/asr_zh}
+
+\paragraph{Comparison with the Qwen3-ASR backbone.}
+Qwen3-ASR-1.7B is the closest comparison because AmphionASR reuses its
+audio encoder and LLM.
+AmphionASR leads on four of the ten test sets, while Qwen3-ASR-1.7B
+leads on the remaining six by $0.13$--$0.85$ absolute points.
+
+\paragraph{Comparison with other open systems.}
+FireRed-ASR2-LLM~\cite{fireredasr2025} leads five Mandarin columns,
+and Step-Audio~2 leads AIShell-2.
+The English column leaders vary across Kimi-Audio, Qwen3-ASR-1.7B, and
+Step-Audio~2.
+AmphionASR does not lead any column in these two tables, consistent
+with the retention-check framing above.
+The highest AmphionASR errors occur on GigaSpeech and the WenetSpeech
+meeting split, both of which contain more spontaneous speech than the
+read-speech sets~\cite{chen2021gigaspeech}.

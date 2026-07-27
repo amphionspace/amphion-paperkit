@@ -6,7 +6,7 @@
   \includegraphics[width=0.92\linewidth]{figures/architecture.pdf}
   \caption{AmphionASR architecture.
     A 16\,kHz waveform is encoded by the \textbf{AuT encoder} into the
-    language backbone's embedding space; the text branch tokenises the
+    LLM's embedding space; the text branch tokenises the
     instruction and optional hotword lines.
     The audio placeholder is replaced by the audio embedding
     span before next-token prediction.
@@ -34,15 +34,15 @@
 
 AmphionASR adopts the Qwen3-ASR architecture
 \cite{qwen2025qwen3asr}: an AuT audio encoder feeds frame
-embeddings directly into the Qwen3-ASR-1.7B language backbone.
+embeddings directly into the LLM.
 At inference time, a hotword retriever selects a top-$K$ subset
 from a large candidate vocabulary and inserts it into the prompt before
 decoding, as shown in Figure~\ref{fig:architecture}.
 
 Component-level parameter counts are summarised in
 Table~\ref{tab:params}. AmphionASR totals
-$2.0$\,B parameters ($1.7$\,B in the language
-backbone plus $0.3$\,B in the audio encoder).
+$2.0$\,B parameters ($1.7$\,B in the LLM
+plus $0.3$\,B in the audio encoder).
 
 \begin{table}[t]
   \caption{Per-component parameter counts.}
@@ -54,15 +54,15 @@ backbone plus $0.3$\,B in the audio encoder).
     Component & Parameters & Detail \\
     \midrule
     AuT encoder               & $300$\,M     & Qwen3-ASR 24-layer AuT encoder \\
-    Language model             & $1.7$\,B & Qwen3-ASR-1.7B text backbone (28 layers, 2048-d) \\
+    LLM                         & $1.7$\,B & initialised from Qwen3-ASR-1.7B (28 layers, 2048-d) \\
     Retrieval adapters         & $2.6$\,M & two MLP adapters \\
     \midrule
-    Total                      & $2.0$\,B & AuT encoder + language backbone + retrieval adapters \\
+    Total                      & $2.0$\,B & AuT encoder + LLM + retrieval adapters \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{AuT Audio Encoder}
+\subsection{Audio Encoder}
 \label{subsec:audio-encoder}
 
 The acoustic front-end is the Qwen3-ASR \textbf{AuT encoder}
@@ -74,16 +74,15 @@ $12.5$\,Hz.
 A chunked-inference window of 800 frames extends the effective input
 duration beyond the standard 30\,s ceiling.
 The AuT encoder is updated only in Stage~1 of fine-tuning and frozen
-thereafter; Stages~2--3 update only the language backbone.
+thereafter; Stages~2--3 update only the LLM.
 
 \subsection{Language Model}
 \label{subsec:llm}
 
-The decoder is the Qwen3-ASR-1.7B text backbone \cite{qwen2025qwen3asr},
+The LLM is initialised from the Qwen3-ASR-1.7B text backbone \cite{qwen2025qwen3asr},
 a 28-layer decoder-only Transformer with 2048-dimensional hidden
-states and a 64\,K native context length. The language backbone is
-updated during fine-tuning as described in
-Section~\ref{sec:training}.
+states and a 64\,K native context length. The LLM is updated during
+fine-tuning as described in Section~\ref{sec:training}.
 
 \subsection{Hotword Retrieval}
 \label{subsec:hotword-rag}
@@ -159,7 +158,7 @@ and target-speaker ASR add task-specific fields.
     \toprule
     Task & Prompt template \\
     \midrule
-    Plain ASR        & \texttt{Transcribe the following audio.\{speech\}} \\
+    General ASR       & \texttt{Transcribe the following audio.\{speech\}} \\
     Hotword ASR      & \texttt{Transcribe the following audio.[Hotwords:...].\{speech\}} \\
     TS-ASR           & \texttt{Given the speaker's voice:\{enroll\} Transcribe what this speaker says in the following audio.\{speech\}} \\
     Whispered-speech ASR & \texttt{Transcribe the following whispered audio.\{speech\}} \\
