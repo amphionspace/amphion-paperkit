@@ -1,9 +1,9 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented \textbf{AmphionASR}, a SpeechLLM built on Qwen3-ASR-1.7B that
-uses a shared model for general, hotword-conditioned, target-speaker,
-degradation-robust, and whispered-speech ASR.
+We presented \textbf{AmphionASR}, a $1.7$\,B SpeechLLM that unifies
+general, hotword-conditioned, target-speaker, degradation-robust, and
+whispered-speech ASR in a single model.
 The system combines staged fine-tuning with optional task conditions
 and retrieval from larger hotword vocabularies.
 The current evaluation covers Mandarin and English benchmarks.
@@ -17,8 +17,7 @@ adds a paired median of $1.37$\,ms in English and $3.25$\,ms in Mandarin
 relative to precomputed Top-$50$ prompts. These results pair substantial contextual
 benefit with a few milliseconds of measured retrieval cost.
 
-The general-ASR results characterise retention of the backbone's general
-recognition quality.
-The target-speaker evidence covers only positive slices, leaving
-target-absent behaviour and transfer across mixture conditions outside
-the conclusions supported by the current experiments.
+The target-speaker evidence covers positive slices and target-absent
+silence; distractor-condition false alarms and transfer across public
+mixture sets remain outside the conclusions supported by the current
+experiments.

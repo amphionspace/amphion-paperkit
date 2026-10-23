@@ -1,20 +1,25 @@
-\section{Model}
+\section{AmphionASR Architecture}
 \label{sec:model}
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/architecture.pdf}
+  \includegraphics[width=0.92\linewidth]{figures/architecture_v4.pdf}
   \caption{AmphionASR architecture.
-    A 16\,kHz waveform is encoded by the \textbf{AuT encoder} into the
-    LLM's embedding space; the text branch tokenises the
-    instruction and optional hotword lines.
-    The audio placeholder is replaced by the audio embedding
-    span before next-token prediction.
-  A parallel \textbf{retrieval} branch selects a top-$K$ hotword
-    subset from a large candidate vocabulary and inserts it into the
-    prompt line; the retrieval adapters and the LLM are updated at
-    fine-tuning time, and the AuT encoder is also updated in Stage~1
-    only and frozen thereafter.}
+    A 16\,kHz waveform is encoded by the \textbf{audio encoder} into the
+    LLM's embedding space, while the text branch tokenizes the
+    instruction; an optional enrollment utterance passes through the same
+    encoder for target-speaker recognition.
+    The LLM consumes the concatenated prefix and decodes the transcription
+    autoregressively, each emitted token being fed back as the input of
+    the next step.
+  A parallel \textbf{retrieval} branch queries a hotword database with the
+    encoded speech, selects a top-$K$ hotword subset from a large
+    candidate vocabulary and inserts it into the sequence as contextual
+    biasing tokens; the retrieval adapters and the LLM are updated at
+    fine-tuning time, and the audio encoder is also updated in Stage~1
+    only and frozen thereafter.
+    Dashed boxes and arrows mark the paths that are optional at
+    inference time.}
   \label{fig:architecture}
 \end{figure}
 
@@ -32,17 +37,22 @@
 
 \subsection{Overview}
 
-AmphionASR adopts the Qwen3-ASR architecture
-\cite{qwen2025qwen3asr}: an AuT audio encoder feeds frame
-embeddings directly into the LLM.
-At inference time, a hotword retriever selects a top-$K$ subset
+AmphionASR couples three components, shown in
+Figure~\ref{fig:architecture}: an audio encoder that feeds frame
+embeddings directly into the LLM, a text branch that carries the
+instruction and the optional task conditions, and a retrieval branch
+that supplies hotword context.
+At inference time, the hotword retriever selects a top-$K$ subset
 from a large candidate vocabulary and inserts it into the prompt before
-decoding, as shown in Figure~\ref{fig:architecture}.
+decoding.
+The audio encoder and the LLM are initialized from
+Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}; the retrieval adapters
+are trained from scratch.
 
-Component-level parameter counts are summarised in
-Table~\ref{tab:params}. AmphionASR totals
-$2.0$\,B parameters ($1.7$\,B in the LLM
-plus $0.3$\,B in the audio encoder).
+Following the convention for LLM-based systems, we report the model
+scale by its LLM: AmphionASR is a $1.7$\,B model.
+Component-level parameter counts are summarized in
+Table~\ref{tab:params}.
 
 \begin{table}[t]
   \caption{Per-component parameter counts.}
@@ -53,11 +63,11 @@ plus $0.3$\,B in the audio encoder).
     \toprule
     Component & Parameters & Detail \\
     \midrule
-    AuT encoder               & $300$\,M     & Qwen3-ASR 24-layer AuT encoder \\
-    LLM                         & $1.7$\,B & initialised from Qwen3-ASR-1.7B (28 layers, 2048-d) \\
-    Retrieval adapters         & $2.6$\,M & two MLP adapters \\
+    Audio encoder               & $300$\,M     & initialized from Qwen3-ASR-1.7B AuT encoder \\
+    LLM                         & $1.7$\,B & initialized from Qwen3-ASR-1.7B language backbone \\
+    RAG adapters                 & $2.6$\,M & two MLP adapters \\
     \midrule
-    Total                      & $2.0$\,B & AuT encoder + LLM + retrieval adapters \\
+    Total                      & $2.0$\,B & audio encoder + LLM + RAG adapters \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -65,21 +75,21 @@ plus $0.3$\,B in the audio encoder).
 \subsection{Audio Encoder}
 \label{subsec:audio-encoder}
 
-The acoustic front-end is the Qwen3-ASR \textbf{AuT encoder}
-\cite{qwen2025qwen3asr}: a single stack that maps 16\,kHz mono audio
+The acoustic front-end is an audio encoder initialized with the
+Qwen3-ASR-1.7B AuT encoder~\cite{qwen2025qwen3asr}: a single stack that maps 16\,kHz mono audio
 through a log-mel front-end (128 mel bins, 10\,ms hop), a
 convolutional sub-sampler and a 24-layer Whisper-style pre-LN
 Transformer into 2048-dimensional frame embeddings at
 $12.5$\,Hz.
 A chunked-inference window of 800 frames extends the effective input
 duration beyond the standard 30\,s ceiling.
-The AuT encoder is updated only in Stage~1 of fine-tuning and frozen
+The audio encoder is updated only in Stage~1 of fine-tuning and frozen
 thereafter; Stages~2--3 update only the LLM.
 
 \subsection{Language Model}
 \label{subsec:llm}
 
-The LLM is initialised from the Qwen3-ASR-1.7B text backbone \cite{qwen2025qwen3asr},
+The LLM is initialized from the Qwen3-ASR-1.7B text backbone \cite{qwen2025qwen3asr},
 a 28-layer decoder-only Transformer with 2048-dimensional hidden
 states and a 64\,K native context length. The LLM is updated during
 fine-tuning as described in Section~\ref{sec:training}.
@@ -104,7 +114,7 @@ of a longer utterance.
 
 Following GLCLAP~\cite{kong2025glclap}, AmphionASR retrieves hotwords
 with a fine-grained local scoring module (\Cref{fig:retrieve}) that
-reuses the frozen AuT audio encoder and the frozen LLM text embedding
+reuses the frozen audio encoder and the frozen LLM text embedding
 table. Two small trainable MLP adapters map these frozen
 representations into a shared $512$-dimensional space; the audio side
 is kept at the frame level (no utterance-level pooling), and each
@@ -135,7 +145,7 @@ boundary is their integration into the shared AmphionASR model and its
 broader set of evaluated recognition settings, rather than a new
 retrieval or reinforcement-learning principle.
 
-\subsection{Chat Template}
+\subsection{Instruction Template}
 \label{subsec:prompt}
 
 Each task is represented by a short instruction followed by the audio
@@ -170,7 +180,7 @@ and target-speaker ASR add task-specific fields.
 TS-ASR prepends an enrollment audio block before the main audio and
 switches the instruction to ``\textit{Transcribe what this speaker
 says in the following audio.}''. Both audio segments share the same
-AuT encoder path and reach the LLM as two ordered audio-embedding
+audio encoder path and reach the LLM as two ordered audio-embedding
 spans (enrollment first, mixed audio second).
 
 \paragraph{Hotword conditioning.}

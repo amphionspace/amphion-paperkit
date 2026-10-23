@@ -1,12 +1,9 @@
-\section{Introduction}
-\label{sec:intro}
-
-\begin{figure}[t]
+\begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/cap.png}
+  \includegraphics[width=0.92\linewidth]{figures/cap_v3_2.png}
   \caption{Four recognition capabilities of AmphionASR.
     \emph{Top-left:} hotword conditioning with retrieval-based
-    contextual biasing, prioritising key names in the transcript.
+    contextual biasing, prioritizing key names in the transcript.
     \emph{Top-right:} target-speaker ASR that transcribes only the
     $3$--$5$\,s enrolled speaker from a multi-speaker mixture,
     robust to overlap and crosstalk.
@@ -16,6 +13,9 @@
     low-amplitude whispered input.}
   \label{fig:teaser}
 \end{figure}
+
+\section{Introduction}
+\label{sec:intro}
 
 Modern speech recognition has evolved through several stages.
 Hybrid HMM--DNN systems~\cite{hinton2012deep} dominated for decades by
@@ -27,8 +27,8 @@ classification, attention encoder--decoder networks, and
 RNN-transducers~\cite{graves2006ctc,chan2016las,graves2012rnnt}, with
 the Conformer~\cite{gulati2020conformer} becoming a strong hybrid of
 convolution and self-attention.
-Self-supervised pretraining then reduced reliance on labelled audio
-by learning speech representations from unlabelled
+Self-supervised pretraining then reduced reliance on labeled audio
+by learning speech representations from unlabeled
 data~\cite{baevski2020wav2vec2,hsu2021hubert}, and weakly supervised
 learning at scale produced robust multilingual systems such as
 Whisper~\cite{radford2023whisper}.
@@ -37,29 +37,35 @@ language backbones~\cite{chu2023qwenaudio,tang2024salmonn,stepaudio22025,kimiaud
 inheriting the comprehension and instruction-following ability of
 large language models.
 
-General transcription is only one part of practical ASR. A recogniser
+General transcription is only one part of practical ASR. A recognizer
 may also face four recognition settings beyond
-unconditioned transcription.
-\emph{Hotword-conditioned ASR} addresses the recognition difficulty of
-rare entities and domain-specific terminology---proper nouns, product
-names, and professional terms that an unconditioned model frequently
-mis-transcribes---by accepting a user-supplied hotword list as
-contextual bias.
-\emph{Target-speaker ASR} addresses multi-talker overlap: given a short
-enrollment utterance of a target speaker, the model must transcribe
-only that speaker's content from overlapping speech, rather than
-concatenating all talkers.
-\emph{Degradation-robust ASR} handles real-world capture conditions
-such as far-field pickup, additive noise, reverberation, and
-transmission dropout that degrade captured speech.
-\emph{Whispered-speech ASR} transcribes atypical, low-energy whispered
-phonation that deviates from normal speech.
+unconditioned transcription:
+
+\begin{itemize}
+  \item \textbf{Hotword-conditioned ASR} addresses the recognition
+        difficulty of rare entities and domain-specific
+        terminology---proper nouns, product names, and professional
+        terms that an unconditioned model frequently
+        mis-transcribes---by accepting a user-supplied hotword list as
+        contextual bias.
+  \item \textbf{Target-speaker ASR} addresses multi-talker overlap:
+        given a short enrollment utterance of a target speaker, the
+        model must transcribe only that speaker's content from
+        overlapping speech, rather than concatenating all talkers.
+  \item \textbf{Degradation-robust ASR} handles real-world capture
+        conditions such as far-field pickup, additive noise,
+        reverberation, and transmission dropout that degrade captured
+        speech.
+  \item \textbf{Whispered-speech ASR} transcribes atypical, low-energy
+        whispered phonation that deviates from normal speech.
+\end{itemize}
+
 These settings differ in their side information and acoustic
 conditions, but they share the same desired output: the transcript of
 the requested speech.
 
-We present \textbf{AmphionASR}, built on Qwen3-ASR-1.7B, as a shared
-model for these four recognition settings.
+We present \textbf{AmphionASR}, a unified model for these four
+recognition settings.
 Hotword lists and target-speaker enrollment audio enter as task
 conditions, while degradation and whispered-speech examples adapt the
 model to atypical acoustic inputs.
@@ -68,13 +74,13 @@ information that specifies what and under which conditions to
 transcribe.
 The hotword path follows prior work that already combines GLCLAP
 top-$K$ retrieval, prompt injection, and GRPO~\cite{lakomkin2025contextual};
-our scope is integration into the shared model and evaluation across
+our scope is integration into the unified model and evaluation across
 the recognition settings studied here.
 
 Our contributions are:
 
 \begin{itemize}
-  \item \textbf{A shared interface for conditioned ASR.}
+  \item \textbf{A unified interface for conditioned ASR.}
         We formulate hotword-conditioned, target-speaker,
         degradation-robust, and whispered-speech ASR within one model,
         using task instructions and optional reference inputs.
@@ -89,7 +95,7 @@ Our contributions are:
         median overheads of $1.37$\,ms in English and $3.25$\,ms in Mandarin
         relative to precomputed Top-$50$ prompts.
   \item \textbf{A multi-condition evaluation.}
-        We evaluate the shared model on standard ASR, contextual ASR,
+        We evaluate the unified model on contextual ASR,
         target-speaker ASR, acoustic degradations, and whispered
         speech, reporting both improvements and remaining gaps across
         the evaluated conditions.

@@ -68,7 +68,7 @@ from the $10{,}112$-entry Mandarin and $10{,}000$-entry English pools.
   \caption{Retrieval-based contextual biasing entity recognition on
     CommonVoice with $K{=}50$ and the $10{,}112$-entry Mandarin and
     $10{,}000$-entry English pools. Recall@$K$ is retriever-level
-    (``--'' without retrieval); B-CER and B-WER count
+    (``--'' without RAG); B-CER and B-WER count
     errors on annotated entity tokens only.}
   \label{tab:hotwords_retrieve}
   \centering
@@ -76,12 +76,12 @@ from the $10{,}112$-entry Mandarin and $10{,}000$-entry English pools.
   \setlength{\tabcolsep}{4pt}
   \begin{tabular}{llrr}
     \toprule
-    Test set & Condition & Recall@$K$ (\%) & B-CER / B-WER (\%) \\
+    CommonVoice test set & Condition & Recall@$K$ (\%) & B-CER / B-WER (\%) \\
     \midrule
-    CV zh hotword test & No retrieval & --     & 9.27  \\
-    CV zh hotword test & Retrieval    & 94.52  & 2.30  \\
-    CV en hotword test & No retrieval & --     & 28.93 \\
-    CV en hotword test & Retrieval    & 95.19  & 9.81  \\
+    zh hotword test & w/o RAG & --     & 9.27  \\
+    zh hotword test & w/ RAG  & 94.52  & 2.30  \\
+    en hotword test & w/o RAG & --     & 28.93 \\
+    en hotword test & w/ RAG  & 95.19  & 9.81  \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -172,7 +172,7 @@ retrieval-conditioned pipeline, whereas the isolated latency claim
 compares online retrieval with identical precomputed Top-$50$ prompts;
 it does not assign the complete quality gain to the retriever alone.
 
-These measurements are an initial latency characterisation rather
+These measurements are an initial latency characterization rather
 than a serving-capacity result: each configuration has only $30$
 utterances, no concurrent requests are tested, the GPU is shared, and
 the deployed default retriever remains the utterance-pooled variant.

@@ -1,7 +1,7 @@
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{Setup}
+\subsection{Setups}
 \label{subsec:setup}
 
 \begin{table}[t]
@@ -19,7 +19,6 @@
                        CommonVoice EN                                             & WER \\
     Hotword ASR      & CommonVoice ZH / EN hotword splits                         & CER / WER \\
     TS-ASR           & in-house target-speaker test set
-                       + LibriMix 2 / 3 \cite{cosentino2020librimix}
                                                                                 & WER \\
     Degradation robustness & Voice-in-the-Wild-Bench \cite{xie2026mega}
                        ($16$ subsets, $5{,}000$ clips)                            & WER \\
@@ -32,15 +31,15 @@
 \end{table}
 
 \paragraph{Normalization.}
-For English benchmarks we apply the Whisper English text normaliser
+For English benchmarks we apply the Whisper English text normalizer
 \cite{radford2023whisper} to both reference and hypothesis before
-computing WER. For Mandarin we apply a stripped-down normaliser that
-removes punctuation, normalises full-width and half-width characters
+computing WER. For Mandarin we apply a stripped-down normalizer that
+removes punctuation, normalizes full-width and half-width characters
 and maps Arabic numerals to their Mandarin equivalents before CER.
 
 \paragraph{Baselines.}
 We compare AmphionASR against eight recent open-source speech-LLM and
-dedicated ASR systems, organised loosely by training objective:
+dedicated ASR systems, organized loosely by training objective:
 audio-understanding and omni-modal LLMs --- Whisper-large-v3
 \cite{radford2023whisper}, Kimi-Audio-7B-Instruct \cite{kimiaudio2025},
 Step-Audio~2 \cite{stepaudio22025}, MiniCPM-o \cite{minicpm2025},
@@ -50,7 +49,7 @@ FireRed-ASR2-LLM \cite{fireredasr2025}, and GLM-ASR-nano
 \cite{glmasr2025}. The baseline columns in
 Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh}
 (Appendix~\ref{sec:appendix-general-asr}) are produced by us under the
-same normaliser as the AmphionASR column.
+same normalizer as the AmphionASR column.
 
 \paragraph{Hotword conditioning setup.}
 We evaluate two conditions on the CommonVoice ZH/EN hotword splits:
@@ -61,11 +60,10 @@ Mandarin and WER for English; entity B-WER and B-CER are used for
 GigaSpeechBench.
 
 \paragraph{Target-speaker ASR setup.}
-Three test sets are used: an in-house target-speaker test set
-(synthesised by the same pipeline as training but on held-out
-speakers), Libri2Mix, and Libri3Mix. We report positive-slice WER
-on all three sets and false-alarm rates on the silence and distractor
-negative sub-slices of the in-house set.
+The test set is an in-house target-speaker test set
+(synthesized by the same pipeline as training but on held-out
+speakers). We report positive-slice WER and the false-alarm rate on the
+silence negative sub-slice of the in-house set.
 Baselines are Qwen3-ASR-0.6B, Qwen3-ASR-1.7B~\cite{qwen2025qwen3asr}
 and Qwen3-Omni~\cite{qwen2025qwen3omni}. Qwen3-Omni is evaluated
 zero-shot with the instruction-enhanced dual-audio prompt described in
@@ -88,4 +86,4 @@ from~\cite{xie2026mega}.
 
 All evaluations use the same metric implementation for offline and
 batched inference.
-Table~\ref{tab:eval} summarises the test sets reported in this paper.
+Table~\ref{tab:eval} summarizes the test sets reported in this paper.

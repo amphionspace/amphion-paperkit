@@ -1,6 +1,6 @@
 Practical speech recognition often requires more than unconditioned transcription: users may provide domain vocabulary or reference speech, while the input may contain degradations or whispered speech.
-We present \textbf{AmphionASR}, a SpeechLLM built on Qwen3-ASR-1.7B
-that supports these conditions through a shared model and
+We present \textbf{AmphionASR}, a $1.7$\,B SpeechLLM that
+supports all of these conditions within a single unified model driven by
 task-specific inputs.
 We evaluate four conditioned recognition settings on Mandarin and
 English benchmarks. For large-vocabulary hotword conditioning, the
@@ -9,11 +9,9 @@ complete pipeline reduces average entity error by $37$--$55$\,\%
 relative to no hotword context~\cite{tu2026gigaspeechbench}. Online
 retrieval adds a paired median of $1.37$--$3.25$\,ms relative to
 precomputed Top-$50$ prompts in the measured single-request,
-steady-state setting. The shared model also demonstrates target-speaker
+steady-state setting. The unified model also demonstrates target-speaker
 selection when the requested speaker is present, records the lowest WER
 among the compared systems on eight of sixteen Voice-in-the-Wild
 degradation subsets~\cite{xie2026mega}, and obtains the lowest error on
 both the Mandarin wEar and English WTIMIT whispered-speech tests
 ($0.58$\,\% CER and $6.11$\,\% WER, respectively)~\cite{fang2025whisperear}.
-General transcription is retained as a retention check across multiple standard ASR
-benchmarks rather than as a state-of-the-art claim.

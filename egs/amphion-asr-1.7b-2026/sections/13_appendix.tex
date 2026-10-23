@@ -9,7 +9,7 @@ transcript is sent as the user message and the model is constrained to
 return a strict JSON object whose \texttt{hotwords} field lists the
 extracted proper-noun entities. The prompt is reproduced in
 Listing~\ref{lst:hotword-prompt}; non-Latin example tokens are
-romanised (pinyin for Mandarin, RTGS for Thai) for the Latin-only
+romanized (pinyin for Mandarin, RTGS for Thai) for the Latin-only
 typesetting, while the deployed prompt keeps the original scripts.
 
 \begin{lstlisting}[style=plain,
@@ -98,14 +98,14 @@ Audio 2:
 \section{TS-ASR Synthesis Recipe}
 \label{sec:appendix-tsasr-synth}
 
-This appendix details the offline synthesiser used to build the
+This appendix details the offline synthesizer used to build the
 target-speaker training sets of Section~\ref{subsec:tsasr-synth}
 (\Cref{fig:tsasr-pipeline}).
 
 \begin{figure}[!t]
   \centering
   \includegraphics[width=0.8\linewidth]{figures/tsasr-pipeline.pdf}
-  \caption{Offline TS-ASR synthesiser. From a target speaker
+  \caption{Offline TS-ASR synthesizer. From a target speaker
     $s_\text{tgt}$ the pipeline draws two different recordings --
     one becomes the $3$--$5\,$s enrollment, the other becomes the
     target waveform. Cross-source interferer sampling adds
@@ -146,11 +146,11 @@ After mixing we apply an RIR with probability $0.5$
 segment with $\mathrm{SNR}\!\sim\!\mathrm{Uniform}(0, 25)$\,dB.
 RIR convolutions are truncated to $1.5$\,s and applied via an
 FFT-based overlap-add; noise is mixed at the configured SNR and
-peak-normalised to avoid clipping.
+peak-normalized to avoid clipping.
 
 \begin{table}[!htbp]
   \caption{Room impulse response and noise pools used by the TS-ASR
-    synthesiser. Within each pool, RIRs are sampled uniformly; noise
+    synthesizer. Within each pool, RIRs are sampled uniformly; noise
     sources are sampled with the listed weights per training example.}
   \label{tab:data_rir_noise}
   \centering
@@ -199,14 +199,14 @@ expose the model to cases where the requested speaker is absent.
 
 This appendix details the general-ASR retention results motivated by
 Section~\ref{subsec:general-asr-retention}: we examine whether the
-added personalisation capabilities --- hotword conditioning,
+added personalization capabilities --- hotword conditioning,
 target-speaker selection, degradation robustness, and whispered-speech
 recognition --- come at the cost of general transcription quality.
 Tables~\ref{tab:asr_en} and~\ref{tab:asr_zh} compare AmphionASR with
 eight open-source systems on four English and six Mandarin test sets
-under the normalisers of Section~\ref{subsec:setup}.
-AmphionASR remains within $0.85$ absolute WER/CER points of the
-Qwen3-ASR-1.7B backbone on every test set and leads on four of the ten,
+under the normalizers of Section~\ref{subsec:setup}.
+AmphionASR remains within $0.85$ absolute WER/CER points of
+Qwen3-ASR-1.7B on every test set and leads on four of the ten,
 indicating that multi-condition fine-tuning preserves general
 recognition quality rather than materially degrading it; we therefore
 treat this grid as a retention check rather than a state-of-the-art
@@ -216,19 +216,15 @@ claim.
 
 \input{tables/asr_zh}
 
-\paragraph{Comparison with the Qwen3-ASR backbone.}
-Qwen3-ASR-1.7B is the closest comparison because AmphionASR reuses its
-audio encoder and LLM.
+Qwen3-ASR-1.7B is the closest comparison because it matches AmphionASR
+in parameter scale and is likewise an ASR-specialized SpeechLLM:
 AmphionASR leads on four of the ten test sets, while Qwen3-ASR-1.7B
 leads on the remaining six by $0.13$--$0.85$ absolute points.
-
-\paragraph{Comparison with other open systems.}
-FireRed-ASR2-LLM~\cite{fireredasr2025} leads five Mandarin columns,
-and Step-Audio~2 leads AIShell-2.
-The English column leaders vary across Kimi-Audio, Qwen3-ASR-1.7B, and
-Step-Audio~2.
-AmphionASR does not lead any column in these two tables, consistent
-with the retention-check framing above.
+Among the other open systems, FireRed-ASR2-LLM~\cite{fireredasr2025}
+leads five Mandarin columns and Step-Audio~2 leads AIShell-2, while the
+English column leaders vary across Kimi-Audio, Qwen3-ASR-1.7B, and
+Step-Audio~2; AmphionASR does not lead any column in these two tables,
+consistent with the retention-check framing above.
 The highest AmphionASR errors occur on GigaSpeech and the WenetSpeech
 meeting split, both of which contain more spontaneous speech than the
 read-speech sets~\cite{chen2021gigaspeech}.

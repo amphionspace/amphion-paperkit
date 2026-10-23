@@ -4,7 +4,7 @@
 We evaluate whispered-speech ASR on the Mandarin wEar and English
 WTIMIT test sets~\cite{fang2025whisperear}.
 We report CER for Mandarin and WER for English.
-All baseline numbers are produced by us under the same normaliser as
+All baseline numbers are produced by us under the same normalizer as
 Section~\ref{subsec:setup}; every system is decoded greedily with no
 whisper-specific prompt or audio preprocessing.
 
@@ -37,10 +37,11 @@ whisper-specific prompt or audio preprocessing.
 
 AmphionASR records the lowest error on both whispered-speech test sets
 (Table~\ref{tab:whisper_asr}). On the Mandarin wEar set it reaches
-0.58\,\% CER, ahead of the next-best system FireRed-ASR2-LLM (1.01\,\%)
-and its own backbone Qwen3-ASR-1.7B (1.22\,\%); the gap over the
-backbone confirms that the Stage~1 whisper SFT transfers rather than
-merely inheriting Qwen3-ASR's general behaviour. On the English WTIMIT
+0.58\,\% CER, ahead of FireRed-ASR2-LLM (1.01\,\%) and
+Qwen3-ASR-1.7B (1.22\,\%); the margin over every baseline indicates
+that the Stage~1 whisper SFT contributes a genuine gain on whispered
+phonation rather than reflecting general recognition quality.
+On the English WTIMIT
 set AmphionASR reaches 6.11\,\% WER, a 3.45-point absolute reduction
 over Qwen3-ASR-1.7B (9.56\,\%) and 4.84 points below the best
 non-whisper-trained baseline (Kimi-Audio-7B-Instruct, 10.95\,\%).
@@ -56,6 +57,6 @@ compressed at the top---six of nine baselines fall in
 37.45\,\% WER and MiniCPM-o / MOSS-Audio exceed 21\,\%, consistent with
 insertion-heavy failure modes on atypical excitation. AmphionASR is the
 only system that is simultaneously best on both languages, which
-supports the claim that the Stage~1 whisper recipe generalises across
+supports the claim that the Stage~1 whisper recipe generalizes across
 the Mandarin and English whisper sub-corpora without a language-specific
 trade-off.
