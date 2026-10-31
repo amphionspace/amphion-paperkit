@@ -6,6 +6,21 @@
 
 ---
 
+## v0.7 — 2026-10-31 — AmphionEval 外部信息源与顶层 README
+
+报告里的评测数字此前只能手抄或从临时目录汇总，无法追溯到 AmphionEval 发布的记录。本次把 AmphionEval 团队桶接入为外部信息源，并补上 AGENTS.md / egs/README.md 早已引用、但一直缺失的顶层 README。**非破坏性**：不改 class、macro、TeX 接口或任何 egs 的渲染结果，不需要更新 `depends_on_template`。
+
+公共层的具体变更：
+
+- 新增 `tools/fetch-eval.py`：读取 `egs/<slug>/refs/internal/amphion-eval.yaml` 声明的桶内路径（`records/<task>/<年月>/`、`eval-sets/<project>/<name>@<version>/`），通过 AmphionBucket（`ab pull`）只读镜像到 `egs/<slug>/refs/internal/amphion-eval/`，布局与 `ae` 状态目录一致；结束时按 benchmark / 模型统计记录数。没有声明文件的报告直接跳过。
+- `.gitignore` 忽略 `egs/*/refs/internal/amphion-eval/`：记录里含不能公开的子集，本仓库是公开仓库；数字只能经各报告自己的净化与汇总进入正文。
+- 新增顶层 `README.md`：安装（含无 root 的 TeX Live 用户目录安装与所需 `tlmgr` 宏包）、快速开始、仓库结构、AmphionEval 接入、命令速查、活跃报告表。
+- `AGENTS.md` 规则 2 的目录表增加 `refs/internal/amphion-eval.yaml`（tracked）与镜像目录（gitignored）两行。
+
+每 egs 影响：`amphion-asr-2.0-2026` 已声明并使用；其他 egs 不受影响，需要时自行添加声明文件。
+
+---
+
 ## v0.6 — 2026-07-21 — 学术语域与结果叙事规则
 
 将 AmphionASR 全文写作审阅中发现的非数据问题抽象为公共写作约束。**非破坏性**：仅增强 `.cursor/rules/paper-writing.mdc`，不修改 class、macro、TeX 接口或默认样式，因此不需要更新各 egs 的 `depends_on_template`。

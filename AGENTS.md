@@ -105,6 +105,8 @@ amphion-paperkit/
 | `egs/<slug>/refs/datasets/INDEX.md` | 数据集清单人类视图 | tracked |
 | `egs/<slug>/refs/datasets/*.pdf` | 数据集 datasheet PDF | gitignored |
 | `egs/<slug>/refs/leaderboards/` | 评测榜单截图（按需） | tracked |
+| `egs/<slug>/refs/internal/amphion-eval.yaml` | 本报告使用的 AmphionEval 记录与测试集登记（桶内路径），`uv run tools/fetch-eval.py egs/<slug>` 拉取 | tracked |
+| `egs/<slug>/refs/internal/amphion-eval/` | AmphionEval 记录的只读镜像（含不可公开子集，数字须经净化后进正文） | gitignored |
 | `egs/<slug>/refs/README.md` | 本目录说明 | tracked |
 
 通用写作方法学源（评审 / 复现 / 写作建议 / agent 协作 / LaTeX 工程）见 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)，所有报告共享一份；不在 egs refs 里。

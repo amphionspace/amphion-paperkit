@@ -79,6 +79,10 @@ figures/*.synctex(busy)
 egs/*/refs/notes/papers/*.pdf
 egs/*/refs/datasets/*.pdf
 
+# AmphionEval mirror (records may include internal-only subsets); pulled by
+# `uv run tools/fetch-eval.py egs/<slug>` from refs/internal/amphion-eval.yaml.
+egs/*/refs/internal/amphion-eval/
+
 # Overleaf-pack output: a flat, self-contained copy of egs/<slug>/ + template/
 # produced by `tools/overleaf-pack.sh` (zip + folder). One-way mono-repo -> Overleaf,
 # regenerated on demand; not tracked.
