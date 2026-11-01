@@ -6,8 +6,8 @@ slug: amphion-asr-2026
 title: AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin–English Speech Recognition
 shortname: AmphionASR
 maintainers: TBD
-status: active
+status: archived
 venue: arXiv
 pdf: TBD
-last_updated: 2026.05.14
+last_updated: 2026.11.01
 depends_on_template: v0.1
