@@ -34,7 +34,7 @@ egs/<slug>/
 ├── references.bib          # 报告 specific cites（顶层 starter 在 ../../references.bib）
 ├── ack/llm-usage.md        # ICLR / NeurIPS LLM 披露日志
 ├── sections/               # XX_name.tex 单文件单节
-├── figures/                # 该报告 specific figures（TikZ 源 + 编译产物 PDF）
+├── figures/                # 该报告 specific figures（TikZ / SVG 源 + 生成的 PDF）
 ├── tables/                 # 大表抽出来 \input 的位置
 └── refs/
     ├── docs/                          # 内部 plan / model_arch / task_prompts / train_eval_data

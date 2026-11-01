@@ -26,7 +26,7 @@ Output written on main.pdf
 
 ## 安装
 
-需要 TeX Live（pdfLaTeX + latexmk）、Python 3.9+ 和 [uv](https://docs.astral.sh/uv/)。读取评测结果还需要 AmphionBucket（`ab`，团队内部工具）。
+需要 TeX Live（pdfLaTeX + latexmk）、Python 3.9+ 和 [uv](https://docs.astral.sh/uv/)；画 SVG 图还需要 `rsvg-convert`（Debian / Ubuntu `apt install librsvg2-bin`，macOS `brew install librsvg`）。读取评测结果还需要 AmphionBucket（`ab`，团队内部工具）。
 
 ```bash
 # uv（脚本依赖通过 PEP 723 声明，uv 自动建环境）
@@ -76,7 +76,7 @@ latexmk -pdf main.tex              # latexmkrc 已把仓库根加入 TEXINPUTS
 ../../tools/fact-check-regex.sh .  # 正文不能出现路径、脚本名、配置字段
 ```
 
-图一律用 TikZ（`\input{_palette}` 复用公共调色板），源码和编译出的 PDF 都放 `figures/` 并提交。
+图用 TikZ（`\input{_palette}` 复用公共调色板）或 SVG（颜色取同一调色板，`tools/svg2pdf.sh` 转 PDF），源码和生成的 PDF 都放 `figures/` 并提交。
 
 ## 仓库结构
 
@@ -84,7 +84,7 @@ latexmk -pdf main.tex              # latexmkrc 已把仓库根加入 TEXINPUTS
 amphion-paperkit/
 ├── template/        amphion.cls + asr-macros.sty + IEEEtran2.bst + venues.bib（CHANGELOG 记版本）
 ├── figures/         公共 TikZ 调色板 _palette.tex 与架构图起手范本
-├── tools/           new-report / build-all / fact-check-regex / fetch-refs / fetch-eval / overleaf-pack
+├── tools/           new-report / build-all / fact-check-regex / fetch-refs / fetch-eval / svg2pdf / overleaf-pack
 ├── .cursor/rules/   写作、LaTeX 工程、ASR 领域、复现、多报告边界规则 + 方法学源汇总
 ├── .github/         CI：编译全部报告、跑抽象层次自检
 └── egs/
@@ -134,6 +134,7 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 | `tools/fact-check-regex.sh [egs/<slug>]` | 检查正文有无路径、脚本名、配置字段（CI 同款） |
 | `tools/overleaf-pack.sh <slug>` | 打包成可直接上传 Overleaf 的扁平目录 / zip |
 | `cd egs/<slug>/figures && pdflatex <name>.tex` | 单独编译一张 TikZ 图 |
+| `tools/svg2pdf.sh egs/<slug>/figures/<name>.svg` | 把一张 SVG 图转成同名 PDF（文字用 TeX Gyre Pagella） |
 
 ## 活跃报告
 
@@ -149,7 +150,7 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 
 | 文档 | 内容 |
 | --- | --- |
-| [AGENTS.md](AGENTS.md) | 9 条硬约束：TikZ 作图、先查 refs、fact check、正文不写实现细节、refs/docs 是原料、仿照同类文献、通用约定、egs 边界、不自创归因 |
+| [AGENTS.md](AGENTS.md) | 9 条硬约束：TikZ / SVG 作图、先查 refs、fact check、正文不写实现细节、refs/docs 是原料、仿照同类文献、通用约定、egs 边界、不自创归因 |
 | [.cursor/rules/](.cursor/rules/) | 写作风格、LaTeX 工程、ASR 领域报告项、复现与 LLM 使用披露、多报告边界 |
 | [.cursor/rules/_sources.md](.cursor/rules/_sources.md) | 写作、评审、复现方法学的外部来源 |
 | [template/CHANGELOG.md](template/CHANGELOG.md) | 公共层每次改动的原因、内容和兼容性 |

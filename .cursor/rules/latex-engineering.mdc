@@ -23,6 +23,7 @@ Distilled from: X-LANCE Lab pre-print template (xlance.cls v0.2.4-20260429), Ove
 - `main.tex` is orchestration only: documentclass, preamble overrides, title/author/abstract, `\input{sections/...}`, bibliography, appendix. No prose body in `main.tex`.
 - `sections/XX_name.tex` -- one section per file, prefixed by 2-digit order.
 - `figures/<name>.tex` -- TikZ source. Build with `latexmk -pdf` from project root; the resulting `figures/<name>.pdf` is checked in.
+- `figures/<name>.svg` -- SVG source for illustrations (scenes, people, devices) that are awkward in TikZ. Use the palette HEX colours and `font-family="TeX Gyre Pagella"`, convert with `tools/svg2pdf.sh`, and check in both the SVG and the resulting `figures/<name>.pdf`.
 - `references.bib` -- our own bibliography. Combined with `xlance/venues.bib` at compile time via `\bibliography{xlance/venues,references}`.
 - `xlance/` -- vendored template, treat as read-only.
 - Tables that exceed ~30 rows or are script-generated: separate file under `tables/`, `\input` from the relevant section.

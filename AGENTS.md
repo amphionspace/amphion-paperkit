@@ -39,12 +39,14 @@ amphion-paperkit/
 
 ---
 
-## 规则 1：所有图一律用 TikZ，多图必须风格统一
+## 规则 1：图用 TikZ 或 SVG，多图必须风格统一
 
 ### 强制要求
 
-- 所有 figure 一律 TikZ 源码：`egs/<slug>/figures/<name>.tex`（standalone class），输出 `egs/<slug>/figures/<name>.pdf`，主文档用 `\includegraphics{figures/<name>.pdf}` 引入（路径相对当前 egs 的 main.tex）。
-- 禁止：PowerPoint / Keynote / drawio / Mermaid / Excalidraw 用于最终 paper figure。
+- figure 源码二选一，都输出矢量 `egs/<slug>/figures/<name>.pdf`，主文档用 `\includegraphics{figures/<name>.pdf}` 引入（路径相对当前 egs 的 main.tex），源码和 PDF 一起提交：
+    - TikZ：`egs/<slug>/figures/<name>.tex`（standalone class），pdflatex 编译。结构图、流程图、数据图优先用它，与已有的图保持一致。
+    - SVG：`egs/<slug>/figures/<name>.svg`，用 `tools/svg2pdf.sh` 转成 PDF。场景演示、人物与设备插画这类 TikZ 不便画的图用它。
+- 禁止：PowerPoint / Keynote / drawio / Mermaid / Excalidraw 用于最终 paper figure；SVG 里不嵌位图。
 - 数据可视化（loss / WER 曲线、柱状图、热力图）优先 pgfplots；如必须用 matplotlib，输出 PDF 矢量并保持字体 sans serif。
 
 ### 风格 preset（已建立，必须复用）
@@ -86,6 +88,15 @@ amphion-paperkit/
 6. 在 main 用 `\includegraphics[width=\linewidth]{figures/<new-name>.pdf}` 引入
 7. `cd egs/<slug> && latexmk -pdf main.tex` 检查整体效果
 8. `git add egs/<slug>/figures/<new-name>.{tex,pdf}` 并 commit
+
+### 新增 SVG 图的步骤
+
+1. 写 `egs/<slug>/figures/<new-name>.svg`：`width` / `height` 用 pt，`viewBox` 与之 1:1（版心宽 443.6pt，整宽图取 `width="444pt"`），这样 SVG 里的字号就是 PDF 里的实际字号
+2. 颜色只用上表 HEX（需要浅色时按同一色相混白，不引入新色相）；文字一律 `font-family="TeX Gyre Pagella"`，与正文同字体，正文级文字 8–9pt
+3. 在文件开头的注释里写明事实来源（`refs/` 路径与章节）和转换命令，与 TikZ 图的头注释一致
+4. 转换：`tools/svg2pdf.sh egs/<slug>/figures/<new-name>.svg`（需要 `rsvg-convert`；脚本临时让 fontconfig 找到 TeX Live 里的 TeX Gyre Pagella），确认 PDF 里嵌入的是 Pagella
+5. 在 main 用 `\includegraphics[width=\linewidth]{figures/<new-name>.pdf}` 引入，`latexmk -pdf main.tex` 检查整体效果
+6. `git add egs/<slug>/figures/<new-name>.{svg,pdf}` 并 commit
 
 ---
 

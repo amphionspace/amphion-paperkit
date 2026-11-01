@@ -6,6 +6,20 @@
 
 ---
 
+## v0.8 — 2026-10-31 — 允许 SVG 图
+
+规则 1 此前要求所有图都用 TikZ。场景演示图（人物、设备、对话气泡）是同类技术报告第 1–2 页的常见内容（CocktailASR-1、AmphionASR 1.0 都有），用 TikZ 画这类插画很费力；1.0 报告只好用位图，偏离了规则。本次允许手写或导出的 SVG，转成矢量 PDF 后照常 `\includegraphics`。**非破坏性**：不改 class、macro、TeX 接口或任何已有图，不需要更新 `depends_on_template`。
+
+公共层的具体变更：
+
+- `AGENTS.md` 规则 1：figure 源码可以是 TikZ 或 SVG。结构图、流程图、数据图仍优先 TikZ / pgfplots，场景和插画类用 SVG；SVG 只用调色板 HEX、文字用 TeX Gyre Pagella、不嵌位图；新增「新增 SVG 图的步骤」。
+- 新增 `tools/svg2pdf.sh`：用 `rsvg-convert` 把 SVG 转成同名 PDF，转换时临时让 fontconfig 找到 TeX Live 自带的 TeX Gyre Pagella，不需要系统级安装字体。
+- `README.md`（依赖、写作说明、命令速查）、`egs/README.md`、`.cursor/rules/latex-engineering.mdc` 同步说明 SVG 源文件。
+
+每 egs 影响：无；需要 SVG 图的报告按规则 1 的步骤添加，`rsvg-convert` 只在转换时需要，编译报告不需要。
+
+---
+
 ## v0.7 — 2026-10-31 — AmphionEval 外部信息源与顶层 README
 
 报告里的评测数字此前只能手抄或从临时目录汇总，无法追溯到 AmphionEval 发布的记录。本次把 AmphionEval 团队桶接入为外部信息源，并补上 AGENTS.md / egs/README.md 早已引用、但一直缺失的顶层 README。**非破坏性**：不改 class、macro、TeX 接口或任何 egs 的渲染结果，不需要更新 `depends_on_template`。
