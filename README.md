@@ -73,7 +73,7 @@ uv run tools/fetch-refs.py egs/<slug>
 ```bash
 cd egs/<slug>
 latexmk -pdf main.tex              # latexmkrc 已把仓库根加入 TEXINPUTS
-../../tools/fact-check-regex.sh .  # 正文不能出现路径、脚本名、配置字段
+../../tools/fact-check-regex.sh .  # 正文不能出现路径、脚本名（注释不算）
 ```
 
 图用 TikZ（`\input{_palette}` 复用公共调色板）或 SVG（颜色取同一调色板，`tools/svg2pdf.sh` 转 PDF），源码和生成的 PDF 都放 `figures/` 并提交。
@@ -133,7 +133,7 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 | `tools/build-all.sh` | 编译全部活跃报告（跳过 `_` 开头目录） |
 | `tools/fact-check-regex.sh [egs/<slug>]` | 检查正文有无路径、脚本名、配置字段（CI 同款） |
 | `tools/overleaf-pack.sh <slug>` | 打包成可直接上传 Overleaf 的扁平目录 / zip |
-| `cd egs/<slug>/figures && pdflatex <name>.tex` | 单独编译一张 TikZ 图 |
+| `cd egs/<slug>/figures && TEXINPUTS=../../../figures//: pdflatex <name>.tex` | 单独编译一张 TikZ 图 |
 | `tools/svg2pdf.sh egs/<slug>/figures/<name>.svg` | 把一张 SVG 图转成同名 PDF（文字用 TeX Gyre Pagella） |
 
 ## 活跃报告
@@ -143,14 +143,14 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 | slug | 报告 | 状态 | 模板 |
 | --- | --- | --- | --- |
 | [amphion-asr-2.0-2026](egs/amphion-asr-2.0-2026/) | AmphionASR 2.0: Target-Speaker Speech Recognition for Real-World Recordings --- A Benchmark and a Model | active（初稿） | v0.1 |
-| [amphion-asr-1.7b-2026](egs/amphion-asr-1.7b-2026/) | AmphionASR: A Unified SpeechLLM for Context-Aware Mandarin–English Speech Recognition（AmphionASR 1.0，2026.07） | 已发布；缺 `REPORT.md` | — |
+| [amphion-asr-1.7b-2026](egs/amphion-asr-1.7b-2026/) | AmphionASR: A Unified SpeechLLM for Context-Aware Mandarin–English Speech Recognition（AmphionASR 1.0，2026.07） | archived（已发布） | v0.1 |
 | [amphion-asr-2026](egs/amphion-asr-2026/) | AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin–English Speech Recognition | active | v0.1 |
 
 ## 协作规则
 
 | 文档 | 内容 |
 | --- | --- |
-| [AGENTS.md](AGENTS.md) | 9 条硬约束：TikZ / SVG 作图、先查 refs、fact check、正文不写实现细节、refs/docs 是原料、仿照同类文献、通用约定、egs 边界、不自创归因 |
+| [AGENTS.md](AGENTS.md) | 9 条硬约束：TikZ / SVG 作图、先查 refs、fact check、正文不写实现细节、refs/docs 是原料、结构仿照同类文献、通用约定、egs 边界、不自创归因 |
 | [.cursor/rules/](.cursor/rules/) | 写作风格、LaTeX 工程、ASR 领域报告项、复现与 LLM 使用披露、多报告边界 |
 | [.cursor/rules/_sources.md](.cursor/rules/_sources.md) | 写作、评审、复现方法学的外部来源 |
 | [template/CHANGELOG.md](template/CHANGELOG.md) | 公共层每次改动的原因、内容和兼容性 |

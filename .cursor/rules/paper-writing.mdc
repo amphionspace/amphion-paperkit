@@ -9,7 +9,7 @@ Sources distilled from: Simon Peyton Jones (How to write a great research paper)
 
 ## 1. One ping, told as a story
 
-- The paper has exactly one sharp idea ("one ping"). State it explicitly: "The main idea of this paper is …".
+- The paper has one sharp idea ("one ping"), or at most two closely linked contributions. Make it clear on the first page, in your own words; no fixed wording is required.
 - Write the paper as if you were explaining at a whiteboard: problem → why it is interesting → why prior work falls short → our idea → evidence it works → implications.
 - Do not start from "what we did". Start from "what is the problem and why should the reader care".
 - Use reader order, not implementation order. Before the first result or contribution for a task, define the user scenario, the failure being addressed, and the desired output. A contribution bullet must not be the reader's first explanation of target-speaker ASR, contextual ASR, whispered ASR, or another unfamiliar task.

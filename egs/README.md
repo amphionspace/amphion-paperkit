@@ -31,7 +31,7 @@ egs/<slug>/
 ├── main.tex                # \documentclass{template/amphion}; ~30 行
 ├── REPORT.md               # 报告元数据（slug / status / venue / 维护者 / ...）
 ├── latexmkrc               # 设置 TEXINPUTS=../../ 让 template/ 解析正确
-├── references.bib          # 报告 specific cites（顶层 starter 在 ../../references.bib）
+├── references.bib          # 该报告的引用
 ├── ack/llm-usage.md        # ICLR / NeurIPS LLM 披露日志
 ├── sections/               # XX_name.tex 单文件单节
 ├── figures/                # 该报告 specific figures（TikZ / SVG 源 + 生成的 PDF）
@@ -59,7 +59,7 @@ egs/<slug>/
 
 ```bash
 cd egs/<slug>
-PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex
+latexmk -pdf main.tex
 ```
 
 或一次性编所有 active egs：

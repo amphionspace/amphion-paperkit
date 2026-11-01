@@ -2,7 +2,8 @@
 # Run AGENTS.md rule 4's regex self-check across egs/<slug>/sections/*.tex.
 # Hits indicate that implementation-level details (file paths, class names,
 # config field names, repo-internal scripts) leaked into the report prose
-# and must be rewritten.
+# and must be rewritten. TeX comments are not prose and are ignored, so source
+# notes such as "refs/internal/.../data.json" may stay in comments.
 #
 # Usage:
 #   tools/fact-check-regex.sh                  # check all egs (skips _skeleton)
@@ -38,9 +39,12 @@ fi
 hits=0
 for t in "${TARGETS[@]}"; do
   [[ -d "$t/sections" ]] || continue
-  if rg --color=never -n -e "$PATTERN" "$t/sections" 2>/dev/null; then
-    hits=$((hits + 1))
-  fi
+  for f in "$t"/sections/*.tex; do
+    [[ -e "$f" ]] || continue
+    if sed -E 's/(^|[^\\])%.*$/\1/' "$f" | grep -nE -e "$PATTERN" | sed "s|^|$f:|"; then
+      hits=$((hits + 1))
+    fi
+  done
 done
 
 if [[ $hits -gt 0 ]]; then

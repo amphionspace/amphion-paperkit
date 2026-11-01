@@ -6,6 +6,25 @@
 
 ---
 
+## v0.10 — 2026-11-01 — 放宽数据披露要求，修复空跑的正文检查，清理过期说明
+
+公共层积累了几处和实际情况不符的内容，其中一处让检查形同虚设：`tools/fact-check-regex.sh` 依赖 `rg` 且吞掉错误，`rg` 不可执行时一律输出 OK；而 `rg` 可用时（CI）又会命中注释里的来源说明。
+
+公共层的具体变更：
+
+- `tools/fact-check-regex.sh`：改用 grep，不再依赖 `rg`；忽略 TeX 注释。CI 去掉安装 ripgrep 的步骤。
+- `.cursor/rules/asr-domain.mdc` §3：数据配方披露到什么程度由报告决定；公开语料及用途、数据类别、是否用了非公开数据、训练与评测的隔离仍必须写。`AGENTS.md` 规则 6、`reproducibility.mdc` 模型卡、`_skeleton` 同步。
+- `AGENTS.md` 开头与 `egs/README.md`、`latex-engineering.mdc`：去掉 macOS 专用路径。
+- `latex-engineering.mdc`：把仍在描述上游 `xlance/` 布局的内容改成 `template/amphion.cls` 的实际情况（类名、选项、宏包清单、文件布局）。
+- 单独编译 TikZ 图的命令补上 `TEXINPUTS`（原命令找不到 `_palette.tex`）。
+- 去掉已不存在的顶层 `references.bib` 的说明。build-reports CI 的触发路径同步，并补上 `figures/**`、`latexmkrc`。
+- `tools/fetch-refs.py`：回写 sha256 时保留 `INDEX.yaml` 开头的注释。
+- `paper-writing.mdc` §1：不再要求写固定句式 "The main idea of this paper is"，允许至多两项紧密相关的贡献。
+
+每 egs 影响：无破坏性变更。
+
+---
+
 ## v0.9 — 2026-11-01 — 规则不再要求写 prompt 原文，并增加母语读者自检
 
 作者认为 task prompt 原文属于代码细节，不该进正文，而规则 6 和 `asr-domain.mdc` 仍要求贴原文。另外从英语母语审稿人的角度看，规则本身也在制造不地道的英文：规则 6 要求仿照样板句式并往里填空，规则 5 要求把内部记录“翻译”成 claim，规则 4 的改写模板是一串名词，规则 9 的模板用了 `paper-writing.mdc` §6 禁止的排期说法。

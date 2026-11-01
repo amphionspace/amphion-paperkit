@@ -207,7 +207,14 @@ def load_yaml(path: Path) -> dict:
 
 
 def dump_yaml(path: Path, data: dict) -> None:
+    # safe_dump drops comments; keep the file's leading comment block.
+    header = []
+    for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
+        if not line.startswith("#"):
+            break
+        header.append(line)
     with path.open("w", encoding="utf-8") as f:
+        f.writelines(header)
         yaml.safe_dump(
             data,
             f,

@@ -32,26 +32,18 @@ Distilled from: Aksenova et al. 2021 "How Might We Create Better Benchmarks for 
 
 ## 3. Data section requirements
 
-For every data source listed:
+How much of the data recipe to disclose is a per-report decision. A report may withhold sampling weights, per-source hours or counts, mixing probabilities and parameter ranges, and cleaning thresholds.
 
-- name
-- hours (audio duration after VAD filtering — state which)
-- number of utterances or segments
-- language(s) and language code (ISO 639-1/3)
-- license (SPDX identifier if possible) and whether redistributable
-- domain category (read / spontaneous / conversational / broadcast / call-center / etc.)
-- collection year or release year
-- citation
+Every report still states:
 
-Add a transparent description of the cleaning pipeline:
+- the public corpora used and what each is used for, with citations;
+- the categories of data and, at the level of concepts, how they are constructed;
+- that non-public data are used, if they are, so that a list of public corpora is not read as complete;
+- how training and evaluation data are separated, wherever overlap affects how results should be read.
 
-- VAD model and threshold
-- language ID model
-- ASR-based confidence filter (if any), threshold, and filter rate
-- de-duplication: utterance-level (e.g. MinHash threshold), and document-level
-- PII / profanity scrubbing if applicable
+Anything a report does disclose must be accurate and traceable. A number used as evidence for a claim keeps its source.
 
-Include a per-source table summing to a clear "Total" row.
+If a report does give a per-source breakdown, each row carries name, hours (say whether after VAD filtering), number of utterances or segments, language(s), license and whether redistributable, domain category, release year and citation, and the table sums to a clear "Total" row. A released dataset also follows `reproducibility.mdc` §2, whatever the report withholds.
 
 ## 4. Model / architecture description
 

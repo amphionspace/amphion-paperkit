@@ -3,8 +3,8 @@
 本文件是 Amphion PaperKit 框架所有 AI agent（Cursor / Claude Code / Codex / 任意 SDK 客户端）的硬约束。
 人协作者也建议遵守，方便保持工程一致。
 
-工作目录：`~/Documents/amphion-paperkit`（mono-repo 根；具体报告住在 `egs/<slug>/`）
-编译命令：`cd egs/<slug> && PATH=/Library/TeX/texbin:$PATH latexmk -pdf main.tex`
+工作目录：仓库根目录（mono-repo 根；具体报告住在 `egs/<slug>/`）。下文的命令都从这里算起，除非写了 `cd`
+编译命令：`cd egs/<slug> && latexmk -pdf main.tex`（TeX Live 的可执行文件要在 PATH 上）
 一键编全部：`tools/build-all.sh`
 默认沟通语言：中文（代码注释保持英文）
 
@@ -15,9 +15,8 @@ mono-repo + icefall 风格 `egs/` 叶子节点。每份报告自包含；公共�
 ```
 amphion-paperkit/
 ├── template/      amphion.cls + asr-macros.sty + IEEEtran2.bst + venues.bib
-├── tools/         new-report.sh / build-all.sh / fact-check-regex.sh / fetch-refs.py / schemas/
+├── tools/         new-report / build-all / fact-check-regex / fetch-refs / fetch-eval / svg2pdf / overleaf-pack / schemas
 ├── figures/       公共 TikZ preset（_palette.tex / architecture-skeleton.tex）
-├── references.bib 顶层 starter cites（仅基础公认文献）
 ├── .cursor/rules/ 公共写作 / 工程规则（含 _sources.md 方法学源汇总）
 ├── egs/_skeleton/ 新报告脚手架（含 refs/ 骨架；不要直接编辑作发布内容）
 └── egs/<slug>/    单份报告：main.tex / sections / figures / tables / refs / ack
@@ -80,11 +79,11 @@ amphion-paperkit/
 
 ### 新增图的步骤
 
-1. 在当前 egs 下：`cp ../../figures/architecture-skeleton.tex egs/<slug>/figures/<new-name>.tex` 起手
-2. 在新文件 preamble 中保留 `\input{_palette}`（路径会通过 latexmkrc 的 TEXINPUTS 解析到顶层 `figures/_palette.tex`），不要重新定义颜色或样式
+1. `cp figures/architecture-skeleton.tex egs/<slug>/figures/<new-name>.tex` 起手
+2. 在新文件 preamble 中保留 `\input{_palette}`（顶层 `figures/_palette.tex`，单独编译图时用下面第 5 步的 TEXINPUTS 找到它），不要重新定义颜色或样式
 3. 用现有 `tikzset` 样式（`encoder` / `adapter` / `llmbox` / `tokenizer` / `boundbox` / ...），不要重新定义
 4. 新增颜色一律加入顶层 `figures/_palette.tex` 同一调色板段并起 `c<XXX>` 命名（如 `cEval`）；新颜色受顶层公共层管控（与规则 8 联动）
-5. 编译验证：`cd egs/<slug>/figures && pdflatex -interaction=nonstopmode <new-name>.tex`
+5. 编译验证：`cd egs/<slug>/figures && TEXINPUTS=../../../figures//: pdflatex -interaction=nonstopmode <new-name>.tex`
 6. 在 main 用 `\includegraphics[width=\linewidth]{figures/<new-name>.pdf}` 引入
 7. `cd egs/<slug> && latexmk -pdf main.tex` 检查整体效果
 8. `git add egs/<slug>/figures/<new-name>.{tex,pdf}` 并 commit
@@ -312,7 +311,7 @@ paper 的「结构 / 段落分配 / 表格组织」一律仿照本 egs `refs/not
 | --- | --- | --- |
 | Architecture / Overview | SLAM-ASR、Qwen2-Audio | 三模块叙述（Encoder + Projector + LLM）+ 模块表 |
 | Methods 章节 ordering | Seed-ASR、Step-Audio 2 | Section 安排、热词与目标说话人小节的拆分方式 |
-| Data 章节 | Kimi-Audio、Whisper | 按 source 列表 + per-source hours 表 + 清洗 pipeline 描述 |
+| Data 章节 | Kimi-Audio、Whisper | 按用途列公开语料 + 流程的概念描述；配方细节披露到什么程度由报告决定（见 `asr-domain.mdc` §3） |
 | Prompt / Task design | Qwen-Audio | 任务清单表（不写 prompt 原文，见规则 4） |
 | Experiments 主表 | Seed-ASR、Whisper | Headline 表 + 对比 baseline + ablation 组织 |
 | Robustness | Whisper §3.7 | SNR sweep + 噪声集对比 |
@@ -362,7 +361,7 @@ paper 的「结构 / 段落分配 / 表格组织」一律仿照本 egs `refs/not
 
 ### 公共层修改流程
 
-修改公共层（`template/*`、`figures/_palette.tex`、`figures/architecture-skeleton.tex`、顶层 `references.bib`、`tools/*`、`tools/schemas/*`、`.cursor/rules/*`、`egs/_skeleton/*`）影响所有 active egs。所有此类修改必须：
+修改公共层（`template/*`、`figures/_palette.tex`、`figures/architecture-skeleton.tex`、`tools/*`、`tools/schemas/*`、`.cursor/rules/*`、`egs/_skeleton/*`）影响所有 active egs。所有此类修改必须：
 
 1. 在 `template/CHANGELOG.md` 追加一条 entry，描述"为什么改、改了什么、是否破坏向后兼容"
 2. 编译 `egs/_skeleton` 与所有 active egs（用 `tools/build-all.sh`）；**视觉无回归** 才能 commit
@@ -381,11 +380,11 @@ tools/new-report.sh <slug> --title "..." --shortname "..." --author "..."
 
 ### 在叶子层只能动叶子
 
-agent 在 `egs/<slug>/` 工作时，原则上不要改 `template/` / `figures/_palette.tex` / 顶层 `references.bib` / `tools/`。如果发现公共层确实需要变（比如新增颜色、新增数学宏），停下来与用户确认，单开一个 PR / commit 走规则 8 的流程，不要混进当前报告的 commit。
+agent 在 `egs/<slug>/` 工作时，原则上不要改 `template/` / `figures/_palette.tex` / `tools/`。如果发现公共层确实需要变（比如新增颜色、新增数学宏），停下来与用户确认，单开一个 PR / commit 走规则 8 的流程，不要混进当前报告的 commit。
 
 ### 不要在叶子里建公共层副本
 
-不要把 `template/` 或 `figures/_palette.tex` 或顶层 `references.bib` 的副本拷到 `egs/<slug>/` 内自用。所有报告共享同一份公共层，这是 mono-repo 的核心收益。
+不要把 `template/` 或 `figures/_palette.tex` 的副本拷到 `egs/<slug>/` 内自用。所有报告共享同一份公共层，这是 mono-repo 的核心收益。
 
 ---
 

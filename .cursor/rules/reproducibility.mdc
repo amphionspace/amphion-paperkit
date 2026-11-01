@@ -34,7 +34,7 @@ For any in-house data we release alongside the model:
 We MUST ship a model card with the released weights. Required sections:
 
 - Intended use and out-of-scope use
-- Training data summary (per-source hours, language coverage, time period)
+- Training data summary (sources, language coverage, time period)
 - Evaluation: WER on each main benchmark with normalization spec (see `asr-domain.mdc`)
 - Known limitations (per Limitations section of the paper)
 - Bias and fairness: per-accent / per-dialect WER breakdown if available
@@ -49,7 +49,7 @@ We MUST ship a model card with the released weights. Required sections:
 
 ## 5. Ethics and broader impact
 
-- The paper must include a Limitations section (already in `sections/08_limitations_ethics.tex`). Be specific, not boilerplate. Examples to consider:
+- The paper must include a Limitations section. Be specific, not boilerplate. Examples to consider:
   - Surveillance and unconsented transcription risk
   - Accent / dialect bias (especially if the data skews mainstream Mandarin or American English)
   - Hallucination risk in medical / legal settings

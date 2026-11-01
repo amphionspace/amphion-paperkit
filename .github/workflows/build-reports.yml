@@ -6,13 +6,15 @@ on:
     paths:
       - 'egs/**'
       - 'template/**'
-      - 'references.bib'
+      - 'figures/**'
+      - 'latexmkrc'
       - '.github/workflows/build-reports.yml'
   pull_request:
     paths:
       - 'egs/**'
       - 'template/**'
-      - 'references.bib'
+      - 'figures/**'
+      - 'latexmkrc'
       - '.github/workflows/build-reports.yml'
   workflow_dispatch:
 
@@ -52,8 +54,6 @@ jobs:
           root_file: main.tex
           latexmk_use_xelatex: false
           latexmk_shell_escape: false
-          extra_system_packages: |
-            inkscape
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
