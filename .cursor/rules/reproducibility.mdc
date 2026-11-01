@@ -44,7 +44,7 @@ We MUST ship a model card with the released weights. Required sections:
 ## 4. LLM use disclosure (ICLR / NeurIPS 2026)
 
 - Maintain `ack/llm-usage.md` (create if missing). Each entry: date, scope (e.g. "drafted §3.2 introduction sentence"), model used.
-- Acknowledgment section in the paper must state "Portions of the manuscript were drafted with the assistance of large language models. All technical content was verified by the authors."
+- If the submission venue requires disclosure, the Acknowledgment section states "Portions of the manuscript were drafted with the assistance of large language models. All technical content was verified by the authors." A report not submitted to such a venue need not include it; keep the log either way.
 - Never paste a citation produced solely by an LLM without verifying the entry exists (author / year / venue) on a primary source.
 
 ## 5. Ethics and broader impact
@@ -65,5 +65,5 @@ We MUST ship a model card with the released weights. Required sections:
 4. Every `% TODO` removed or moved to a tracked issue
 5. Numbers in main tables traceable to a script in the release repo
 6. Model card and datasheet drafted
-7. `ack/llm-usage.md` reviewed and reflected in Acknowledgments
+7. `ack/llm-usage.md` reviewed, and reflected in Acknowledgments if the venue requires it
 8. `requirements.txt` produces a working environment from a fresh venv on the documented Python / CUDA versions

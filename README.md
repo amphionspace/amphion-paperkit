@@ -144,7 +144,7 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 | --- | --- | --- | --- |
 | [amphion-asr-2.0-2026](egs/amphion-asr-2.0-2026/) | AmphionASR 2.0: Target-Speaker Speech Recognition for Real-World Recordings --- A Benchmark and a Model | active（初稿） | v0.1 |
 | [amphion-asr-1.7b-2026](egs/amphion-asr-1.7b-2026/) | AmphionASR: A Unified SpeechLLM for Context-Aware Mandarin–English Speech Recognition（AmphionASR 1.0，2026.07） | archived（已发布） | v0.1 |
-| [amphion-asr-2026](egs/amphion-asr-2026/) | AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin–English Speech Recognition | active | v0.1 |
+| [amphion-asr-2026](egs/amphion-asr-2026/) | AmphionASR: An Open-Source Industrial-Grade SpeechLLM for Personalised Mandarin–English Speech Recognition | archived（已被 amphion-asr-1.7b-2026 取代） | v0.1 |
 
 ## 协作规则
 

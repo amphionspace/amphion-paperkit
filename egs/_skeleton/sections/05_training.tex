@@ -1,13 +1,9 @@
 % Training.
 %
-% Per .cursor/rules/asr-domain.mdc §5:
-%   - Objective stated explicitly with formula on first use.
-%   - Per stage: trainable params, LR schedule, batch size (audio-hours +
-%     tokens), seq length cap, total tokens, total update steps, precision,
-%     optimizer (AdamW betas, weight decay).
-%   - Hardware: GPU/TPU type and count, parallelism strategy, throughput,
-%     wall-clock time.
-%   - If RL / DPO is used: preference data source, pair construction, KL coef.
+% Per .cursor/rules/asr-domain.mdc §5: always state the initialization, the
+% stages, which parameters are trained or frozen, and the objective in words.
+% How much else to disclose (LR schedule, batch size, steps, hardware) is decided
+% per report. If RL / DPO is used: preference data source, pair construction, KL coef.
 
 \section{Training}
 \label{sec:training}

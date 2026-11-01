@@ -206,7 +206,7 @@ uv run tools/fetch-refs.py egs/<slug>
 - 类名 / 函数名形式：`EscForegroundMix`、`build_hotwords_for_sample`、`compute_silence_metrics`、`SpeakerPool.load_dataset`
 - repo 内部脚本名：`eval_vllm.sh`、`serve_vllm.sh`、`run_rollout_server.sh`、`convert_amphion_to_hf.py`
 - 配置字段名当变量用：`train_dataset_samples=1,000,000`、`prompt_hotword_prob=0.8` ← 改成完整的英文短语（"at most 1\,M utterances per source"、"each hotword stays in the prompt with probability 0.8"）
-- task prompt 原文：整段 system prompt、模板字符串 ← 只说明每个任务的 prompt 带什么信息（"a list of hotwords"、"a fixed instruction"）
+- task prompt 与模型输出的原文：整段 system prompt、模板字符串、特殊标记 ← 只说明它们带什么信息（"a list of hotwords"、"a language tag"）
 
 ### 允许 / 鼓励出现
 

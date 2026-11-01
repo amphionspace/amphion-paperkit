@@ -73,11 +73,17 @@ Report and diagram both layers. Retriever Recall@$K$ alone does not establish co
 
 ## 5. Training section requirements
 
-- State the objective (e.g. token-level CE on transcript tokens, with prompt-token loss masking) explicitly with the formula on first use.
+How much of the training setup to disclose is a per-report decision. A report may withhold hardware, learning-rate schedules, batch sizes, step counts and other hyperparameters.
+
+Every report still states the initialization, the training stages and what each one is for, which parameters are trained or frozen, and the objective in words.
+
+If a report does give details:
+
+- Give the objective with its formula on first use.
 - Per stage: trainable params, learning rate schedule, batch size in audio-hours and in tokens, sequence length cap, total tokens consumed, total update steps, precision (fp32 / bf16 / fp16-amp), optimizer (AdamW betas, weight decay).
 - Hardware: GPU/TPU type and count, parallelism strategy (FSDP / ZeRO-3 / TP+PP), throughput in TFLOPS or audio-hours/GPU/day, total wall-clock training time.
 - If RL / DPO is used: preference data source, pair construction policy, KL coefficient.
-- Distinguish the decoding algorithm from the serving backend. Report greedy/beam/sampling parameters because they affect the metric; name vLLM or another server only when it changes decoding semantics or supports a measured systems claim such as throughput or latency.
+- Distinguish the decoding algorithm from the serving backend. Always report greedy/beam/sampling parameters, because they affect the metric; name vLLM or another server only when it changes decoding semantics or supports a measured systems claim such as throughput or latency.
 
 ## 6. Robustness, long-form, streaming
 
