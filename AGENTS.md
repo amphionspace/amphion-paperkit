@@ -206,7 +206,8 @@ uv run tools/fetch-refs.py egs/<slug>
 - 文件路径：`src/...py`、`local/...py`、`configs/.../*.yaml`、`configs/.../*.json`、`*.sh`、`*.jsonl.gz`、`*.tar.gz`、绝对路径 `/ai_sds_wuzz/...`、`/data/...`
 - 类名 / 函数名形式：`EscForegroundMix`、`build_hotwords_for_sample`、`compute_silence_metrics`、`SpeakerPool.load_dataset`
 - repo 内部脚本名：`eval_vllm.sh`、`serve_vllm.sh`、`run_rollout_server.sh`、`convert_amphion_to_hf.py`
-- 配置字段名当变量用：`train_dataset_samples=1,000,000`、`prompt_hotword_prob=0.8` ← 改成英文概念加括号给数字（"the per-source utterance cap (1\,M)"、"the prompt-hotword keep probability (0.8)"）
+- 配置字段名当变量用：`train_dataset_samples=1,000,000`、`prompt_hotword_prob=0.8` ← 改成完整的英文短语（"at most 1\,M utterances per source"、"each hotword stays in the prompt with probability 0.8"）
+- task prompt 原文：整段 system prompt、模板字符串 ← 只说明每个任务的 prompt 带什么信息（"a list of hotwords"、"a fixed instruction"）
 
 ### 允许 / 鼓励出现
 
@@ -214,18 +215,20 @@ uv run tools/fetch-refs.py egs/<slug>
 - 学术变量名：$\rho$, $K$, $\mathrm{SNR}$, $w_\text{acc}$
 - 论文级技术词：LoRA, ZeRO-2, GRPO, vLLM, ms-swift（这些是已发表工作 / 库名，不是本 repo 文件）
 - 公开数据集 key：LibriSpeech, AISHELL-2, FLEURS, MUSAN, SLR26（学术读者直接认）
-- 数字参数本体：seed=124, $K=10$, max\_hotwords=20 ← 但用 `\texttt` 而不是 `\path`，且不带路径前缀
+- 数字参数本体：学术变量（$K=10$）或英文短语（"at most 20 hotwords"、"random seed 124"），不用配置字段名
 
 ### 改写策略（口径模板）
 
+优先用动词把事情说出来，不要造一串名词叠在一起的“组件名”：母语读者要拆开才看得懂，而且 synthesizer 在语音领域通常指 TTS。
+
 | 不要写 | 改写成 |
 | --- | --- |
-| 由 \path{local/prepare\_tsasr\_data.py} 离线合成 | 由 an offline TS-ASR synthesiser 离线合成 |
-| \texttt{configs/target\_speaker/train.yaml} 中的 \texttt{train\_dataset\_samples} | the multi-task training mixture's per-source utterance cap |
-| \texttt{EscForegroundMix} 在线混音 | an on-the-fly ESC foreground mixer |
+| 由 \path{local/prepare\_tsasr\_data.py} 离线合成 | target-speaker samples are mixed offline |
+| \texttt{configs/target\_speaker/train.yaml} 中的 \texttt{train\_dataset\_samples} | a cap on the utterances drawn from each source |
+| \texttt{EscForegroundMix} 在线混音 | environmental sounds are mixed in on the fly |
 | \texttt{src/dataset\_registry.py} 注册表 | a unified dataset registry |
 | \texttt{src/compute\_wer.py} | the evaluation harness |
-| \texttt{eval\_vllm.sh -w K} | the evaluation client (with $K$ hotwords requested) |
+| \texttt{eval\_vllm.sh -w K} | we request $K$ hotwords at evaluation time |
 
 ### 触发：每次写 `*.tex` 后必须自检
 
@@ -256,16 +259,16 @@ CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫
 - 待办与 `@人名` 分配
 - 调试中间结果、占位 TODO、未结案问题、已废弃实验
 
-它们提供事实和数字，但不提供 paper 的句式 / 叙述 / 卖点。把 md 当"原料库"用，不要当成"草稿"用。
+它们提供事实和数字，但不提供 paper 的句式 / 叙述 / 主张。把 md 当"原料库"用，不要当成"草稿"用。
 
 ### 提炼 vs 照搬
 
 读 `egs/<slug>/refs/docs` 时只做两件事：
 
 1. 抽事实：hours、参数量、benchmark 数字、阶段时间线、最终采用的 prompt 模板、最终采用的训练配置
-2. 抽卖点：把"目标 / 已完成"翻译成 1–2 句 paper-level claim，例如：
-    - 内部："中文热词测试集 SOTA"  →  claim："we surpass the strongest open contextual ASR baseline on an in-house Mandarin hotword benchmark"
-    - 内部："libri2mix 较差，原因未排查"  →  这不是卖点，可能进 Limitations，先问
+2. 抽主张：弄清"目标 / 已完成"背后的事实，再用英文重新写成 1–2 句 paper-level claim，不要逐句翻译。主张要点名对照对象、指标和数字，不用 "surpass the strongest" 这类无法检验的说法，例如：
+    - 内部："中文热词测试集 SOTA"  →  claim："On an in-house Mandarin hotword test set, hotword recall is X\%, against Y\% for Z."
+    - 内部："libri2mix 较差，原因未排查"  →  这不是主张，可能进 Limitations，先问
 
 不搬路径、不抄类名、不复述调试过程 —— 与规则 4 联动。
 
@@ -274,11 +277,11 @@ CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫
 `egs/<slug>/refs/docs` 是动态工作记录，常包含 未结案 / 已废弃 / 占位 / 实验失败 的痕迹。任何要进 paper 的 claim，遇到下列情况必须停下来问用户，不要自行裁断：
 
 - 某个测试集结果在 refs 里只出现一次，没说是 final 还是 ablation
-- `plan.md` 里某项标"测试进度：无"或"未排查"，但你想拿来做卖点
+- `plan.md` 里某项标"测试进度：无"或"未排查"，但你想拿来做主张
 - `task_prompts.md` / `model_arch.md` 里出现多个版本，没说哪个是最终采用
 - `egs/<slug>/refs/docs` 里的数字与同一 egs `refs/notes/papers/` 中官方 PDF 的数字不一致
 - 某段描述无法判断是已落地、还是 plan 里的待办（"@xxx 动作：…"）
-- 用户口头没说过、refs 里也没明确背书，但你"觉得是好卖点"的内容
+- 用户口头没说过、refs 里也没明确背书，但你"觉得值得主张"的内容
 
 提问格式（写进回复，而不是直接动笔）：
 
@@ -287,17 +290,19 @@ CI（`.github/workflows/lint.yml`）在每次 push / PR 也会跑同一脚本扫
 ### 禁止
 
 - 把 `plan.md` 的待办（"@xxx 动作：…"）误读成已完成结果
-- 把 `task_prompts.md` 里的 prompt 调试历史抄进 Methods（只保留最终模板，与规则 4、ASR 域规则联动）
+- 把 `task_prompts.md` 里的 prompt 原文或调试历史抄进正文（它只用来核对事实，与规则 4、ASR 域规则联动）
 - 把 `model_arch.md` 里张量级细节 / 类名 / 路径搬进 paper
 - 把 `plan.md` 的"目标 / 动作 / 谁负责"原样翻译成英文段落
 
 ---
 
-## 规则 6：写法仿照同类文献，不要凭原料自由发挥
+## 规则 6：结构仿照同类文献，不要凭原料自由发挥
 
 ### 核心原则
 
-paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一律仿照本 egs `refs/notes/papers/` 中的同类技术报告（或外部同类）。`egs/<slug>/refs/docs` 只提供 fact，不提供 form。
+paper 的「结构 / 段落分配 / 表格组织」一律仿照本 egs `refs/notes/papers/` 中的同类技术报告（或外部同类）。`egs/<slug>/refs/docs` 只提供 fact，不提供 form。
+
+句子不仿照样板。样板的作者不一定是英语母语者，跟着学句式会把别人的毛病一起带进来；句子按 `.cursor/rules/paper-writing.mdc` §3 写。
 
 不要凭 `egs/<slug>/refs/docs` 内容原创叙述结构 —— 最常见的失败模式是把"项目周报语气"或"中文工作记录直译"带进英文 paper（同时违反规则 4 + 规则 6）。
 
@@ -308,10 +313,10 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 | Architecture / Overview | SLAM-ASR、Qwen2-Audio | 三模块叙述（Encoder + Projector + LLM）+ 模块表 |
 | Methods 章节 ordering | Seed-ASR、Step-Audio 2 | Section 安排、热词与目标说话人小节的拆分方式 |
 | Data 章节 | Kimi-Audio、Whisper | 按 source 列表 + per-source hours 表 + 清洗 pipeline 描述 |
-| Prompt / Task design | Qwen-Audio | 任务清单表 + literal prompt template |
+| Prompt / Task design | Qwen-Audio | 任务清单表（不写 prompt 原文，见规则 4） |
 | Experiments 主表 | Seed-ASR、Whisper | Headline 表 + 对比 baseline + ablation 组织 |
 | Robustness | Whisper §3.7 | SNR sweep + 噪声集对比 |
-| Contextual ASR | Seed-ASR 热词小节 | 卖点句式 + U-WER / B-WER 分指标 |
+| Contextual ASR | Seed-ASR 热词小节 | 结果的组织方式 + U-WER / B-WER 分指标 |
 | Target-speaker ASR | 最近的 TS-ASR / 多说话人论文 | 评测协议 + speaker prompt 表述 |
 
 样板源头：先查本 egs `refs/notes/papers/`（用 `INDEX.md` / `INDEX.yaml` 的 usage 字段定位）；找不到再 WebSearch / WebFetch 找该论文的官方 PDF；都找不到就停下问用户，不要"凭印象写"。
@@ -320,9 +325,9 @@ paper 的「风格 / 结构 / 段落分配 / 表格组织 / 卖点句式」一�
 
 1. 找出 1 篇最相近的样板文献，定位到对应章节
 2. 把样板章节的"段落主题树"复述一遍（每段讲什么），这就是本节的骨架
-3. 仿样板的句式 / 表格列名 / 命名约定填空
-4. 用 `egs/<slug>/refs/docs` 抽到的事实做填充
-5. 通读检查：有没有从 `egs/<slug>/refs/docs` 直接译过来的句子？有就重写
+3. 仿样板的表格列名 / 命名约定搭好骨架
+4. 用 `egs/<slug>/refs/docs` 抽到的事实，自己写句子，不要往样板句式里填空
+5. 通读检查：有没有从 `egs/<slug>/refs/docs` 直接译过来的句子？有就重写。再按 `paper-writing.mdc` §3 的 "Native-reader check" 过一遍
 
 ### 触发：fact-check block 必加一行
 
@@ -402,10 +407,12 @@ agent 在 `egs/<slug>/` 工作时，原则上不要改 `template/` / `figures/_p
 1. 在 `egs/<slug>/refs/docs/` 中检索该现象的 keyword（如 `LibriMix` / `FLEURS` / `ZeRO` / `hotword` / `repetition`），看作者是否已写归因或机理；
 2. 若有，如实复述（语言强度也不要超过 refs/docs 的原始判断），在 fact-check block 列出来源行号；
 3. 若没有，按下列模板一笔带过，不要发挥：
-    - 「the underlying cause has not yet been diagnosed」
-    - 「a controlled ablation is on the agenda for the next iteration」
-    - 「a mechanistic decomposition is left to future work」
-    - 「the cause has not been investigated; a qualitative error-type breakdown is the planned next step」
+    - 「The cause has not been determined.」
+    - 「We did not run a controlled ablation for this effect.」
+    - 「We did not separate the contributions of X and Y.」
+    - 「This requires further analysis.」
+
+    不要写排期（"next iteration"、"on the agenda"、"planned next step"），与 `paper-writing.mdc` §6 一致。
 
 ### 禁用写作模式（无 refs/docs 背书时）
 

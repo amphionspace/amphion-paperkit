@@ -64,13 +64,13 @@ For every component, report:
 - frame rate (Hz) at the boundary between modules
 - which weights are frozen / trainable / LoRA-adapted in each training stage
 
-For the prompt template, paste the literal template (using `lstlisting` with the `prompt` style defined in `main.tex`). Do not paraphrase.
+Do not paste literal prompt templates; they are implementation detail (AGENTS.md rule 4). State what each task's prompt carries, for example "a list of hotwords" or "a fixed instruction".
 
-Prompt provenance is part of the model specification:
+Prompt provenance is still part of the model specification:
 
-- Verify every literal template against the final training/evaluation source of truth, not memory or a nearby model's README.
-- Label each template as inherited unchanged, modified from the backbone, or introduced by this work; cite the public backbone at the first inherited template.
-- If the official public interface hides an internal template, do not call a guessed string "the Qwen3-ASR prompt". Name it as this work's template and mark any unresolved provenance with `% TODO: verify`.
+- Verify each description against the final training/evaluation source of truth, not memory or a nearby model's README.
+- Say whether each task's prompt is inherited unchanged, modified from the backbone, or introduced by this work; cite the public backbone at the first inherited prompt.
+- If the official public interface hides an internal template, do not attribute a guessed form to the backbone. Mark any unresolved provenance with `% TODO: verify`.
 
 For contextual / hotword ASR, keep two layers distinct:
 

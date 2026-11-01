@@ -6,6 +6,24 @@
 
 ---
 
+## v0.9 — 2026-11-01 — 规则不再要求写 prompt 原文，并增加母语读者自检
+
+作者认为 task prompt 原文属于代码细节，不该进正文，而规则 6 和 `asr-domain.mdc` 仍要求贴原文。另外从英语母语审稿人的角度看，规则本身也在制造不地道的英文：规则 6 要求仿照样板句式并往里填空，规则 5 要求把内部记录“翻译”成 claim，规则 4 的改写模板是一串名词，规则 9 的模板用了 `paper-writing.mdc` §6 禁止的排期说法。
+
+公共层的具体变更：
+
+- `AGENTS.md` 规则 4：禁止 task prompt 原文；改写模板改用动词；数字参数不用配置字段名。
+- `AGENTS.md` 规则 5：不再逐句翻译内部记录，主张要点名对照对象、指标和数字；“卖点”改称“主张”。
+- `AGENTS.md` 规则 6：只仿照结构、段落分配和表格组织，不仿照句式。
+- `AGENTS.md` 规则 9：一笔带过的模板去掉排期说法。
+- `.cursor/rules/paper-writing.mdc` §3：新增 "Native-reader check"；hedge 规则改为按证据强度措辞，实测结果直接陈述；§7 的 `\citep` 改为 `\cite`，与规则 7 一致。
+- `.cursor/rules/asr-domain.mdc`：不贴 prompt 原文，只说明 prompt 带什么信息，出处核对要求保留。
+- `egs/_skeleton`：去掉 "Prompt Templates (Verbatim)" 附录和贴原文的注释。
+
+每 egs 影响：无破坏性变更。已发布的 1.0 报告保留其 prompt 表，不追溯修改。
+
+---
+
 ## v0.8 — 2026-10-31 — 允许 SVG 图
 
 规则 1 此前要求所有图都用 TikZ。场景演示图（人物、设备、对话气泡）是同类技术报告第 1–2 页的常见内容（CocktailASR-1、AmphionASR 1.0 都有），用 TikZ 画这类插画很费力；1.0 报告只好用位图，偏离了规则。本次允许手写或导出的 SVG，转成矢量 PDF 后照常 `\includegraphics`。**非破坏性**：不改 class、macro、TeX 接口或任何已有图，不需要更新 `depends_on_template`。

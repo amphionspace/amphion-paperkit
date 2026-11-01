@@ -46,7 +46,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 ## 3. Prose style
 
 - Write in paragraphs, not bullet lists. Use bullets only for genuinely enumerable items (contributions, datasets, hyperparameters).
-- Hedge consistently: use "suggests", "indicates", "may", not "proves" or "demonstrates conclusively" unless you really proved it.
+- Match the strength of a sentence to its evidence. State measured results plainly ("CER is 13.1\%"). Hedge interpretations with "suggests", "indicates" or "may", and do not write "proves" or "demonstrates conclusively" unless you really proved it.
 - Pronoun: "we" throughout. Do not switch between "we" / "I" / "the authors".
 - Bold and italic only for technical terms or conventional emphasis. Never for decoration.
 - Every inserted paragraph must connect explicitly to the one before and the one after via a transition sentence — no orphan paragraphs.
@@ -56,6 +56,17 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 - Choose either British or American English for each report and apply it consistently, including `normaliser / normalizer`, `optimised / optimized`, and `behaviour / behavior`.
 - Avoid slash-heavy prose (`A / B`, `with / without`). Use conjunctions in sentences; reserve compact slash notation for tables when space is constrained.
 - Evaluative modifiers must be testable. Replace "industrial-grade", "production-oriented", "deployment-scale", "strong", "competitive", and "low-error" with the concrete constraint or comparison unless the paper defines a criterion for the label.
+
+Native-reader check. Drafts in this repository usually start from Chinese notes, so read every new paragraph as an English-speaking reviewer would:
+
+- Write from the fact, not from the Chinese sentence. If a phrase only makes sense when translated back ("built by scenario", "the same weights still serve"), rewrite it.
+- Give each sentence one main claim. Split sentences over about 35 words, and do not chain clauses with semicolons to fit more in.
+- Read for garden paths: the reader must not have to restart a sentence. "Evaluations covering only silence rate a system ..." first reads "silence rate" as a noun phrase.
+- Do not turn metric names or nouns into verbs. Write "has a 10.8\% false-alarm rate", not "false-alarms on 10.8\%".
+- Avoid stacks of more than three words before a noun. Unpack them with verbs and prepositions: "a cap on the utterances drawn from each source", not "the per-source utterance cap".
+- Prefer verbs to nominalizations: "we evaluate", not "we perform an evaluation of".
+- Prefer established terms. Explain a coined term in plain words at first use ("absent twins"), and coin one only if it is used repeatedly.
+- Check articles and number on every noun phrase, especially for terms repeated from notes: "the target", "a target-present sample", "these data".
 
 ## 4. Endorsement awareness
 
@@ -82,7 +93,7 @@ Section ordering and depth: each successive section is read by fewer readers. Ti
 ## 7. Anti-hallucination (hard rules)
 
 - Every concrete number, dataset name, model name, dataset size, year, author name, conference name, arXiv ID, license, and benchmark score must trace to a citable source. If you can't find one, write `?` or `% TODO: verify ...` rather than a plausible-sounding fabrication.
-- Never invent a citation. If a `\citep{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
+- Never invent a citation. If a `\cite{key}` appears, the entry must exist in `references.bib` with verified author / year / venue. New cites must be added together with the bib entry in the same edit.
 - Lookup order before writing any factual claim:
   1. `egs/<slug>/refs/` (use Grep + Read; INDEX.yaml is the truth source for paper / dataset PDFs)
   2. WebSearch / WebFetch on primary source (paper PDF, official repo README, official blog)
