@@ -105,8 +105,8 @@ amphion-paperkit/
 
 | 路径 | 范围 | git 跟踪 |
 | --- | --- | --- |
-| `egs/<slug>/refs/docs/` | 内部 plan / model_arch / task_prompts / train_eval_data | tracked |
-| `egs/<slug>/refs/internal/` | 数据统计、内部 model card、训练日志摘要 | tracked |
+| `egs/<slug>/refs/docs/` | 内部 plan / model_arch / task_prompts / train_eval_data | 只放本机（gitignored） |
+| `egs/<slug>/refs/internal/` | 数据统计、内部 model card、训练日志摘要、已发布页面的源码 | 只放本机（gitignored） |
 | `egs/<slug>/refs/notes/papers/INDEX.yaml` | 论文清单真相源（file/url/sha256/group/usage） | tracked |
 | `egs/<slug>/refs/notes/papers/INDEX.md` | 论文清单人类视图（由 yaml 派生） | tracked |
 | `egs/<slug>/refs/notes/papers/*.pdf` | 论文 PDF | gitignored |
@@ -115,9 +115,11 @@ amphion-paperkit/
 | `egs/<slug>/refs/datasets/INDEX.md` | 数据集清单人类视图 | tracked |
 | `egs/<slug>/refs/datasets/*.pdf` | 数据集 datasheet PDF | gitignored |
 | `egs/<slug>/refs/leaderboards/` | 评测榜单截图（按需） | tracked |
-| `egs/<slug>/refs/internal/amphion-eval.yaml` | 本报告使用的 AmphionEval 记录与测试集登记（桶内路径），`uv run tools/fetch-eval.py egs/<slug>` 拉取 | tracked |
+| `egs/<slug>/refs/internal/amphion-eval.yaml` | 本报告使用的 AmphionEval 记录与测试集登记（桶内路径），`uv run tools/fetch-eval.py egs/<slug>` 拉取 | 只放本机（gitignored，含团队桶名） |
 | `egs/<slug>/refs/internal/amphion-eval/` | AmphionEval 记录的只读镜像（含不可公开子集，数字须经净化后进正文） | gitignored |
 | `egs/<slug>/refs/README.md` | 本目录说明 | tracked |
+
+本仓库是公开仓库，`refs/docs/` 与 `refs/internal/` 只放在本机，不要 `git add -f`；这条规则之前已入库的同类文件保持原状。
 
 通用写作方法学源（评审 / 复现 / 写作建议 / agent 协作 / LaTeX 工程）见 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)，所有报告共享一份；不在 egs refs 里。
 

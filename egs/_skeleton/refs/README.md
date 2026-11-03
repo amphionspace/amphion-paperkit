@@ -8,8 +8,8 @@
 
 ```
 refs/
-├── docs/                            # 内部 plan / model_arch / task_prompts / train_eval_data
-├── internal/                        # 数据统计、内部 model card、训练日志摘要
+├── docs/                            # 内部 plan / model_arch / task_prompts / train_eval_data（只放本机，不入 git）
+├── internal/                        # 数据统计、内部 model card、训练日志摘要（只放本机，不入 git）
 ├── notes/
 │   ├── papers/
 │   │   ├── INDEX.yaml               # 真相源 (file/url/sha256/group/usage)

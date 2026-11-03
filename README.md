@@ -64,7 +64,7 @@ tools/new-report.sh <slug> --title "..." --shortname "..." --author "..."
 uv run tools/fetch-refs.py egs/<slug>
 ```
 
-内部材料（plan、模型结构、训练与评测数据）放 `refs/docs/`，数据统计和净化后的结果放 `refs/internal/`。写任何一节前先读这里，见 [AGENTS.md 规则 2](AGENTS.md)。
+内部材料（plan、模型结构、训练与评测数据）放 `refs/docs/`，数据统计和净化后的结果放 `refs/internal/`；这两个目录只放本机，不入 git（本仓库公开）。写任何一节前先读这里，见 [AGENTS.md 规则 2](AGENTS.md)。
 
 **3. 接入评测结果（可选）。** 在 `egs/<slug>/refs/internal/amphion-eval.yaml` 声明要用的记录和测试集，再拉取，见[外部信息源](#外部信息源amphioneval)。
 
@@ -106,7 +106,7 @@ AmphionEval（`ae`，团队内部工具）把每次评测发布到团队对象�
 `tools/fetch-eval.py` 通过 AmphionBucket 只读拉取报告声明的路径，不需要安装 `ae`：
 
 ```yaml
-# egs/<slug>/refs/internal/amphion-eval.yaml
+# egs/<slug>/refs/internal/amphion-eval.yaml (local only, not in git)
 bucket: <bucket>:amphion-eval/
 pull:
   - records/asr/2026-10/
@@ -119,7 +119,7 @@ uv run tools/fetch-eval.py egs/<slug> --overwrite   # 桶里的记录改过（�
 ```
 
 - 镜像落在 `egs/<slug>/refs/internal/amphion-eval/`，布局与 `ae` 的状态目录相同，`ae --state-dir` 或按 `ae sync` 输出写的汇总脚本可以直接读。
-- **镜像不入 git。** 记录里有不能公开的子集；本仓库是公开仓库。数字只能经过报告自己的净化与汇总（例如 `refs/internal/` 下的数据文件和构建脚本）进入正文，口径以该报告的 `refs/docs/plan.md` 为准。
+- **镜像和声明文件都不入 git。** 记录里有不能公开的子集，声明文件里有团队桶名；本仓库是公开仓库。数字只能经过报告自己的净化与汇总（例如 `refs/internal/` 下的数据文件和构建脚本）进入正文，口径以该报告的 `refs/docs/plan.md` 为准。
 - 正文不写 run ID、桶名、内部模型键；比较同一张表的结果时，只用同一 benchmark 版本、同一打分协议版本、全量（非抽样）的记录，规则见 AmphionEval 仓库里的结果组织说明（`docs/results.md`）。
 
 ## 命令速查

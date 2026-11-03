@@ -111,7 +111,7 @@ cat <<EOF
 
 Next steps:
   1. cd egs/$SLUG && latexmk -pdf main.tex   # smoke-build the placeholder PDF
-  2. Drop internal docs into egs/$SLUG/refs/docs/
+  2. Drop internal docs into egs/$SLUG/refs/docs/ (local only, gitignored)
   3. Fill sections/ in the order recommended by paper-writing.mdc
   4. Add an entry for this report to the top-level README.md table
   5. Update egs/$SLUG/REPORT.md as the report progresses

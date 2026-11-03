@@ -83,6 +83,15 @@ egs/*/refs/datasets/*.pdf
 # `uv run tools/fetch-eval.py egs/<slug>` from refs/internal/amphion-eval.yaml.
 egs/*/refs/internal/amphion-eval/
 
+# Internal source material stays on the local machine because this repository is
+# public: plans, model / data / prompt notes (refs/docs/), and data summaries,
+# sources of published pages and AmphionEval declarations, which name the team
+# bucket (refs/internal/). Files committed before this rule stay tracked.
+egs/*/refs/docs/*
+!egs/*/refs/docs/.gitkeep
+egs/*/refs/internal/*
+!egs/*/refs/internal/.gitkeep
+
 # Overleaf-pack output: a flat, self-contained copy of egs/<slug>/ + template/
 # produced by `tools/overleaf-pack.sh` (zip + folder). One-way mono-repo -> Overleaf,
 # regenerated on demand; not tracked.

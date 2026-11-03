@@ -6,6 +6,20 @@
 
 ---
 
+## v0.12 — 2026-11-02 — 内部原料只放本机
+
+本仓库是公开仓库，而规则 2 让 `refs/docs/`、`refs/internal/` 入库：2.0 报告的这两个目录里有作者决定不公开的数据配方、task prompt、训练配置，已发布页面的源码，以及含团队桶名的 AmphionEval 声明文件。
+
+公共层的具体变更：
+
+- `.gitignore`：忽略 `egs/*/refs/docs/*` 与 `egs/*/refs/internal/*`（保留 `.gitkeep`）。规则之前已入库的同类文件保持原状。
+- `AGENTS.md` 规则 2 目录表：这两个目录与 `amphion-eval.yaml` 改为只放本机。顶层 `README.md`、`tools/new-report.sh` 的提示、`_skeleton/refs/README.md` 同步。
+- 顶层 `README.md`、`tools/fetch-eval.py`、本文件 v0.7 不再写团队桶名、内部 Git 地址和不公开子集的名称。
+
+每 egs 影响：无破坏性变更，不影响渲染。
+
+---
+
 ## v0.11 — 2026-11-01 — 训练细节和 LLM 披露也按报告决定
 
 作者决定 2.0 报告不写模型输出的特殊标记、硬件和训练超参数，也不写致谢里的 LLM 披露，而规则仍把它们列为必须项。
