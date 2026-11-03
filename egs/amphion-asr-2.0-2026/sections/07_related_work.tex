@@ -1,0 +1,102 @@
+% Related work and comparisons. Sources: HTML §7; refs/docs/model_arch.md §6
+% (design comparison); AmphionASR 1.0 PDF §3.5, §5.4; the papers of MT-LLM, SpeakerLM, DiCoW,
+% TS-SUPERB, M2MeT 2.0, NOTSOFAR-1, Personal VAD, TST-Bench and the two ISCA TSE papers
+% (refs/notes/papers/INDEX.yaml, added 2026-11-01). The CocktailASR-1 protocol
+% note (refs/docs/plan.md §8) lives in the experimental setup.
+% Placed after the experiments, as in the HTML and refs/docs/plan.md §5.
+
+\section{Related Work and Comparisons}
+\label{sec:related}
+
+\paragraph{Evaluation.}
+Common evaluations for speech separation and TSE are synthesized from read speech: WSJ0-2mix~\cite{hershey2016deep}, Libri2Mix~\cite{cosentino2020librimix}, and WHAM!~\cite{wichern2019wham} and WHAMR!~\cite{maciejewski2020whamr}, which add noise and reverberation to WSJ0-2mix.
+TSE usually enrolls another utterance of the same speaker and reports signal-to-distortion ratios on mixtures in which the target is present~\cite{zmolikova2019speakerbeam, zmolikova2023neural}.
+Multi-talker and target-speaker recognition often use LibriSpeechMix~\cite{kanda2020serialized}, synthesized from LibriSpeech.
+Real meeting corpora such as AMI~\cite{carletta2005ami}, AISHELL-4~\cite{fu2021aishell4}, AliMeeting~\cite{yu2022m2met} and CHiME-6~\cite{watanabe2020chime6} are mainly used for diarization and multi-talker transcription and do not themselves define enrollments or target-absent samples.
+Neither do the speaker-attributed ASR benchmark of M2MeT~2.0~\cite{liang2023second} or the far-field office meetings of NOTSOFAR-1~\cite{vinnikov2024notsofar}.
+TS-SUPERB~\cite{peng2025tssuperb} conditions TS-ASR on an embedding of the enrollment but evaluates it on Libri2Mix.
+An absent target has mainly been studied outside recognition.
+Personal VAD~\cite{ding2020personal} labels each frame as non-speech, target-speaker speech or non-target speech.
+Speaker extraction has been trained and evaluated with the target present or absent in mixtures of one and two talkers~\cite{borsdorf2021universal, zhang2023speaker}, and Delcroix et al.~\cite{delcroix2022listen} studied false extractions in TSE when the target is silent.
+TST-Bench~\cite{lee2026who} asks a system to tag enrolled speakers and reject unknown ones in long synthetic conversations.
+In \tsbench, target-absent samples make up nearly half of the benchmark, and enrollments and absent samples are also defined on real meeting and call recordings.
+
+\paragraph{Models.}
+Early TS-ASR work added speaker conditioning to encoder--decoder recognizers such as Whisper~\cite{radford2023robust}: prompt tuning~\cite{ma2023extending}, learnable speaker queries that extract prompts from the enrollment~\cite{guo2024sqwhisper}, or frame-level diarization outputs that modulate the encoder~\cite{polok2024target}.
+DiCoW~\cite{polok2024dicow} develops the last into masks of silence, target, non-target and overlapping speech and needs no enrollment.
+Among SpeechLLMs, MT-LLM~\cite{meng2024large} follows multi-talker instructions, one of which places a 3\,s clip of the target talker and 3\,s of silence before the mixture.
+SpeakerLM~\cite{yin2025speakerlm} jointly diarizes and transcribes a conversation, attributing speech to registered speakers through their speaker embeddings and leaving out registered speakers who do not speak.
+AmphionASR~1.0~\cite{amphion2026amphionasr} encodes the enrollment and the mixture separately and feeds them to the language model in sequence.
+Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi} and its precursor~\cite{zhang2025thinking} concatenate reference speech with the mixture into one input to the audio encoder and support an empty output when the target is absent as well as chain-of-thought reasoning.
+Like CocktailASR-1, AmphionASR~2.0 lets the enrollment interact with the mixture inside the audio encoder, but it joins the two segments after the convolutional downsampling rather than on the waveform (\Cref{sec:model}).
+\Cref{tab:design} summarizes these systems.
+
+\begin{table}[!tbp]
+  \caption{Speaker-conditioned recognizers related to AmphionASR~2.0.}
+  \label{tab:design}
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{2.25cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.6cm}@{}}
+    \toprule
+    System & Model & How the target is specified & Absent target & TS-ASR evaluation \\
+    \midrule
+    AmphionASR 2.0 & About 1.7\,B: AuT encoder + Qwen3-1.7B & Enrollment audio (first 5\,s; random 1--20\,s in training), joined to the mixture by a learnable \septok after the encoder's convolution & Empty output; scored on paired absent samples & \tsbench: Mandarin, synthetic and real \\
+    \addlinespace[2pt]
+    AmphionASR 1.0~\cite{amphion2026amphionasr} & About 1.7\,B, plus a 2.6\,M hotword-retrieval adapter & Enrollment audio (3--5\,s) and mixture pass through the same encoder and enter the language model as two ordered spans & Empty output; 164 samples in which nobody speaks & In-house synthetic set \\
+    \addlinespace[2pt]
+    CocktailASR-1 \cite{zhang2026xiaomi} & About 8.9\,B: Data2Vec2 encoder~\cite{baevski2023efficient} + Qwen3-8B & Reference speech (random 1--4\,s), 1\,s of silence and the mixture, concatenated on the waveform & Empty output; separate absent test sets & LibriMix, LibriSpeechMix, AMI, AliMeeting \\
+    \addlinespace[2pt]
+    MT-LLM~\cite{meng2024large} & Llama-2-7B-chat with LoRA; Whisper and WavLM encoders & A 3\,s clip of the target and 3\,s of silence before the mixture, with an instruction & Not discussed & LibriSpeechMix; English and German \\
+    \addlinespace[2pt]
+    SpeakerLM~\cite{yin2025speakerlm} & Qwen2.5-7B-Instruct; SenseVoice-large encoder & Registered speakers: an embedding averaged over 2--10\,s clips, with the speaker's name & Registered speakers who do not speak are left out & Speaker-attributed transcription of AliMeeting, AISHELL-4, AISHELL-5 \\
+    \addlinespace[2pt]
+    DiCoW~\cite{polok2024dicow} & Whisper large-v3-turbo & No enrollment: frame-level masks from a diarization system & Not discussed & AMI, NOTSOFAR-1, Libri2Mix, LibriCSS \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Comparison with AmphionASR 1.0}
+\label{subsec:related_v1}
+
+\paragraph{Target-speaker recognition.}
+On its in-house synthetic test set, AmphionASR~1.0 reports a target-present WER of 13.02\%, a miss rate of 4.13\% and a 6.10\% false-alarm rate on 164 target-absent samples in which nobody speaks~\cite{amphion2026amphionasr}.
+That test set differs from \tsbench, so the numbers are not directly comparable.
+The closest part of \tsbench is the ``no one speaking'' section, where the false-alarm rate of AmphionASR~2.0 is 0.8\%; \Cref{subsec:exp_conditions} shows what an evaluation restricted to target-present and silent samples misses.
+
+\paragraph{General recognition.}
+The two reports share 10 public test sets (\Cref{tab:vs_v1}).
+Because their Mandarin normalizations differ, the table compares each version with the same reference model, Qwen3-ASR-1.7B, as measured in each report.
+In English, 1.0 matches or slightly beats Qwen3-ASR-1.7B on LibriSpeech and trails it by 0.6--0.9 points on GigaSpeech and Common Voice, while 2.0 trails slightly on LibriSpeech, by less on GigaSpeech (0.40) and by 0.81 on Common Voice.
+In Mandarin, the gap of 2.0 to Qwen3-ASR-1.7B is smaller than that of 1.0 on KeSpeech and Common Voice, and both versions are slightly better than Qwen3-ASR-1.7B on AISHELL-2.
+On the two WenetSpeech subsets the gap of 2.0 is larger (1.01 points on test\_net, against 0.13 for 1.0).
+
+\begin{table}[!tbp]
+  \caption{Comparison with AmphionASR~1.0 on shared public test sets (CER / WER, \%). Each version is compared with Qwen3-ASR-1.7B as measured in its own report; negative differences mean better than Qwen3-ASR-1.7B.}
+  \label{tab:vs_v1}
+  \centering
+  \small
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    & \multicolumn{3}{c}{AmphionASR 1.0 report~\cite{amphion2026amphionasr}} & \multicolumn{3}{c}{This report} \\
+    \cmidrule(lr){2-4}\cmidrule(l){5-7}
+    Test set & 1.0 & Qwen3-ASR & $\Delta$ & 2.0 & Qwen3-ASR & $\Delta$ \\
+    \midrule
+    LibriSpeech $\cdot$ test-clean & 1.59 & 1.61 & $-$0.02 & 1.69 & 1.63 & +0.06 \\
+    LibriSpeech $\cdot$ test-other & 3.35 & 3.39 & $-$0.04 & 3.65 & 3.37 & +0.27 \\
+    GigaSpeech & 9.53 & 8.68 & +0.85 & 9.09 & 8.70 & +0.40 \\
+    Common Voice $\cdot$ English & 7.87 & 7.24 & +0.63 & 8.17 & 7.36 & +0.81 \\
+    AISHELL-1$^\dagger$ & 1.34 & 1.58 & $-$0.24 & 0.38 & 1.48 & $-$1.10 \\
+    AISHELL-2 & 2.65 & 2.77 & $-$0.12 & 2.53 & 2.56 & $-$0.04 \\
+    KeSpeech (all dialects pooled) & 5.71 & 5.21 & +0.50 & 5.19 & 4.97 & +0.22 \\
+    Common Voice $\cdot$ Mandarin & 5.21 & 5.06 & +0.15 & 5.02 & 5.03 & $-$0.01 \\
+    WenetSpeech $\cdot$ test\_net & 5.17 & 5.04 & +0.13 & 5.49 & 4.49 & +1.01 \\
+    WenetSpeech $\cdot$ test\_meeting & 6.30 & 5.85 & +0.45 & 5.51 & 4.69 & +0.82 \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip
+  {\footnotesize Both reports normalize English with the Whisper English normalizer but normalize Mandarin differently: the 1.0 report removes punctuation, unifies full- and half-width characters and converts Arabic numerals to Chinese characters, and this report additionally removes filler words and unifies erhua. Absolute Mandarin numbers are therefore not comparable across the two reports. $^\dagger$AISHELL-1 shares text with AISHELL-2, which 2.0 is trained on; the 2.0 entry in this row is optimistic.\par}
+\end{table}
+
+\FloatBarrier

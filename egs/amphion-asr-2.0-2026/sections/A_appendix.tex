@@ -1,0 +1,33 @@
+% Appendix. Sources: refs/docs/ts_benchmark.md §3 (synthesis rules);
+% HTML appendix A (results by scenario, tables/scenarios.tex).
+
+\section{Synthesis of the AmphionTS-Bench synthetic part}
+\label{app:synthesis}
+
+\paragraph{Levels.}
+Each utterance is first normalized to $-25$\,dBFS and then scaled according to the signal-to-interference ratio of the condition, with an additional $\pm2$\,dB per interferer; the final mixture is peak-normalized to 0.5.
+
+\paragraph{Timing.}
+The target speaks only complete sentences.
+The last sentence of an interferer may be cut off at the end of the clip, with a 30\,ms fade-out, to approximate segments cut by voice activity detection.
+
+\paragraph{Noise floors and rooms.}
+Noise floors come from WHAM!~\cite{wichern2019wham} (real ambient noise such as cafés, restaurants and streets), stationary AudioSet and Freesound excerpts distributed with the DNS Challenge~\cite{dubey2023icassp}, and white and pink noise, at $-65$ to $-35$\,dBFS.
+Room responses come from measured responses in OpenSLR 28, simulated small, medium and large rooms, and the simulated responses of the DNS Challenge.
+
+\paragraph{Background sounds.}
+Background conditions use MUSAN~\cite{snyder2015musan} noise and music, AudioSet traffic, FSD50K~\cite{fonseca2022fsd50k} environmental events and crowds, synthetic babble from 5--20 test-split speakers, and Mandarin pop songs with accompaniment from MIR-1K, used only for evaluation.
+% TODO: add citations for MIR-1K, AudioSet and OpenSLR 28 (not yet in refs INDEX).
+
+\paragraph{Diagnostic conditions.}
+Twelve subsets outside the sections cover 0\,dB enrollment contamination, clipping, 3.4\,kHz narrowband audio, $\mu$-law coding, and stacked outdoor and office conditions.
+
+\section{Results by scenario}
+\label{app:scenarios}
+
+\Cref{tab:scenarios} lists the complete results on \tsbench grouped by scenario.
+Each synthetic group changes a single condition on the same base scenes.
+
+{\small
+\input{tables/scenarios}
+}

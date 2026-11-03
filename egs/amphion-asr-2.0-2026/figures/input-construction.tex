@@ -1,0 +1,134 @@
+% fig:input — AmphionASR 2.0 in TS-ASR mode (bottom-up, same layout idiom as the
+% 1.0 architecture figure: inputs at the bottom, language model bar, output on top).
+% Facts: refs/docs/model_arch.md §1--4 (AuT about 300 M, Mel outside AuT, separate
+% Mel + conv per segment, [SEP] after the convolution and before the 24-layer
+% Transformer, one attention window over the whole input, conv layers and text
+% embeddings frozen, presence decision on the language tag at the start of the output).
+% Build: cd egs/amphion-asr-2.0-2026/figures && TEXINPUTS=../../../figures//: pdflatex input-construction.tex
+\documentclass[tikz, border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}
+\usepackage{mathpazo}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
+
+\input{_palette}
+
+% Waveform pictogram: \wavepic{colour}{envelope macro}
+\newcommand{\wavepic}[2]{%
+  \begin{tikzpicture}[baseline=-0.6ex]
+    \foreach \h [count=\i] in #2 {
+      \draw[line width=0.85pt, line cap=round, draw=#1] (0.11*\i,-\h) -- (0.11*\i,\h);
+    }
+  \end{tikzpicture}}
+\def\envEnr{0.10,0.22,0.16,0.34,0.24,0.40,0.28,0.18,0.30,0.20,0.12}
+\def\envMix{0.08,0.18,0.30,0.22,0.40,0.28,0.46,0.34,0.24,0.38,0.20,0.32,0.42,0.26,0.36,0.18,0.28,0.14,0.22,0.10}
+
+\tikzset{
+  cellEnr/.style ={tokcell, minimum size=0.34cm, fill=cEnc, draw=cEncB},
+  cellMix/.style ={tokcell, minimum size=0.34cm, fill=cTok!55, draw=cTokB!75},
+  cellSep/.style ={tokcell, minimum size=0.34cm, fill=cBound, draw=cBoundB, line width=0.7pt},
+  otok/.style    ={draw=black!35, fill=white, rounded corners=1.5pt, font=\ttfamily\scriptsize,
+                   inner sep=2.5pt, minimum height=0.42cm},
+  osel/.style    ={otok, fill=cBound, draw=cBoundB, minimum width=1.25cm},
+  caption/.style ={font=\scriptsize, text=black!70, align=center},
+}
+
+\begin{document}
+\begin{tikzpicture}
+
+  \def\p{0.42}      % token pitch
+  \def\yConv{1.45}
+  \def\yTok{2.75}
+  \def\yLLM{5.95}
+  \def\xT{8.2}      % text column
+
+  % ====================== token row [enrollment | SEP | mixture] ==========
+  \node[cellSep] (sep) at (0,\yTok) {};
+  \foreach \k in {1,...,8}  \node[cellEnr] (e\k) at (-\k*\p,\yTok) {};
+  \foreach \k in {1,...,14} \node[cellMix] (m\k) at (\k*\p,\yTok) {};
+  \node[draw=black!40, dashed, rounded corners=2pt, line width=0.5pt, inner sep=2.5pt,
+        fit=(e8)(m14)] (seq) {};
+
+  % ====================== convolution (frozen), one per segment ===========
+  \node[encoder, minimum width=2.6cm, minimum height=0.8cm, font=\footnotesize] (conv1)
+    at (-6*\p,\yConv) {\frozenIcon~~Conv.\ downsampling};
+  \node[encoder, minimum width=2.6cm, minimum height=0.8cm, font=\footnotesize] (conv2)
+    at (6*\p,\yConv) {\frozenIcon~~Conv.\ downsampling};
+  \node[boundbox, minimum width=1.25cm, minimum height=0.8cm, font=\footnotesize] (sepin)
+    at (0,\yConv) {\fireIcon~~\textbf{[SEP]}\\[-2pt]{\scriptsize learnable}};
+
+  \draw[flow] (conv1.north) -- (conv1.north |- seq.south);
+  \draw[flow] (conv2.north) -- (conv2.north |- seq.south);
+  \draw[flow] (sepin.north) -- (sepin.north |- seq.south);
+
+  % ====================== inputs ==========================================
+  \node[caption] (wav1) at (conv1 |- 0,-0.4)
+    {\wavepic{cEncB}{\envEnr}\\[1pt]enrollment $\cdot$ first 5\,s};
+  \node[caption] (wav2) at (conv2 |- 0,-0.4)
+    {\wavepic{cTokB}{\envMix}\\[1pt]mixture $\cdot$ $\le$ 25\,s};
+  \draw[flow] (wav1.north) -- (conv1.south);
+  \draw[flow] (wav2.north) -- (conv2.south);
+
+  % ====================== Transformer (one window over the whole input) ===
+  \node[encoder, minimum height=0.95cm, inner sep=0pt, fit=(e8)(m14), yshift=1.3cm] (tfbox) {};
+  \node[align=center, font=\small] at (tfbox.center)
+    {\fireIcon~~Transformer $\cdot$ 24 layers\\[-1pt]
+     {\scriptsize one attention window over the whole input: every mixture frame sees the enrollment}};
+  \draw[flow] (seq.north) -- (seq.north |- tfbox.south);
+
+  % ====================== AuT frame =======================================
+  \begin{scope}[on background layer]
+    \node[draw=cEncB!70, dashed, rounded corners=6pt, line width=0.6pt, fill=cEnc!22,
+          inner xsep=0.28cm, inner ysep=0.22cm, fit=(conv1)(conv2)(tfbox)(seq)] (aut) {};
+  \end{scope}
+  \node[rotate=90, anchor=south, font=\scriptsize\bfseries, text=cEncB]
+    at (aut.west) {AuT audio encoder $\cdot$ about 300\,M};
+  \node[edgelabel] at ($(wav1.north)!0.5!(wav1.north |- aut.south)$) {Mel};
+  \node[edgelabel] at ($(wav2.north)!0.5!(wav2.north |- aut.south)$) {Mel};
+
+  % ====================== text side =======================================
+  \node[promptbox, minimum width=2.7cm, minimum height=0.95cm, font=\footnotesize] (prompt)
+    at (\xT,-0.3) {System prompt\\[-2pt]{\scriptsize fixed TS-ASR instruction}};
+  \node[tokenizer, minimum width=2.7cm, minimum height=0.8cm, font=\footnotesize] (temb)
+    at (\xT,\yConv) {\frozenIcon~~Text embedding};
+  \draw[flow] (prompt) -- (temb);
+
+  % ====================== language model ==================================
+  \node[llmbox, minimum width=0pt, minimum height=0.95cm, inner sep=0pt,
+        fit={(aut.west |- 0,\yLLM) (temb.east |- 0,\yLLM)}] (llm) {};
+  \node[font=\normalsize] at (llm.center) {\fireIcon~~Qwen3-ASR-1.7B language model};
+  \draw[flow] (tfbox.north) -- (tfbox.north |- llm.south);
+  \node[edgelabel] at ($(tfbox.north |- aut.north)!0.5!(tfbox.north |- llm.south)$) {audio embs};
+  \draw[flow] (temb.north) -- (temb.north |- llm.south) node[midway, edgelabel] {text embs};
+
+  % ====================== output ==========================================
+  \begin{scope}[node distance=2pt]
+    \node[osel] (o1) at (3.0,\yLLM+1.6) {language tag};
+    \node[otok, right=of o1, font=\itshape\scriptsize] (o2) {transcript};
+    \node[osel, below=4pt of o1] (n1) {no language};
+    \node[font=\scriptsize, text=black!60, anchor=west] at ($(n1.east)+(0.06,0)$) {$\rightarrow$ empty output};
+  \end{scope}
+  \node[caption, anchor=east] at ($(o1.west)+(-0.12,0)$) {target present};
+  \node[caption, anchor=east] at ($(n1.west)+(-0.12,0)$) {target absent};
+  \node[font=\scriptsize, text=cBoundB, anchor=south] at (o1.north) {presence decision};
+  \draw[flow] (llm.north -| o1) -- (n1.south);
+
+  % ====================== legend ==========================================
+  \node[anchor=north west, align=left, inner sep=0pt] at ($(llm.north west)+(0,1.75)$) {%
+    \scriptsize
+    \renewcommand{\arraystretch}{1.2}%
+    \begin{tabular}{@{}c@{\hspace{4pt}}l@{\hspace{10pt}}c@{\hspace{4pt}}l@{}}
+      \frozenIcon & frozen &
+      \tikz\node[cellEnr, minimum size=0.28cm]{}; & enrollment frame\\
+      \fireIcon & trainable &
+      \tikz\node[cellMix, minimum size=0.28cm]{}; & mixture frame\\
+      & &
+      \tikz\node[cellSep, minimum size=0.28cm]{}; & separator\\
+    \end{tabular}};
+
+\end{tikzpicture}
+\end{document}

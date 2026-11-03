@@ -1,0 +1,15 @@
+% Abstract — supplied to \abstract{} in main.tex (no environment).
+% Jobs, one per sentence (paper-writing.mdc §2; refs/docs/plan.md §5):
+% task -> gap -> benchmark + key contrast -> model -> headline + retention.
+% Numbers: refs/internal/html-report/data.json (v12.headline, supp.bench, asr).
+
+Target-speaker automatic speech recognition (TS-ASR) transcribes only the person heard in a few seconds of enrollment speech and should output nothing when that person does not speak.
+It was the capability of AmphionASR~1.0 that most needed work.
+Common evaluations mix read utterances, always contain the target, and score only target-present samples, so they cannot measure the most common error in real use: transcribing someone else while the enrolled speaker is silent.
+We propose \tsbench, a Mandarin benchmark of 24{,}101 samples in 248 subsets, to be released publicly.
+It pairs every condition with target-present and target-absent samples and adds real meeting, phone-call and web-conversation recordings without mixing.
+On this benchmark, two systems with almost the same character error rate (CER) when only the target talks in real recordings (7.5\% and 7.3\%) have false-alarm rates of 2.6\% and 96.1\% on real recordings in which others talk.
+We also present AmphionASR~2.0, a 1.7\,B SpeechLLM fine-tuned from Qwen3-ASR-1.7B.
+It joins the enrollment and the mixture with a learnable separator inside its audio encoder, and every scene type in its training data has target-absent counterparts.
+On \tsbench it reaches 13.1\% CER on target-present samples and a 3.7\% false-alarm rate on target-absent samples, against 33.4\% and 67.8\% for Xiaomi-CocktailASR-1, a model about five times larger.
+The same weights are 0.1 to 1.0 points behind Qwen3-ASR-1.7B on the category means of public plain-ASR test sets.

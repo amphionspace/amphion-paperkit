@@ -1,0 +1,73 @@
+% Data. Sources: refs/docs/train_eval_data.md §1--5; HTML §4. Section layout (overview,
+% corpus table, pipeline paragraphs) follows the data sections of the 1.0 report and
+% Kimi-Audio, per AGENTS.md rule 6. Sampling weights, mixing probabilities and counterpart
+% ratios are deliberately left out (user, 2026-10-31).
+
+\section{Data}
+\label{sec:data}
+
+Training has two stages (\Cref{sec:training}).
+Stage~1, multi-task supervised fine-tuning, uses plain ASR, hotword ASR, synthetic two- and three-talker target-speaker mixtures and turn-taking samples cut from meeting corpora.
+This section describes the data of stage~2, target-speaker robustness training.
+Target-speaker samples make up most of the stage-2 data: online mixtures, scene pools, turn-taking samples and real meeting windows, plus samples in which nobody speaks or a sentence is surrounded by babble.
+The rest are plain and hotword ASR samples, intended to retain those capabilities.
+\Cref{tab:corpora} lists the public corpora; the stage-2 data also include a small amount of domain-specific speech and meeting-room noise floors, which are not listed.
+
+\begin{table}[t]
+  \caption{Public corpora used in stage~2.}
+  \label{tab:corpora}
+  \centering
+  \small
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Use & Corpora \\
+    \midrule
+    Target-speaker voices & AISHELL-2~\cite{du2018aishell2}, LibriSpeech~\cite{panayotov2015librispeech}, KeSpeech~\cite{tang2021kespeech}, MagicData, Emilia~\cite{he2024emilia} \\
+    Interferers and real conversations & AliMeeting~\cite{yu2022m2met}, AISHELL-4~\cite{fu2021aishell4}, MagicData-RAMC~\cite{yang2022open}, AMI~\cite{carletta2005ami}, CHiME-6~\cite{watanabe2020chime6}, Emilia conversations \\
+    Plain ASR & WenetSpeech~\cite{zhang2022wenetspeech}, GigaSpeech~\cite{chen2021gigaspeech}, Common Voice~\cite{ardila2020common}, FLEURS, KeSpeech, AISHELL-2, LibriSpeech, 3D-Speaker~\cite{zheng2023speaker}, Voice-in-the-Wild-2M~\cite{xie2026megaasr} \\
+    Noise & MUSAN~\cite{snyder2015musan}, WHAM!~\cite{wichern2019wham}, DNS Challenge noise~\cite{dubey2023icassp}, AudioSet, synthetic babble \\
+    Room impulse responses & DNS Challenge, OpenSLR 26 and 28, MIT measured rooms~\cite{traer2016statistics} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+% TODO: add citations for FLEURS, AudioSet and OpenSLR 26/28 (not yet in refs INDEX).
+
+\subsection{Online mixing}
+\label{subsec:data_mixing}
+
+Most target-speaker samples are synthesized on the fly when they are loaded, so a source item yields a different mixture each time it is drawn.
+A mixture has up to four interferers and varies in signal-to-interference ratio and overall level; speakers may pass through near-field or far-field room responses, and noise is added on top of a noise floor.
+The enrollment is a random 1--20\,s crop and may be degraded by another voice, a low level, narrowband filtering, leading silence, telephone codecs or clipping.
+The target may enter or leave midway.
+For absent samples, the target is removed from the mixture and the transcript is empty.
+
+\subsection{Scene pools and target-absent counterparts}
+\label{subsec:data_scenes}
+
+Random mixing does not reproduce structures that are common in meetings and conversations: two people taking turns, someone else picking up a sentence, the target saying only a word or two, or several people talking at once.
+We build scene pools for these structures, following three principles.
+
+\paragraph{Every scene type has target-absent counterparts.}
+A counterpart keeps the same scene but enrolls another person, sometimes a similar-sounding one, and its reference transcript is empty.
+During development, some scene types, such as turn-taking, were almost always target-present in training.
+On those scenes the model still transcribed someone in about a quarter of samples after the enrollment was replaced by that of an unrelated person.
+Adding counterparts to these scene types lowered the target-absent false-alarm rate from 4.9\% to 1.9\%, measured at the threshold that fixes the empty-output rate at 5\%.
+
+\paragraph{More sources of target speakers.}
+Besides AISHELL-2, Mandarin targets come from KeSpeech, in which the same speaker is recorded once in Mandarin and once in dialect, and from MagicData speakers.
+Each new source covers all scene types.
+
+\paragraph{The enrollment never contains the target sentence.}
+In corpora where a speaker reads the same text several times, the enrollment could be the target sentence itself; such samples are excluded so that the target cannot be copied from the enrollment.
+
+\subsection{Real meeting windows and label checks}
+\label{subsec:data_real}
+
+We cut real multi-talker windows from the training sets of AliMeeting, AISHELL-4, MagicData-RAMC and Emilia, and decide from the utterance-level timeline whether the enrolled speaker talks in each window.
+Windows labeled ``enrolled speaker absent'' in which a check found the enrolled speaker talking are excluded.
+
+\subsection{No speech and background babble}
+\label{subsec:data_babble}
+
+We add samples with only noise, music or babble and an empty target, intended to keep the model from producing text when nobody speaks.
+We also add whole sentences with babble before, after and during them, intended to keep the model from dropping a sentence spoken inside babble.

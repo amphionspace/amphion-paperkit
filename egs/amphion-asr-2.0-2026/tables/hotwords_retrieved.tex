@@ -1,0 +1,64 @@
+% Generated from the published HTML report (refs/internal/html-report/, table 16;
+% data: supp.json["hwv3"]). Bold marks the best value in each row: highest recall,
+% lowest false-alarm rate.
+\begin{table}[!tbp]
+  \caption{Hotwords with candidate lists from lexicon retrieval (\%). Bold marks the best value in each row.}
+  \label{tab:hotwords_retrieved}
+  \centering
+  \small
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Data set & AmphionASR 2.0 & Qwen3-ASR-1.7B & Ming-3.0-asr-tiny \\
+    \midrule
+    \multicolumn{4}{@{}l}{\textit{List contains the correct word $\cdot$ hotword recall \%}} \\
+    AISHELL-1 named entities$^\dagger$ & \best{94.4} & 76.0 & 78.8 \\
+    ContextASR Mandarin & 81.4 & \best{92.8} & 71.9 \\
+    Real speech (SpeechIO + WenetSpeech) & 79.6 & \best{89.5} & 80.9 \\
+    Common Voice Mandarin & 80.8 & \best{85.9} & 74.5 \\
+    AISHELL-2 & \best{80.6} & 79.7 & 74.7 \\
+    AISHELL-3 & \best{87.9} & 86.4 & 82.2 \\
+    KeSpeech & 76.8 & \best{82.8} & 77.3 \\
+    GigaSpeech & 83.8 & 80.3 & \best{88.0} \\
+    LibriSpeech other & 91.2 & 87.6 & \best{93.9} \\
+    Common Voice English & \best{97.2} & 83.9 & 90.8 \\
+    \midrule
+    \multicolumn{4}{@{}l}{\textit{List contains the correct word $\cdot$ distractor false-alarm rate \%}} \\
+    AISHELL-1 named entities$^\dagger$ & \best{5.4} & 17.7 & 24.6 \\
+    ContextASR Mandarin & 63.8 & \best{35.2} & 90.7 \\
+    Real speech (SpeechIO + WenetSpeech) & 21.7 & \best{9.6} & 25.3 \\
+    Common Voice Mandarin & 26.1 & \best{14.2} & 36.1 \\
+    AISHELL-2 & 18.8 & \best{14.5} & 27.2 \\
+    AISHELL-3 & 13.0 & \best{11.8} & 20.1 \\
+    KeSpeech & 22.3 & \best{13.2} & 28.8 \\
+    GigaSpeech & 6.5 & \best{0.2} & 2.7 \\
+    LibriSpeech other & \best{0.1} & 0.1 & 0.9 \\
+    Common Voice English & 1.1 & \best{0.8} & 1.6 \\
+    \midrule
+    \multicolumn{4}{@{}l}{\textit{List lacks the correct word $\cdot$ false-alarm rate \%}} \\
+    AISHELL-1 named entities$^\dagger$ & \best{15.7} & 27.5 & 47.4 \\
+    ContextASR Mandarin & 85.2 & \best{63.9} & 99.2 \\
+    Real speech (SpeechIO + WenetSpeech) & 39.8 & \best{17.7} & 52.7 \\
+    Common Voice Mandarin & 52.9 & \best{25.4} & 66.7 \\
+    AISHELL-2 & 40.3 & \best{20.8} & 53.5 \\
+    AISHELL-3 & 32.3 & \best{21.1} & 48.1 \\
+    KeSpeech & 43.4 & \best{23.4} & 59.5 \\
+    GigaSpeech & 1.4 & \best{0.0} & 3.8 \\
+    LibriSpeech other & 0.4 & \best{0.1} & 1.7 \\
+    Common Voice English & 6.4 & \best{1.4} & 3.0 \\
+    \midrule
+    \multicolumn{4}{@{}l}{\textit{No list $\cdot$ hotword recall \%}} \\
+    AISHELL-1 named entities$^\dagger$ & \best{97.4} & 68.2 & 81.8 \\
+    ContextASR Mandarin & 81.5 & \best{89.1} & 48.3 \\
+    Real speech (SpeechIO + WenetSpeech) & 83.2 & \best{85.4} & 81.9 \\
+    Common Voice Mandarin & \best{77.1} & 75.0 & 76.6 \\
+    AISHELL-2 & 82.5 & 78.6 & \best{84.7} \\
+    AISHELL-3 & \best{95.0} & 83.1 & 91.9 \\
+    KeSpeech & 73.7 & 72.5 & \best{82.2} \\
+    GigaSpeech & 71.7 & 74.6 & \best{77.6} \\
+    LibriSpeech other & 84.0 & 83.9 & \best{89.9} \\
+    Common Voice English & 59.3 & 63.4 & \best{67.4} \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip
+  {\footnotesize All items, 264{,}681 requests in total, plain ASR mode. Mandarin lists hold 50 words retrieved from a pool of about 10{,}000 hotwords; English lists hold 50 (GigaSpeech, Common Voice) or 100 (LibriSpeech) words. All lists include homophone and near-homophone distractors; in the ``lacks the correct word'' condition every candidate is a distractor. Recall is counted over correct hotwords; the false-alarm rate is the share of utterances whose output contains some distractor more often than the reference does. Recall in the ``no list'' group is the share of the same hotwords written correctly without any hint. Real speech comes from SpeechIO and WenetSpeech test\_net and test\_meeting, with hotwords extracted and checked by a large language model. $^\dagger$Most AISHELL-1 test sentences appear in AISHELL-2, which AmphionASR~2.0 is trained on; this row is optimistic.\par}
+\end{table}

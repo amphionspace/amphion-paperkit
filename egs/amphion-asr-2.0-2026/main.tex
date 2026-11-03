@@ -1,0 +1,79 @@
+% =============================================================================
+% AmphionASR 2.0: Target-Speaker Speech Recognition for Real-World Recordings --- A Benchmark and a Model — built with Amphion PaperKit
+% Uses the public LaTeX template shipped with Amphion PaperKit
+% (template/amphion.cls). Default theme = amphion (warm ivory + petrol teal);
+% see template/CHANGELOG.md for available [opendfm] / [xlance] / [withlogo]
+% options.
+%
+% Placeholders use the <<NAME>> form (angle brackets, LaTeX-safe). Run
+% tools/new-report.sh <slug> to substitute them automatically.
+% =============================================================================
+
+\documentclass{template/amphion}
+
+% --- ASR-domain math macros (\wer / \cer / \mer / \hotwerN). Drop if not ASR.
+\usepackage{template/asr-macros}
+
+% --- Report-wide names. The benchmark name is tentative (refs/docs/plan.md §4);
+%     renaming it is a one-line change here.
+\newcommand{\tsbench}{AmphionTS-Bench\xspace}
+\newcommand{\septok}{\texttt{[SEP]}\xspace}
+
+% --- PDF metadata (theme + page styles owned by template/amphion.cls) -------
+\hypersetup{
+  pdftitle={AmphionASR 2.0: Target-Speaker Speech Recognition for Real-World Recordings --- A Benchmark and a Model},
+  pdfsubject={cs.CL},
+  pdfauthor={Amphion Team},
+  pdfkeywords={Target-speaker ASR, Benchmark, SpeechLLM},
+}
+
+% --- Title, author, abstract ------------------------------------------------
+\title{AmphionASR 2.0: Target-Speaker Speech Recognition for Real-World Recordings --- A Benchmark and a Model}
+\author{Amphion Team}
+\abstract{\input{sections/00_abstract}}
+% TODO: replace with the AmphionTS-Bench / model release link once decided
+% (refs/docs/plan.md §4.3); the scaffold default is kept until then.
+\metadatainfo{
+  \small\makebox[\linewidth][c]{
+    \href{https://github.com/amphionspace/technical-reports}{\texttt{GitHub: amphionspace/technical-reports}}
+  }
+}
+
+% =============================================================================
+\begin{document}
+\publishdate{2026.10.31}
+\maketitle
+
+% --- Body page header: short name (full \title is too long for every page) --
+\fancyhead[L]{AmphionASR 2.0}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+% --- Relax float placement so tables share pages with text (as in 1.0) ------
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{3}
+
+% --- Body sections ----------------------------------------------------------
+\input{sections/01_introduction}
+\input{sections/02_benchmark}
+\input{sections/03_model}
+\input{sections/04_data}
+\input{sections/05_training}
+\input{sections/06_experiments}
+\input{sections/07_related_work}
+\input{sections/08_limitations}
+\input{sections/09_conclusion}
+
+% --- Bibliography: report-local cites + venue strings shipped with the template.
+\bibliographystyle{template/IEEEtran2}
+\setcitestyle{numbers}
+\bibliography{template/venues, references}
+
+\appendix
+\input{sections/A_appendix}
+
+\end{document}

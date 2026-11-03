@@ -1,0 +1,55 @@
+% Generated from the published HTML report (refs/internal/html-report/, table 17;
+% data: data.json["asr"]). Bold marks the best value in each row.
+\begin{table}[!tbp]
+  \caption{Plain ASR on public test sets (CER / WER, \%). Bold marks the best value in each row.}
+  \label{tab:asr_general}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    Test set & \begin{tabular}[b]{@{}c@{}}AmphionASR\\2.0\end{tabular} & \begin{tabular}[b]{@{}c@{}}Qwen3-ASR\\1.7B\end{tabular} & \begin{tabular}[b]{@{}c@{}}MiMo-V2.5\\ASR\end{tabular} & \begin{tabular}[b]{@{}c@{}}Ming-3.0\\asr-tiny\end{tabular} & \begin{tabular}[b]{@{}c@{}}VibeVoice\\ASR-7B\end{tabular} & \begin{tabular}[b]{@{}c@{}}Dolphin\\CN-Dialect\end{tabular} \\
+    \midrule
+    \multicolumn{7}{@{}l}{\textit{Mandarin}} \\
+    WenetSpeech $\cdot$ test\_net & 5.49 & \best{4.49} & 4.87 & 5.06 & 17.62 & 6.64 \\
+    WenetSpeech $\cdot$ test\_meeting & 5.51 & \best{4.69} & 5.28 & 4.91 & 20.89 & 6.58 \\
+    AISHELL-1$^\dagger$ & \best{0.38} & 1.48 & 0.98 & 1.04 & 5.01 & 1.21 \\
+    AISHELL-2 & 2.53 & 2.56 & 2.38 & \best{2.17} & 5.25 & 2.85 \\
+    AISHELL-3 & \best{0.76} & 1.91 & 1.66 & 1.08 & 4.50 & 1.96 \\
+    MagicData & 1.66 & 2.15 & 2.19 & \best{1.59} & 9.24 & 2.92 \\
+    THCHS-30 & 3.81 & 2.85 & \best{1.38} & 2.80 & 6.36 & 4.12 \\
+    KeSpeech $\cdot$ Mandarin & 2.32 & 2.37 & 2.38 & \best{1.76} & 11.89 & 2.46 \\
+    Common Voice $\cdot$ Mandarin & 5.02 & 5.03 & 4.88 & \best{4.81} & 30.56 & 7.53 \\
+    \cmidrule(l){2-7}
+    Mandarin $\cdot$ mean & 3.39 & 3.26 & 3.13 & \best{3.02} & 13.29 & 4.38 \\
+    \midrule
+    \multicolumn{7}{@{}l}{\textit{English}} \\
+    LibriSpeech $\cdot$ test-clean & 1.69 & 1.63 & 1.46 & \best{1.16} & 2.02 & 54.12 \\
+    LibriSpeech $\cdot$ test-other & 3.65 & 3.37 & 3.45 & \best{2.39} & 5.52 & 63.74 \\
+    MLS $\cdot$ English & 5.91 & 4.65 & 4.87 & \best{3.29} & 6.59 & 58.93 \\
+    GigaSpeech & 9.09 & 8.70 & 8.82 & \best{8.38} & 9.65 & 62.23 \\
+    Common Voice $\cdot$ English & 8.17 & 7.36 & 9.42 & \best{6.86} & 22.46 & 71.89 \\
+    \cmidrule(l){2-7}
+    English $\cdot$ mean & 5.70 & 5.14 & 5.61 & \best{4.42} & 9.25 & 62.18 \\
+    \midrule
+    \multicolumn{7}{@{}l}{\textit{Mandarin--English code-switching}} \\
+    TALCS & 7.85 & 7.48 & 6.39 & \best{5.51} & 13.32 & 11.66 \\
+    \midrule
+    \multicolumn{7}{@{}l}{\textit{Dialects and accents}} \\
+    KeSpeech $\cdot$ Beijing & 5.31 & 5.20 & 9.75 & \best{4.33} & 42.55 & 5.81 \\
+    KeSpeech $\cdot$ Northeastern & 5.99 & 5.59 & 5.00 & \best{3.88} & 20.80 & 4.96 \\
+    KeSpeech $\cdot$ Ji-Lu & 5.98 & 5.83 & 8.65 & \best{4.72} & 39.06 & 5.46 \\
+    KeSpeech $\cdot$ Jiao-Liao & 6.42 & 6.43 & 9.47 & \best{4.90} & 45.92 & 5.59 \\
+    KeSpeech $\cdot$ Zhongyuan & 4.64 & 4.30 & 7.62 & \best{3.23} & 36.81 & 3.96 \\
+    KeSpeech $\cdot$ Lan-Yin & 5.99 & 5.90 & 11.21 & \best{4.98} & 51.00 & 5.77 \\
+    KeSpeech $\cdot$ Jiang-Huai & 9.16 & 8.84 & 16.00 & \best{6.63} & 57.29 & 7.70 \\
+    KeSpeech $\cdot$ Southwestern & 5.78 & 5.03 & 7.15 & \best{3.84} & 45.16 & 5.02 \\
+    WenetSpeech-Chuan $\cdot$ easy & 14.66 & 11.77 & \best{11.69} & 13.92 & 58.92 & 13.03 \\
+    WenetSpeech-Chuan $\cdot$ hard & 27.21 & \best{21.83} & 23.48 & 24.55 & 104.66 & 24.05 \\
+    \cmidrule(l){2-7}
+    Dialects and accents $\cdot$ mean & 9.11 & 8.07 & 11.00 & \best{7.50} & 50.22 & 8.13 \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip
+  {\footnotesize Plain ASR mode on every item of each test set; Chinese is scored by character and English by word. All models are scored on the same audio with the same text normalization. $^\dagger$Most AISHELL-1 test sentences also appear in the AISHELL-2 training set, which AmphionASR~2.0 uses; this row is optimistic and is excluded from the means.\par}
+\end{table}

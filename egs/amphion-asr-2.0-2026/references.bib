@@ -1,0 +1,388 @@
+% Report-specific bibliography. Combined at compile time with the top-level
+% starter cites (../../references.bib) and template/venues.bib.
+%
+% Conventions (per .cursor/rules/latex-engineering.mdc and AGENTS.md rule 7):
+%   - Key format: <lastname><year><firstcontentword>, lowercase, no punctuation.
+%       e.g. gulati2020conformer, radford2023whisper.
+%   - Never invent citations: every entry must trace to a primary source
+%       (paper PDF / official repo / official blog) before being added.
+%   - Prefer published-venue entries over arXiv when both exist.
+%
+% Sources: arXiv abstract pages / API (author lists and titles, 2026-10-31);
+% refs/notes/papers/INDEX.yaml and refs/datasets/INDEX.yaml; the AmphionASR 1.0
+% PDF title page (github.com/AmphionTeam/AmphionASR, main.pdf, 2026.07.28).
+
+% --- Initialization, predecessor and compared systems -----------------------
+
+@misc{shi2026qwen3asr,
+  title        = {{Qwen3-ASR} Technical Report},
+  author       = {Shi, Xian and Wang, Xiong and Guo, Zhifang and Wang, Yongqi and Zhang, Pei and Zhang, Xinyu and Guo, Zishan and Hao, Hongkun and Xi, Yu and Yang, Baosong and Xu, Jin and Zhou, Jingren and Lin, Junyang},
+  howpublished = {arXiv preprint arXiv:2601.21337},
+  year         = {2026}
+}
+
+@misc{amphion2026amphionasr,
+  title        = {{AmphionASR}: Personalized Context-Aware Speech Recognition},
+  author       = {{Amphion Team}},
+  howpublished = {Technical report, \url{https://github.com/AmphionTeam/AmphionASR}},
+  year         = {2026}
+}
+
+@misc{zhang2026xiaomi,
+  title        = {{Xiaomi-CocktailASR-1} Technical Report},
+  author       = {Zhang, Yiru and Su, Hang and Fan, Lichun and Zeng, Ying and Liu, Chang and Wang, Yifeng and Liang, Yuquan and Li, Tao and Li, Lian and Yang, Wenhao and Luan, Jian and Zou, Cong and Qu, Heng},
+  howpublished = {arXiv preprint arXiv:2609.11274},
+  year         = {2026}
+}
+
+@misc{zhang2025thinking,
+  title        = {Thinking in Cocktail Party: Chain-of-Thought and Reinforcement Learning for Target Speaker Automatic Speech Recognition},
+  author       = {Zhang, Yiru and Su, Hang and Fan, Lichun and Luo, Zhenbo and Luan, Jian},
+  howpublished = {arXiv preprint arXiv:2509.15612},
+  year         = {2025}
+}
+
+@misc{guo2024sqwhisper,
+  title        = {{SQ-Whisper}: Speaker-Querying based {Whisper} Model for Target-Speaker {ASR}},
+  author       = {Guo, Pengcheng and Chang, Xuankai and Lv, Hang and Watanabe, Shinji and Xie, Lei},
+  howpublished = {arXiv preprint arXiv:2412.05589},
+  year         = {2024}
+}
+
+@misc{ma2023extending,
+  title        = {Extending {Whisper} with Prompt Tuning to Target-Speaker {ASR}},
+  author       = {Ma, Hao and Peng, Zhiyuan and Shao, Mingjie and Li, Jing and Liu, Ju},
+  howpublished = {arXiv preprint arXiv:2312.08079},
+  year         = {2023}
+}
+
+@misc{polok2024target,
+  title        = {Target Speaker {ASR} with {Whisper}},
+  author       = {Polok, Alexander and Klement, Dominik and Wiesner, Matthew and Khudanpur, Sanjeev and {\v{C}}ernock{\'y}, Jan and Burget, Luk{\'a}{\v{s}}},
+  howpublished = {arXiv preprint arXiv:2409.09543},
+  year         = {2024}
+}
+
+@inproceedings{baevski2023efficient,
+  title     = {Efficient Self-supervised Learning with Contextualized Target Representations for Vision, Speech and Language},
+  author    = {Baevski, Alexei and Babu, Arun and Hsu, Wei-Ning and Auli, Michael},
+  booktitle = {ICML},
+  year      = {2023}
+}
+
+@inproceedings{radford2023robust,
+  title     = {Robust Speech Recognition via Large-Scale Weak Supervision},
+  author    = {Radford, Alec and Kim, Jong Wook and Xu, Tao and Brockman, Greg and McLeavey, Christine and Sutskever, Ilya},
+  booktitle = {ICML},
+  year      = {2023}
+}
+
+@misc{xie2026megaasr,
+  title        = {{Mega-ASR}: Towards In-the-wild$^2$ Speech Recognition via Scaling up Real-world Acoustic Simulation},
+  author       = {Xie, Zhifei and Pang, Kaiyu and Zhang, Haobin and Ye, Deheng and Hu, Xiaobin and Yan, Shuicheng and Miao, Chunyan},
+  howpublished = {arXiv preprint arXiv:2605.19833},
+  year         = {2026}
+}
+
+% --- Inference and training techniques ---------------------------------------
+
+@inproceedings{kwon2023vllm,
+  title     = {Efficient Memory Management for Large Language Model Serving with {PagedAttention}},
+  author    = {Kwon, Woosuk and Li, Zhuohan and Zhuang, Siyuan and Sheng, Ying and Zheng, Lianmin and Yu, Cody Hao and Gonzalez, Joseph E. and Zhang, Hao and Stoica, Ion},
+  booktitle = {ACM SOSP},
+  year      = {2023}
+}
+
+@inproceedings{wortsman2022model,
+  title     = {Model Soups: Averaging Weights of Multiple Fine-tuned Models Improves Accuracy without Increasing Inference Time},
+  author    = {Wortsman, Mitchell and Ilharco, Gabriel and Gadre, Samir Yitzhak and Roelofs, Rebecca and Gontijo-Lopes, Raphael and Morcos, Ari S. and Namkoong, Hongseok and Farhadi, Ali and Carmon, Yair and Kornblith, Simon and Schmidt, Ludwig},
+  booktitle = {ICML},
+  year      = {2022}
+}
+
+% --- Common TSE / TS-ASR evaluations -----------------------------------------
+
+@inproceedings{hershey2016deep,
+  title     = {Deep Clustering: Discriminative Embeddings for Segmentation and Separation},
+  author    = {Hershey, John R. and Chen, Zhuo and Le Roux, Jonathan and Watanabe, Shinji},
+  booktitle = {ICASSP},
+  year      = {2016}
+}
+
+@misc{cosentino2020librimix,
+  title        = {{LibriMix}: An Open-Source Dataset for Generalizable Speech Separation},
+  author       = {Cosentino, Joris and Pariente, Manuel and Cornell, Samuele and Deleforge, Antoine and Vincent, Emmanuel},
+  howpublished = {arXiv preprint arXiv:2005.11262},
+  year         = {2020}
+}
+
+@inproceedings{kanda2020serialized,
+  title     = {Serialized Output Training for End-to-End Overlapped Speech Recognition},
+  author    = {Kanda, Naoyuki and Gaur, Yashesh and Wang, Xiaofei and Meng, Zhong and Yoshioka, Takuya},
+  booktitle = {Interspeech},
+  year      = {2020}
+}
+
+@inproceedings{wichern2019wham,
+  title     = {{WHAM!}: Extending Speech Separation to Noisy Environments},
+  author    = {Wichern, Gordon and Antognini, Joe and Flynn, Michael and Zhu, Licheng Richard and McQuinn, Emmett and Crow, Dwight and Manilow, Ethan and Le Roux, Jonathan},
+  booktitle = {Interspeech},
+  year      = {2019}
+}
+
+@inproceedings{maciejewski2020whamr,
+  title     = {{WHAMR!}: Noisy and Reverberant Single-Channel Speech Separation},
+  author    = {Maciejewski, Matthew and Wichern, Gordon and McQuinn, Emmett and Le Roux, Jonathan},
+  booktitle = {ICASSP},
+  year      = {2020}
+}
+
+@article{zmolikova2019speakerbeam,
+  title   = {{SpeakerBeam}: Speaker Aware Neural Network for Target Speaker Extraction in Speech Mixtures},
+  author  = {{\v{Z}}mol{\'\i}kov{\'a}, Kate{\v{r}}ina and Delcroix, Marc and Kinoshita, Keisuke and others},
+  journal = {IEEE Journal of Selected Topics in Signal Processing},
+  year    = {2019}
+}
+
+@inproceedings{delcroix2022listen,
+  title     = {Listen Only to Me! How Well Can Target Speech Extraction Handle False Alarms?},
+  author    = {Delcroix, Marc and Kinoshita, Keisuke and Ochiai, Tsubasa and {\v{Z}}mol{\'\i}kov{\'a}, Kate{\v{r}}ina and Sato, Hiroshi and Nakatani, Tomohiro},
+  booktitle = {Interspeech},
+  year      = {2022}
+}
+
+@article{zmolikova2023neural,
+  title   = {Neural Target Speech Extraction: An Overview},
+  author  = {{\v{Z}}mol{\'\i}kov{\'a}, Kate{\v{r}}ina and Delcroix, Marc and Ochiai, Tsubasa and Kinoshita, Keisuke and {\v{C}}ernock{\'y}, Jan and Yu, Dong},
+  journal = {IEEE Signal Processing Magazine},
+  year    = {2023}
+}
+
+% --- Mandarin corpora --------------------------------------------------------
+
+@inproceedings{bu2017aishell1,
+  title     = {{AISHELL-1}: An Open-Source {Mandarin} Speech Corpus and a Speech Recognition Baseline},
+  author    = {Bu, Hui and Du, Jiayu and Na, Xingyu and Wu, Bengu and Zheng, Hao},
+  booktitle = {O-COCOSDA},
+  year      = {2017}
+}
+
+@misc{du2018aishell2,
+  title        = {{AISHELL-2}: Transforming {Mandarin} {ASR} Research Into Industrial Scale},
+  author       = {Du, Jiayu and Na, Xingyu and Liu, Xuechen and Bu, Hui},
+  howpublished = {arXiv preprint arXiv:1808.10583},
+  year         = {2018}
+}
+
+@inproceedings{shi2021aishell3,
+  title     = {{AISHELL-3}: A Multi-Speaker {Mandarin} {TTS} Corpus},
+  author    = {Shi, Yao and Bu, Hui and Xu, Xin and Zhang, Shaoji and Li, Ming},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+
+@misc{wang2015thchs30,
+  title        = {{THCHS-30}: A Free {Chinese} Speech Corpus},
+  author       = {Wang, Dong and Zhang, Xuewei},
+  howpublished = {arXiv preprint arXiv:1512.01882},
+  year         = {2015}
+}
+
+@inproceedings{tang2021kespeech,
+  title     = {{KeSpeech}: An Open Source Speech Dataset of {Mandarin} and Its Eight Subdialects},
+  author    = {Tang, Zhiyuan and Li, Dong and Khassanov, Yerbolat and Tang, Hao and Bao, Bin and Wang, Jiamin and Tian, Lin and Yu, Hongtao and Le, Quan and Li, Xinran and Wang, Dong and Liu, Liang},
+  booktitle = {NeurIPS Datasets and Benchmarks},
+  year      = {2021}
+}
+
+@inproceedings{zhang2022wenetspeech,
+  title     = {{WenetSpeech}: A 10000+ Hours Multi-domain {Mandarin} Corpus for Speech Recognition},
+  author    = {Zhang, Binbin and Lv, Hang and Guo, Pengcheng and Shao, Qijie and Yang, Chao and Xie, Lei and Xu, Xin and Bu, Hui and Chen, Xiaoyu and Zeng, Chenchen and Wu, Di and Peng, Zhendong},
+  booktitle = {ICASSP},
+  year      = {2022}
+}
+
+@inproceedings{li2022talcs,
+  title     = {{TALCS}: An Open-Source {Mandarin}-{English} Code-Switching Corpus and a Speech Recognition Baseline},
+  author    = {Li, Chengyi and Deng, Shiyu and Wang, Yueteng and Wang, Gaofeng and Gong, Yidi and Chen, Chao and Bai, Junfeng},
+  booktitle = {Interspeech},
+  year      = {2022}
+}
+
+@misc{zheng2023speaker,
+  title        = {{3D-Speaker}: A Large-Scale Multi-Device, Multi-Distance, and Multi-Dialect Corpus for Speech Representation Disentanglement},
+  author       = {Zheng, Siqi and Cheng, Luyao and Chen, Yafeng and Wang, Hui and Chen, Qian},
+  howpublished = {arXiv preprint arXiv:2306.15354},
+  year         = {2023}
+}
+
+% --- English corpora ---------------------------------------------------------
+
+@inproceedings{panayotov2015librispeech,
+  title     = {{LibriSpeech}: An {ASR} Corpus Based on Public Domain Audio Books},
+  author    = {Panayotov, Vassil and Chen, Guoguo and Povey, Daniel and Khudanpur, Sanjeev},
+  booktitle = {ICASSP},
+  year      = {2015}
+}
+
+@inproceedings{chen2021gigaspeech,
+  title     = {{GigaSpeech}: An Evolving, Multi-domain {ASR} Corpus with 10{,}000 Hours of Transcribed Audio},
+  author    = {Chen, Guoguo and Chai, Shuzhou and Wang, Guanbo and Du, Jiayu and Zhang, Wei-Qiang and Weng, Chao and Su, Dan and Povey, Daniel and Trmal, Jan and Zhang, Junbo and Jin, Mingjie and Khudanpur, Sanjeev and Watanabe, Shinji and Zhao, Shuaijiang and Zou, Wei and Li, Xiangang and Yao, Xuchen and Wang, Yongqing and You, Zhao and Yan, Zhiyong},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+
+@inproceedings{ardila2020common,
+  title     = {{Common Voice}: A Massively-Multilingual Speech Corpus},
+  author    = {Ardila, Rosana and Branson, Megan and Davis, Kelly and Henretty, Michael and Kohler, Michael and Meyer, Josh and Morais, Reuben and Saunders, Lindsay and Tyers, Francis M. and Weber, Gregor},
+  booktitle = {LREC},
+  year      = {2020}
+}
+
+@inproceedings{pratap2020mls,
+  title     = {{MLS}: A Large-Scale Multilingual Dataset for Speech Research},
+  author    = {Pratap, Vineel and Xu, Qiantong and Sriram, Anuroop and Synnaeve, Gabriel and Collobert, Ronan},
+  booktitle = {Interspeech},
+  year      = {2020}
+}
+
+@article{vincent2017analysis,
+  title   = {An Analysis of Environment, Microphone and Data Simulation Mismatches in Robust Speech Recognition},
+  author  = {Vincent, Emmanuel and Watanabe, Shinji and Nugraha, Aditya Arie and Barker, Jon and Marxer, Ricard},
+  journal = {Computer Speech \& Language},
+  year    = {2017}
+}
+
+% --- Meetings, calls and conversations ---------------------------------------
+
+@inproceedings{fu2021aishell4,
+  title     = {{AISHELL-4}: An Open Source Dataset for Speech Enhancement, Separation, Recognition and Speaker Diarization in Conference Scenario},
+  author    = {Fu, Yihui and Cheng, Luyao and Lv, Shubo and Jv, Yukai and Kong, Yuxiang and Chen, Zhuo and Hu, Yanxin and Xie, Lei and Wu, Jian and Bu, Hui and Xu, Xin and Du, Jun and Chen, Jingdong},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+
+@inproceedings{yu2022m2met,
+  title     = {{M2MeT}: The {ICASSP} 2022 Multi-Channel Multi-Party Meeting Transcription Challenge},
+  author    = {Yu, Fan and Zhang, Shiliang and Fu, Yihui and Xie, Lei and Zheng, Siqi and Du, Zhihao and Huang, Weilong and Guo, Pengcheng and Yan, Zhijie and Ma, Bin and Xu, Xin and Bu, Hui},
+  booktitle = {ICASSP},
+  year      = {2022}
+}
+
+@inproceedings{yang2022open,
+  title     = {Open Source {MagicData-RAMC}: A Rich Annotated {Mandarin} Conversational ({RAMC}) Speech Dataset},
+  author    = {Yang, Zehui and Chen, Yifan and Luo, Lei and Yang, Runyan and Ye, Lingxuan and Cheng, Gaofeng and Xu, Ji and Jin, Yaohui and Zhang, Qingqing and Zhang, Pengyuan and Xie, Lei and Yan, Yonghong},
+  booktitle = {Interspeech},
+  year      = {2022}
+}
+
+@inproceedings{he2024emilia,
+  title     = {{Emilia}: An Extensive, Multilingual, and Diverse Speech Dataset for Large-Scale Speech Generation},
+  author    = {He, Haorui and Shang, Zengqiang and Wang, Chaoren and Li, Xuyuan and Gu, Yicheng and Hua, Hua and Liu, Liwei and Yang, Chen and Li, Jiaqi and Shi, Peiyang and Wang, Yuancheng and Chen, Kai and Zhang, Pengyuan and Wu, Zhizheng},
+  booktitle = {IEEE Spoken Language Technology Workshop (SLT)},
+  year      = {2024}
+}
+
+@inproceedings{carletta2005ami,
+  title     = {The {AMI} Meeting Corpus: A Pre-Announcement},
+  author    = {Carletta, Jean and Ashby, Simone and Bourban, Sebastien and others},
+  booktitle = {Machine Learning for Multimodal Interaction (MLMI)},
+  year      = {2005}
+}
+
+@inproceedings{watanabe2020chime6,
+  title     = {{CHiME-6} Challenge: Tackling Multispeaker Speech Recognition for Unsegmented Recordings},
+  author    = {Watanabe, Shinji and Mandel, Michael and Barker, Jon and Vincent, Emmanuel and Arora, Ashish and Chang, Xuankai and Khudanpur, Sanjeev and Manohar, Vimal and Povey, Daniel and Raj, Desh and Snyder, David and Subramanian, Aswin Shanmugam and Trmal, Jan and Yair, Bar Ben and Boeddeker, Christoph and Ni, Zhaoheng and Fujita, Yusuke and Horiguchi, Shota and Kanda, Naoyuki and Yoshioka, Takuya and others},
+  booktitle = {CHiME Workshop},
+  year      = {2020}
+}
+
+% --- Noise and room responses ------------------------------------------------
+
+@misc{snyder2015musan,
+  title        = {{MUSAN}: A Music, Speech, and Noise Corpus},
+  author       = {Snyder, David and Chen, Guoguo and Povey, Daniel},
+  howpublished = {arXiv preprint arXiv:1510.08484},
+  year         = {2015}
+}
+
+@article{fonseca2022fsd50k,
+  title   = {{FSD50K}: An Open Dataset of Human-Labeled Sound Events},
+  author  = {Fonseca, Eduardo and Favory, Xavier and Pons, Jordi and Font, Frederic and Serra, Xavier},
+  journal = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
+  year    = {2022}
+}
+
+@inproceedings{dubey2023icassp,
+  title     = {{ICASSP} 2023 Deep Noise Suppression Challenge},
+  author    = {Dubey, Harishchandra and Aazami, Ashkan and Gopal, Vishak and Naderi, Babak and Braun, Sebastian and Cutler, Ross and Ju, Alex and Zohourian, Mehdi and Tang, Min and Gamper, Hannes and Golestaneh, Mehrsa and Aichner, Robert},
+  booktitle = {ICASSP},
+  year      = {2023}
+}
+
+@article{traer2016statistics,
+  title   = {Statistics of Natural Reverberation Enable Perceptual Separation of Sound and Space},
+  author  = {Traer, James and McDermott, Josh H.},
+  journal = {Proceedings of the National Academy of Sciences},
+  year    = {2016}
+}
+@inproceedings{meng2024large,
+  title     = {Large Language Model Can Transcribe Speech in Multi-Talker Scenarios with Versatile Instructions},
+  author    = {Meng, Lingwei and Hu, Shujie and Kang, Jiawen and Li, Zhaoqing and Wang, Yuejiao and Wu, Wenxuan and Wu, Xixin and Liu, Xunying and Meng, Helen},
+  booktitle = {ICASSP},
+  year      = {2025}
+}
+@inproceedings{yin2025speakerlm,
+  title     = {{SpeakerLM}: End-to-End Versatile Speaker Diarization and Recognition with Multimodal Large Language Models},
+  author    = {Yin, Han and Chen, Yafeng and Deng, Chong and Cheng, Luyao and Wang, Hui and Tan, Chao-Hong and Chen, Qian and Wang, Wen and Li, Xiangang},
+  booktitle = {AAAI},
+  year      = {2026}
+}
+@misc{polok2024dicow,
+  title        = {{DiCoW}: Diarization-Conditioned {Whisper} for Target Speaker Automatic Speech Recognition},
+  author       = {Polok, Alexander and Klement, Dominik and Kocour, Martin and Han, Jiangyu and Landini, Federico and Yusuf, Bolaji and Wiesner, Matthew and Khudanpur, Sanjeev and {\v{C}}ernock{\'y}, Jan and Burget, Luk{\'a}{\v{s}}},
+  howpublished = {arXiv preprint arXiv:2501.00114},
+  year         = {2024}
+}
+@inproceedings{ding2020personal,
+  title     = {Personal {VAD}: Speaker-Conditioned Voice Activity Detection},
+  author    = {Ding, Shaojin and Wang, Quan and Chang, Shuo-yiin and Wan, Li and Lopez Moreno, Ignacio},
+  booktitle = {Odyssey: The Speaker and Language Recognition Workshop},
+  year      = {2020}
+}
+@inproceedings{borsdorf2021universal,
+  title     = {Universal Speaker Extraction in the Presence and Absence of Target Speakers for Speech of One and Two Talkers},
+  author    = {Borsdorf, Marvin and Xu, Chenglin and Li, Haizhou and Schultz, Tanja},
+  booktitle = {Interspeech},
+  year      = {2021}
+}
+@inproceedings{zhang2023speaker,
+  title     = {Speaker Extraction with Detection of Presence and Absence of Target Speakers},
+  author    = {Zhang, Ke and Borsdorf, Marvin and Pan, Zexu and Li, Haizhou and Wei, Yangjie and Wang, Yi},
+  booktitle = {Interspeech},
+  year      = {2023}
+}
+@inproceedings{peng2025tssuperb,
+  title     = {{TS-SUPERB}: A Target Speech Processing Benchmark for Speech Self-Supervised Learning Models},
+  author    = {Peng, Junyi and Ashihara, Takanori and Delcroix, Marc and Ochiai, Tsubasa and Plchot, Old{\v{r}}ich and Araki, Shoko and {\v{C}}ernock{\'y}, Jan},
+  booktitle = {ICASSP},
+  year      = {2025}
+}
+@inproceedings{liang2023second,
+  title     = {The Second Multi-Channel Multi-Party Meeting Transcription Challenge ({M2MeT} 2.0): A Benchmark for Speaker-Attributed {ASR}},
+  author    = {Liang, Yuhao and Shi, Mohan and Yu, Fan and Li, Yangze and Zhang, Shiliang and Du, Zhihao and Chen, Qian and Xie, Lei and Qian, Yanmin and Wu, Jian and Chen, Zhuo and Lee, Kong Aik and Yan, Zhijie and Bu, Hui},
+  booktitle = {ASRU},
+  year      = {2023}
+}
+@misc{vinnikov2024notsofar,
+  title        = {{NOTSOFAR-1} Challenge: New Datasets, Baseline, and Tasks for Distant Meeting Transcription},
+  author       = {Vinnikov, Alon and Ivry, Amir and Hurvitz, Aviv and Abramovski, Igor and Koubi, Sharon and Gurvich, Ilya and Pe'er, Shai and Xiao, Xiong and Elizalde, Benjamin Martinez and Kanda, Naoyuki and Wang, Xiaofei and Shaer, Shalev and Yagev, Stav and Asher, Yossi and Sivasankaran, Sunit and Gong, Yifan and Tang, Min and Wang, Huaming and Krupka, Eyal},
+  howpublished = {arXiv preprint arXiv:2401.08887},
+  year         = {2024}
+}
+@misc{lee2026who,
+  title        = {Who Spoke When in Multi-Conversation: Target Speaker Tagging Task and Benchmark},
+  author       = {Lee, Minjae and Heo, Hee-Soo and Kwon, Youngki and Kim, Han-Gyu and Kim, You Jin and Lee, Bong-Jin},
+  howpublished = {arXiv preprint arXiv:2606.14091},
+  year         = {2026}
+}

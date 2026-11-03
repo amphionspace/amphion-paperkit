@@ -1,0 +1,80 @@
+% Figure 3 — results pooled by section of AmphionTS-Bench (pgfplots dot plot).
+% Data: refs/internal/html-report/data.json, v12.sections (present.cer, absent.fa).
+% Build: cd egs/amphion-asr-2.0-2026/figures && TEXINPUTS=../../../figures//: pdflatex section-results.tex
+\documentclass[tikz, border=4pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}
+\usepackage{mathpazo}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
+
+\input{_palette}
+
+% y = section index (top to bottom): 7 degraded enrollment, 6 entry/exit,
+% 5 short segments, 4 no one speaking, 3 noise and recording chain,
+% 2 far field and rooms, 1 real conversations.
+\pgfplotsset{
+  secaxis/.style={
+    width=7.1cm, height=6.4cm,
+    ymin=0.4, ymax=7.6,
+    ytick={1,...,7},
+    y dir=normal,
+    xmin=0,
+    axis line style={black!45}, tick style={black!45},
+    xmajorgrids, grid style={black!12},
+    xticklabel style={font=\small, text=black!70},
+    yticklabel style={font=\small, text=black!80, align=right},
+    title style={font=\small, text=black!80},
+    axis x line*=bottom, axis y line*=left,
+  },
+  ours/.style={only marks, mark=*, mark size=2.6pt, color=cEncB},
+  cock/.style={only marks, mark=square*, mark size=2.3pt, color=cAdpB},
+  cot/.style={only marks, mark=triangle*, mark size=3.0pt, color=cAdp!85!cAdpB, mark options={draw=cAdpB}},
+}
+\tikzset{lab/.style={font=\scriptsize, text=cEncB, inner sep=1.5pt}}
+
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[secaxis, name=left,
+      title={Target present $\cdot$ CER (\%)},
+      xmax=70, xtick={0,10,...,70},
+      yticklabels={Real conversations, Far field and rooms, Noise and recording chain,
+                   No one speaking, Short segments, {Entry, exit and interferers}, Degraded enrollment},
+      legend style={at={(1.08,1.20)}, anchor=south, draw=none, fill=none,
+                    legend columns=-1, font=\small,
+                    /tikz/every even column/.append style={column sep=0.6cm}},
+    ]
+    \addplot[ours] coordinates {(10.59,1) (14.39,2) (11.73,3) (6.37,5) (13.99,6) (13.32,7)};
+    \addplot[cock] coordinates {(39.38,1) (31.08,2) (24.24,3) (13.17,5) (43.25,6) (31.40,7)};
+    \addplot[cot]  coordinates {(35.68,1) (37.06,2) (28.30,3) (11.26,5) (65.59,6) (46.28,7)};
+    \legend{AmphionASR 2.0, CocktailASR-1, CocktailASR-1 $\cdot$ CoT}
+    \node[font=\scriptsize, text=black!45] at (axis cs:35,4) {no target-present samples};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:10.6,1) {10.6};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:14.4,2) {14.4};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:11.7,3) {11.7};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:6.4,5) {6.4};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:14.0,6) {14.0};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:13.3,7) {13.3};
+  \end{axis}
+  \begin{axis}[secaxis, at={(left.east)}, anchor=west, xshift=0.5cm,
+      title={Target absent $\cdot$ false alarm (\%)},
+      xmin=-4, xmax=100, xtick={0,20,...,100},
+      yticklabels={},
+    ]
+    \addplot[ours] coordinates {(2.60,1) (2.01,2) (2.17,3) (0.75,4) (9.07,5) (4.90,6) (5.39,7)};
+    \addplot[cock] coordinates {(96.14,1) (73.82,2) (79.77,3) (11.33,4) (25.93,5) (78.44,6) (77.64,7)};
+    \addplot[cot]  coordinates {(87.66,1) (56.18,2) (61.00,3) (52.67,4) (55.46,5) (73.02,6) (53.88,7)};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:2.6,1) {2.6};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:2.0,2) {2.0};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:2.2,3) {2.2};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:0.8,4) {0.8};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:9.1,5) {9.1};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:4.9,6) {4.9};
+    \node[lab, anchor=south, yshift=2.5pt] at (axis cs:5.4,7) {5.4};
+  \end{axis}
+\end{tikzpicture}
+\end{document}

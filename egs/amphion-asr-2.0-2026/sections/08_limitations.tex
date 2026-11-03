@@ -1,0 +1,40 @@
+% Limitations. Sources: HTML §8; refs/docs/ts_benchmark.md §6; refs/docs/plan.md §8;
+% supp.json["ctx"] (context correction: 6.5% / 7.3%, 93.6%).
+
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{False alarms with many talkers or short sentences.}
+With four other people speaking and the target absent, the false-alarm rate of AmphionASR~2.0 is 8.3\%; when a similar-sounding person says one short sentence and the target is absent, it is 22.7\%.
+
+\paragraph{An empty output is not speaker verification.}
+With a very poor enrollment or a very low SNR, a target-present sample may still yield an empty output, and a target-absent sample may still yield a false alarm.
+Applications that need strict identity checks should add a speaker-verification step.
+
+\paragraph{Regression in general recognition.}
+AmphionASR~2.0 remains behind the model it was initialized from, Qwen3-ASR-1.7B, on WenetSpeech, WenetSpeech-Chuan, the KeSpeech dialects and English (\Cref{subsec:exp_general}).
+
+\paragraph{Contextual correction.}
+An in-house contextual-correction test has a speaker clarify an earlier word in the same utterance, for example by spelling out which character of a name is meant.
+AmphionASR~2.0 rewrites the earlier mention according to the clarification only 6.5\% of the time (Qwen3-ASR-1.7B: 7.3\%), although 93.6\% of the clarifications themselves are transcribed correctly.
+In TS-ASR mode, when the voice in the mixture is a text-to-speech clone of a person and the enrollment is that person's real recording, 11.6\% of samples produce an empty output.
+% TODO: verify the 11.6% TTS-clone figure; it comes from the published HTML §8
+% and was not found in supp.json["ctx"].
+
+\paragraph{Near-homophone distractors in hotword lists.}
+When the candidate list comes from lexicon retrieval and contains homophones and near-homophones, AmphionASR~2.0 writes wrong candidates into Mandarin output.
+On real speech, its false-alarm rate is 21.7\% with the correct word in the list and 39.8\% without it, roughly twice that of Qwen3-ASR-1.7B in both cases (\Cref{subsec:exp_hotwords}).
+In practice, the list should be kept short, with few near-homophones.
+
+\paragraph{Punctuation and length.}
+About 29\% of plain-ASR outputs carry punctuation, so post-processing is needed to punctuate the rest.
+% TODO: verify the 29% punctuation share; it comes from the published HTML §8.
+One request carries at most 30\,s of audio, and longer recordings must be segmented first.
+
+\paragraph{Benchmark coverage.}
+\tsbench is Mandarin only.
+Its synthetic part uses read speech, without the prosody and interruptions of real conversation, and although its noise floors and room responses are partly real recordings, the mixing is synthetic.
+The real part covers only meetings, phone calls and web conversations, with no in-car, outdoor or on-device recordings, and has only 100--460 samples per corpus.
+References for the web conversations come from automatic diarization and recognition and contain some errors.
+The training splits of the real meeting corpora, with different recordings and speakers, are used in training, so the real part measures in-domain behavior.
+AISHELL-1 test text overlaps with AISHELL-2, which is used in training, and MagicData-RAMC assigns several speaker IDs to one person in some cases, so the real-call subset may contain training speakers.

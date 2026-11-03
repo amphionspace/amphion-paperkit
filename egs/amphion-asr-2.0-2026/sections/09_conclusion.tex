@@ -1,0 +1,16 @@
+% Conclusion. Source: HTML §9; synthesis only (paper-writing.mdc §6).
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This report addressed target-speaker recognition in recordings where the enrolled speaker may or may not talk.
+We proposed \tsbench, which will be released publicly.
+Every condition is paired with target-present and target-absent samples.
+The synthetic part is designed from errors observed in real use and changes one factor at a time, and the real part comes from the test sets of public meeting and call corpora and from web conversations.
+With \tsbench, we showed that evaluations limited to a single talker, to samples with the target present or to silence can rate two systems as roughly equal.
+Yet when others talk in real recordings, one of those systems almost always produces false alarms and the other rarely does.
+We also presented AmphionASR~2.0, which joins the enrollment and the mixture with a learnable separator after the convolutional downsampling of its audio encoder and whose training data give every scene type target-absent counterparts.
+Compared on \tsbench with Xiaomi-CocktailASR-1, a model about five times larger, AmphionASR~2.0 has a lower CER with the target present and a false-alarm rate more than an order of magnitude lower when others talk and the target is absent.
+The difference holds on real meetings and calls.
+The same weights also handle plain and hotword ASR, with a small regression in general recognition relative to the initial model.
+False alarms when a similar-sounding person speaks briefly, near-homophone distractors in hotword lists, and this regression remain the main open problems.

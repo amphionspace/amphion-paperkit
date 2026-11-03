@@ -1,0 +1,32 @@
+% Training. Sources: refs/docs/train_eval_data.md §1, refs/docs/model_arch.md §4; HTML §5.
+
+\section{Training}
+\label{sec:training}
+
+AmphionASR~2.0 starts from Qwen3-ASR-1.7B and is trained in two stages, both updating all parameters except the frozen ones listed in \Cref{tab:training}.
+Stage~1 consists of three rounds of multi-task supervised fine-tuning.
+Stage~2 continues from the stage-1 model with target-speaker robustness training in five segments.
+Each segment starts from the weights of the previous one, and its data recipe is adjusted according to the evaluation of the previous segment.
+
+\begin{table}[t]
+  \caption{Training setup.}
+  \label{tab:training}
+  \centering
+  \small
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Item & Setting \\
+    \midrule
+    Initialization & Qwen3-ASR-1.7B~\cite{shi2026qwen3asr} \\
+    Stage 1: multi-task supervised fine-tuning & Plain ASR, hotword ASR, synthetic target-speaker mixtures and meeting turn-taking data; three rounds \\
+    Stage 2: target-speaker robustness training & Five segments continued from the stage-1 model \\
+    Parameters updated & All, except the text embeddings and the convolution layers of the AuT encoder, which are frozen; \septok is trained \\
+    Loss & Cross-entropy on the text positions to be predicted only \\
+    Released weights & Parameter-wise average of the last three checkpoints~\cite{wortsman2022model} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Weight averaging.}
+The present-or-absent decision of a single checkpoint fluctuates: between neighboring checkpoints, the share of target-present samples with an empty output can differ by 4 percentage points.
+We therefore release the parameter-wise average of the last three checkpoints~\cite{wortsman2022model}.

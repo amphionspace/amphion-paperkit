@@ -1,0 +1,158 @@
+% fig:bench — how AmphionTS-Bench samples are built.
+% Facts: refs/docs/ts_benchmark.md §1 (21,720 synthetic / 2,381 real samples),
+% §2.3 (base scenes of target + 1--2 interferers; one factor changed at a time:
+% enrollment, noise floor, room response, level, background; target-absent counterparts keep the
+% mixture and swap the enrollment for a random person or one of the 5 speakers
+% closest to an interferer), §2.4 (real corpora, no mixing, 8--22 s window from a
+% sentence start extended to whole sentences up to 26 s; present = speaks >= 1 s in
+% the window, absent = same recording, silent in the window; enrollment outside the
+% window with a 1 s margin), §2.5 (10 s stored, first 5 s used, 0.3--0.6 s pauses,
+% zero padding, 2/3/4 s evaluated separately), §4 (metrics).
+% Build: cd egs/amphion-asr-2.0-2026/figures && TEXINPUTS=../../../figures//: pdflatex bench-construction.tex
+\documentclass[tikz, border=4pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}
+\usepackage{mathpazo}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc,
+                decorations.pathreplacing, decorations.pathmorphing}
+
+\input{_palette}
+
+\tikzset{
+  panel/.style   ={draw=black!18, fill=cAudio!45, rounded corners=5pt, line width=0.5pt},
+  ptitle/.style  ={anchor=north west, font=\small, text=black!85, inner sep=0pt},
+  psub/.style    ={anchor=north west, font=\scriptsize, text=black!60, inner sep=0pt},
+  track/.style   ={draw=black!14, line width=0.5pt},
+  tlab/.style    ={anchor=east, font=\scriptsize, text=black!70, inner sep=1pt},
+  note/.style    ={font=\scriptsize, text=black!60, align=center},
+  % speakers: target / interferer / optional interferer / someone not in the audio
+  spkT/.style    ={fill=cEncB!80, draw=cEncB, line width=0.4pt},
+  spkI/.style    ={fill=cAdpB!70, draw=cAdpB, line width=0.4pt},
+  spkJ/.style    ={fill=cAdpB!25, draw=cAdpB, line width=0.4pt, densely dashed},
+  spkO/.style    ={fill=cPromptB!65, draw=cPromptB, line width=0.4pt},
+  factor/.style  ={draw=black!28, fill=white, rounded corners=2pt, font=\scriptsize,
+                   minimum width=2.15cm, minimum height=0.36cm, inner sep=1pt},
+  enr/.style     ={rounded corners=2pt, minimum width=0.5cm, minimum height=0.4cm,
+                   inner sep=0pt, text=white, font=\scriptsize},
+  mix/.style     ={draw=black!35, fill=white, rounded corners=2pt, minimum width=1.4cm,
+                   minimum height=0.4cm, inner sep=0pt},
+  res/.style     ={anchor=west, font=\scriptsize, align=left, text=black!75},
+  brace/.style   ={decorate, decoration={brace, amplitude=3pt}, draw=black!50, line width=0.5pt},
+}
+
+% \seg{x1}{x2}{y}{style}: one sentence on a speaker track
+\newcommand{\seg}[4]{\path[#4, rounded corners=1pt] (#1,#3-0.09) rectangle (#2,#3+0.09);}
+
+% \pair{name}{y-present}{y-absent}{present label}{absent label}
+\def\xE{10.7}
+\newcommand{\pair}[5]{%
+  \node[enr, fill=cEncB]    (#1p) at (\xE,#2) {\faUser};
+  \node[enr, fill=cPromptB] (#1a) at (\xE,#3) {\faUser};
+  \foreach \r/\y in {p/#2, a/#3} {
+    \node[mix] (#1m\r) at (\xE+1.15,\y) {};
+    \path[spkT] ($(#1m\r.west)+(0.12,0.04)$) rectangle +(0.62,0.08);
+    \path[spkI] ($(#1m\r.west)+(0.55,-0.12)$) rectangle +(0.72,0.08);
+    \node[font=\scriptsize, text=black!50] at ($(#1\r.east)!0.5!(#1m\r.west)$) {+};
+  }
+  \node[note, font=\tiny] at ($(#1mp.south)!0.5!(#1ma.north)$) {same audio};
+  \node[tlab, align=right] at ($(#1p.west)+(-0.06,0)$) {#4};
+  \node[tlab, align=right] at ($(#1a.west)+(-0.06,0)$) {#5};
+  \node[res] at ($(#1mp.east)+(0.12,0)$) {\textcolor{cEncB}{\textbf{target present}}\\CER, empty-output rate};
+  \node[res] at ($(#1ma.east)+(0.12,0)$) {\textcolor{cPromptB}{\textbf{target absent}}\\false-alarm rate};
+}
+
+\begin{document}
+\begin{tikzpicture}
+  \def\W{15.4}
+
+  % ======================================================================
+  % (a) synthetic part
+  % ======================================================================
+  \path[panel] (0,4.2) rectangle (\W,7.95);
+  \node[ptitle] at (0.2,7.8) {\textbf{(a) Synthetic part}\enspace\textcolor{black!55}{21{,}720 samples}};
+  \node[psub]   at (0.2,7.38) {Read speech; speakers only from the official test splits of AISHELL-1/2/3, KeSpeech and MagicData};
+
+  % base scene: target + 1--2 interferers + background
+  \foreach \y in {6.6,6.15,5.7} \draw[track] (1.7,\y) -- (5.75,\y);
+  \node[tlab] at (1.65,6.6)  {\textcolor{cEncB}{target}};
+  \node[tlab] at (1.65,6.15) {\textcolor{cAdpB}{interferer 1}};
+  \node[tlab] at (1.65,5.7)  {\textcolor{cAdpB}{interferer 2}};
+  \node[tlab] at (1.65,5.25) {background};
+  \seg{1.85}{3.3}{6.6}{spkT}  \seg{4.05}{5.55}{6.6}{spkT}
+  \seg{2.85}{4.3}{6.15}{spkI} \seg{5.05}{5.75}{6.15}{spkI}
+  \seg{1.7}{2.45}{5.7}{spkJ}  \seg{4.45}{5.1}{5.7}{spkJ}
+  \draw[black!45, line width=0.5pt, decorate,
+        decoration={random steps, segment length=1.6pt, amplitude=1.6pt}] (1.7,5.25) -- (5.75,5.25);
+  \node[note] at (3.72,4.72) {base scene: target + 1--2 interferers};
+
+  % one factor at a time
+  \draw[flow] (5.9,5.95) -- (6.32,5.95);
+  \node[note, anchor=south] at (7.65,6.6) {\itshape change one factor};
+  \foreach \t [count=\i] in {enrollment audio, {noise floor (type, level)}, room response,
+                            overall level, background sound}
+    \node[factor, minimum width=2.45cm] at (7.65,{6.75-0.4*\i}) {\t};
+  \draw[flow] (9.02,5.95) -- (9.35,5.95);
+
+  % present / absent counterparts
+  \pair{A}{6.4}{5.35}{target}{random or\\similar voice}
+
+  % ======================================================================
+  % (b) real part
+  % ======================================================================
+  \path[panel] (0,0.25) rectangle (\W,3.95);
+  \node[ptitle] at (0.2,3.8) {\textbf{(b) Real part}\enspace\textcolor{black!55}{2{,}381 samples}};
+  \node[psub]   at (0.2,3.38) {AliMeeting and AISHELL-4 far-field meetings, MagicData-RAMC phone calls, web conversations; recordings used without mixing};
+
+  % window: nominal part + extension to the end of the overlapping sentence
+  \fill[cPrompt] (4.4,1.1) rectangle (6.95,2.6);
+  \fill[cPrompt!45] (6.95,1.1) rectangle (7.25,2.6);
+  \draw[cPromptB, densely dashed, line width=0.5pt] (4.4,1.1) rectangle (7.25,2.6);
+  \node[note] at (5.83,0.73) {window: 8--22\,s from a sentence start,\\[-1pt]extended to whole sentences ($\le$ 26\,s)};
+
+  \foreach \y in {2.3,1.85,1.4} \draw[track] (1.7,\y) -- (8.4,\y);
+  \node[tlab] at (1.65,2.3)  {\textcolor{cEncB}{speaker A}};
+  \node[tlab] at (1.65,1.85) {\textcolor{cAdpB}{speaker B}};
+  \node[tlab] at (1.65,1.4)  {\textcolor{cPromptB}{speaker C}};
+  \seg{1.8}{3.0}{2.3}{spkT}   \seg{4.4}{5.4}{2.3}{spkT}   \seg{6.1}{7.25}{2.3}{spkT}
+  \seg{2.1}{2.75}{1.85}{spkI} \seg{5.25}{6.2}{1.85}{spkI} \seg{7.45}{8.1}{1.85}{spkI}
+  \seg{1.75}{2.7}{1.4}{spkO}  \seg{7.6}{8.35}{1.4}{spkO}
+
+  % enrollments come from outside the window, with a 1 s margin
+  \draw[brace] (1.8,2.45) -- (3.0,2.45) node[midway, above=2pt, note, inner sep=0pt] {enrollment of A};
+  \draw[brace] (2.7,1.25) -- (1.75,1.25) node[midway, below=2pt, note, inner sep=0pt] {enrollment of C};
+  \draw[{Bar[width=4pt]}-{Bar[width=4pt]}, black!50, line width=0.45pt] (3.0,2.3) -- (4.4,2.3)
+    node[midway, below=1pt, note, inner sep=1pt] {1\,s margin};
+
+  \draw[flow] (8.6,1.85) -- (9.3,1.85);
+  \pair{B}{2.35}{1.3}{A: $\ge$ 1\,s\\in window}{C: silent\\in window}
+
+  % ======================================================================
+  % (c) enrollment protocol
+  % ======================================================================
+  \path[panel] (0,-1.75) rectangle (\W,-0.05);
+  \node[ptitle] at (0.2,-0.2) {\textbf{(c) Enrollment}};
+  % 10 s at 0.6 cm/s
+  \def\ex{2.2}
+  \path[spkT] (\ex,-1.02) rectangle ++(1.98,0.26);
+  \path[spkT, fill=cEncB!40] ({\ex+2.25},-1.02) rectangle ++(1.95,0.26);
+  \path[spkT, fill=cEncB!40] ({\ex+4.47},-1.02) rectangle ++(1.53,0.26);
+  \node[font=\scriptsize, text=white] at ({\ex+0.99},-0.89) {first sentence};
+  \node[font=\scriptsize, text=black!75] at ({\ex+3.22},-0.89) {other sentences};
+  \draw[brace] (\ex,-0.68) -- ({\ex+3.0},-0.68)
+    node[midway, above=2pt, note, inner sep=0pt, text=cEncB] {\textbf{first 5\,s used}};
+  \foreach \s/\l in {0/0, 5/5\,s, 10/10\,s} {
+    \draw[black!45, line width=0.4pt] ({\ex+0.6*\s},-1.08) -- ({\ex+0.6*\s},-1.16);
+    \node[font=\tiny, text=black!55, anchor=north] at ({\ex+0.6*\s},-1.16) {\l};
+  }
+  \node[note, anchor=west, align=left, text width=6.3cm] at (8.85,-0.9)
+    {10\,s of one speaker are stored per enrollment: the first sentence, then other sentences
+     of this speaker that do not occur in the mixture, with 0.3--0.6\,s pauses.
+     Shorter enrollments are zero-padded; 2, 3 and 4\,s enrollments are evaluated separately
+     on the same scenes.};
+
+\end{tikzpicture}
+\end{document}
