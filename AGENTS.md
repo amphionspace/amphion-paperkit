@@ -119,7 +119,7 @@ amphion-paperkit/
 | `egs/<slug>/refs/internal/amphion-eval/` | AmphionEval 记录的只读镜像（含不可公开子集，数字须经净化后进正文） | gitignored |
 | `egs/<slug>/refs/README.md` | 本目录说明 | tracked |
 
-本仓库是公开仓库，`refs/docs/` 与 `refs/internal/` 只放在本机，不要 `git add -f`；这条规则之前已入库的同类文件保持原状。
+本仓库是公开仓库，`refs/docs/` 与 `refs/internal/` 只放在本机，不要 `git add -f`。
 
 通用写作方法学源（评审 / 复现 / 写作建议 / agent 协作 / LaTeX 工程）见 [`.cursor/rules/_sources.md`](.cursor/rules/_sources.md)，所有报告共享一份；不在 egs refs 里。
 

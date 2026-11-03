@@ -86,7 +86,7 @@ egs/*/refs/internal/amphion-eval/
 # Internal source material stays on the local machine because this repository is
 # public: plans, model / data / prompt notes (refs/docs/), and data summaries,
 # sources of published pages and AmphionEval declarations, which name the team
-# bucket (refs/internal/). Files committed before this rule stay tracked.
+# bucket (refs/internal/).
 egs/*/refs/docs/*
 !egs/*/refs/docs/.gitkeep
 egs/*/refs/internal/*
