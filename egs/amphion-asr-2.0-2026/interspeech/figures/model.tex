@@ -1,0 +1,38 @@
+% Condensed from ../sections/03_model.tex; source report Section 3.
+% Reuse the repository palette; labels are 8 pt at the final 80 mm width.
+\documentclass[tikz,border=1pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\input{_palette}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  every node/.style={font=\fontsize{8}{9}\selectfont,align=center},
+  box/.style={minimum height=6mm,inner sep=2pt},
+  flow/.style={-Stealth,line width=.65pt}]
+\node[audio,box,minimum width=32mm] (e) at (17,0) {Enrollment (5 s)};
+\node[audio,box,minimum width=32mm] (x) at (61,0) {Mixture ($\leq$25 s)};
+\node[encoder,box,minimum width=32mm] (ce) at (17,-10) {Mel + frozen conv.};
+\node[encoder,box,minimum width=32mm] (cx) at (61,-10) {Mel + frozen conv.};
+\draw[flow] (e)--(ce);
+\draw[flow] (x)--(cx);
+\node[boundbox,box,minimum width=76mm] (seq) at (39,-21)
+  {$H_e$ \quad | \quad learnable separator \quad | \quad $H_x$};
+\draw[flow] (ce)--(ce|-seq.north);
+\draw[flow] (cx)--(cx|-seq.north);
+\node[encoder,box,minimum width=76mm] (tf) at (39,-32)
+  {AuT Transformer: global attention (24 layers)};
+\draw[flow] (seq)--(tf);
+\node[adapter,box,minimum width=32mm] (proj) at (17,-43) {Audio projection};
+\node[promptbox,box,minimum width=32mm] (prompt) at (61,-43)
+  {Task instruction\\frozen text embedding};
+\draw[flow] (tf.south-|proj.north)--(proj);
+\node[llmbox,box,minimum width=76mm] (llm) at (39,-55)
+  {Qwen3 language model (1.7 B)};
+\draw[flow] (proj)--(proj|-llm.north);
+\draw[flow] (prompt)--(prompt|-llm.north);
+\node[font=\fontsize{8}{9}\selectfont] (out) at (39,-65)
+  {Target present: transcript \quad / \quad absent: empty};
+\draw[flow] (llm)--(out);
+\end{tikzpicture}
+\end{document}

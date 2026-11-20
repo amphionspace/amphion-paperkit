@@ -1,0 +1,25 @@
+% Condensed from the source report, Sections 1 and 7.
+\section{Introduction}
+\label{sec:introduction}
+Across meetings, phone calls, and continuously listening applications, a recognizer may need to transcribe one person despite changes in acoustics and speaker activity.
+Target-speaker automatic speech recognition (TS-ASR) receives a short enrollment recording of that person and a recording to transcribe, called the mixture.
+It must recognize the target's words despite competing voices, but also return an empty transcript when only other people speak.
+A system that recognizes speech accurately yet frequently transcribes the wrong person fails this task.
+
+Common evaluations such as WSJ0-2mix, LibriMix, and LibriSpeechMix overlay read utterances and assume that the target is present~\cite{hershey2016deep,cosentino2020librimix,kanda2020serialized}.
+They measure recognition or separation under overlap, but cannot expose false alarms when the enrolled speaker is absent.
+Prior target speech extraction work has studied this failure explicitly~\cite{delcroix2022listen,borsdorf2021universal,zhang2023speaker}.
+Enrollment-conditioned speech models, including SQ-Whisper and CocktailASR, extend recognition to competing speakers~\cite{guo2024sqwhisper,zhang2025thinking,zhang2026xiaomi}.
+Real meeting benchmarks address speaker-attributed transcription~\cite{liang2023second,vinnikov2024notsofar}, but this differs from recognizing a single enrolled person and rejecting all others.
+The remaining evaluation gap is to test both behaviors across conversational timing, degraded enrollment, and real recordings.
+
+We introduce \model (One For All Target-Speaker ASR), using the same model parameters across noise, reverberation, turn-taking, overlap, short utterances, and target absence.
+It builds on Qwen3-ASR-1.7B~\cite{shi2026qwen3asr}, conditions its audio encoder on enrollment speech, and trains with target-absent counterparts across scene types.
+This extends the speaker-selection capability studied in AmphionASR~1.0~\cite{amphion2026amphionasr}.
+To evaluate this scenario coverage, we introduce \bench, with 24{,}101 Mandarin samples in 248 subsets.
+It combines controlled synthetic conditions with real meetings, telephone calls, and web conversations, measuring recognition, complete misses, and false alarms together.
+
+The benchmark changes how systems compare.
+When only the target speaks in real recordings, \model and Xiaomi-CocktailASR-1 have nearly identical character error rates (CERs), 7.5\% and 7.3\%.
+When others speak while the target is absent, their false-alarm rates are 2.6\% and 96.1\%.
+This contrast motivates evaluating target absence as a distinct requirement rather than treating silence-only tests as sufficient.

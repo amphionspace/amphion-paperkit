@@ -1,0 +1,62 @@
+% Source: sections/02_benchmark.tex and its composition/metric definitions.
+\section{AmphionTS-Bench}
+\label{sec:benchmark}
+We evaluate one model across the conditions in Table~\ref{tab:composition}, with 12{,}950 target-present and 11{,}151 target-absent samples.
+The benchmark's synthetic part has 21{,}720 samples; 2{,}381 come from real recordings.
+The benchmark is intended for public release.
+
+\begin{table}[t]
+\caption{Benchmark composition. P/A: target present/absent. Counts include diagnostic subsets.}
+\label{tab:composition}
+\centering
+\small
+\begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+\toprule
+Condition & Subsets & P & A \\
+\midrule
+Degraded enrollment & 22 & 1{,}650 & 1{,}650 \\
+Timing and interferers & 27 & 2{,}280 & 960 \\
+Short segments & 15 & 2{,}520 & 1{,}080 \\
+No one speaking & 10 & 0 & 1{,}200 \\
+Noise and recording chain & 52 & 3{,}240 & 3{,}000 \\
+Far field and reverberation & 22 & 1{,}320 & 1{,}320 \\
+Real conversations & 88 & 1{,}190 & 1{,}191 \\
+Additional diagnostics & 12 & 750 & 750 \\
+\midrule
+Total & 248 & 12{,}950 & 11{,}151 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Paired synthetic conditions}
+Synthetic speech comes from the official test splits of AISHELL-1/2/3, KeSpeech, and MagicData~\cite{bu2017aishell1,du2018aishell2,shi2021aishell3,tang2021kespeech}.
+Scenes cover turn-taking, simultaneous starts, interruptions, the target entering or leaving, short replies, and multiple interferers.
+Enrollment degradations include limited speech, leading silence, narrowband audio, noise, reverberation, and another voice.
+Other subsets vary noise floors, room responses, recording level, and background sounds, including music and babble without a target.
+
+Controlled comparisons change one factor on the same base scenes.
+For paired target-absent samples, the mixture remains identical while the enrollment changes to another person.
+This person is either random or among the five speakers whose embeddings are closest to an interferer.
+The similar-voice condition tests a failure that random enrollment alone can hide.
+Each enrollment stores 10\,s; evaluation uses its first 5\,s, with zero-padding when shorter.
+Separate subsets test enrollments recorded for only 2--4\,s.
+
+\subsection{Real recordings and label checks}
+Real samples are sentence-aligned windows from AliMeeting and AISHELL-4 far-field meetings~\cite{yu2022m2met,fu2021aishell4}, MagicData-RAMC calls~\cite{yang2022open}, and Emilia web conversations~\cite{he2024emilia}, without synthetic mixing.
+The first three use human-annotated test sets; web conversations use pseudo-labels.
+Present samples enroll someone who speaks for at least 1\,s in the window.
+Absent samples enroll a silent participant from the same recording, or a speaker from another recording of the same corpus when necessary.
+Enrollment speech is taken outside the window with a 1\,s margin.
+
+Speaker embeddings are used to check enrollment identity.
+Three mismatched AISHELL-4 enrollments were replaced and one unconfirmed window removed.
+Enrollments containing at least 0.3\,s of another voice in their first 5\,s are evaluated separately.
+AliMeeting also provides paired near-field and far-field conditions to compare synthetic degradation with real microphone mismatch.
+
+\subsection{Metrics}
+Mandarin text is converted to simplified characters, numbers are normalized, and filler words are removed.
+CER pools character errors and reference characters over target-present samples.
+The empty-output rate (ER) is the fraction of target-present samples with an empty normalized transcript.
+The false-alarm rate (FA) is the fraction of target-absent samples with a nonempty normalized transcript.
+These metrics must be read together: suppressing every output reduces FA but increases ER.
+Section and overall scores are pooled over their constituent samples, rather than averaged across subsets.

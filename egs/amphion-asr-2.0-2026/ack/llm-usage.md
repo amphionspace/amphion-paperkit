@@ -15,6 +15,8 @@ date | section/scope | model | summary
 <!-- 在下方追加 entries，最新的放最上面 -->
 | 日期 | 范围 | 模型 | 摘要 |
 | --- | --- | --- | --- |
+| 2026.11.20 | interspeech/main.tex, sections, README | Codex | Applied the user-approved OFA-TS title and model name; aligned scenario-coverage wording, captions, and table labels; preserved reported results and limitations. |
+| 2026.11.19 | interspeech/ | Codex | Condensed the source report into the Interspeech format; prepared a compact model figure and four tables; compiled and checked the PDF. Existing numerical results were retained. |
 | 2026.11.02 | HTML 报告源码（本机）、refs/README | Claude (Claude Code) | HTML 版同步隐藏数据配方、prompt 与输出格式原文、训练超参数与硬件；内部原料改为只放本机 |
 | 2026.11.01 | sections/*、figures/scenarios、references.bib、refs/notes/papers | Claude (Claude Code) | 重画场景图与架构图、新增基准构造图；压缩数据配方细节；把 CocktailASR-1 比较并入实验节；新增 10 篇相关工作并逐篇核对 PDF；去掉 prompt 原文；英文措辞修改（数字与主张不变）；去掉输出格式原文与训练超参数 |
 | 2026.10.31 | sections/*、tables/*、figures/*、references.bib | Claude (Claude Code) | 按 HTML 定稿与 refs/docs 起草 LaTeX 初稿；表格由脚本从 HTML 表格转换；4 张 TikZ / pgfplots 图；头条数字用 AmphionEval 记录复算；文献作者表按 arXiv API 核对 |

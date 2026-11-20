@@ -1,0 +1,48 @@
+% Source: sections/03_model.tex, 04_data.tex and 05_training.tex.
+\section{OFA-TS: model and training}
+\label{sec:model}
+\subsection{Enrollment inside the audio encoder}
+\model initializes both its audio encoder and language model from Qwen3-ASR-1.7B~\cite{shi2026qwen3asr}.
+The AuT encoder has convolutional downsampling and a 24-layer Transformer.
+It maps 128-dimensional Mel features from 16\,kHz mono audio to 12.5\,Hz embeddings.
+The language model has 1.7\,B parameters; including the approximately 300\,M encoder, the total is about 2.0\,B.
+
+Figure~\ref{fig:model} shows the TS-ASR input.
+Enrollment and mixture features pass separately through the shared convolutional downsampling, preventing a convolutional receptive field from crossing their boundary.
+Their output sequences, $H_e$ and $H_x$, are then joined by a trainable 1024-dimensional separator $\sepvec$:
+\begin{equation}
+H = [H_e;\,\sepvec;\,H_x].
+\label{eq:input}
+\end{equation}
+The Transformer uses one attention window over the entire sequence, so every mixture frame can attend to the enrollment.
+Projected encoder outputs and a fixed task instruction enter the language model.
+The output language tag carries the presence decision: a present target is followed by its transcript, whereas absence yields no language and an empty transcript.
+Plain and hotword ASR share the same weights but do not insert a separator.
+A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at most 25\,s for the mixture.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/model.pdf}
+\caption{OFA-TS input construction, shared across scenarios. Encoder and language model are initialized from Qwen3-ASR. Enrollment and mixture share convolution weights but are processed separately. The separator is introduced during fine-tuning.}
+\label{fig:model}
+\end{figure}
+
+\subsection{Training with absent counterparts}
+Training has two stages.
+Three rounds of multi-task supervised fine-tuning use plain ASR, hotword ASR, synthetic target-speaker mixtures, and meeting turn-taking data.
+Five subsequent robustness-training segments continue from the preceding weights with adjusted data recipes.
+All parameters are updated except the encoder convolutions and text embeddings.
+The objective is cross-entropy over predicted text positions.
+Final weights average the last three checkpoints~\cite{wortsman2022model}.
+
+Robustness training combines online mixtures, constructed conversational scenes, and real meeting windows.
+Online mixing varies up to four interferers, signal levels, room responses, noise, and enrollment quality.
+Scene pools add turn-taking, hand-overs, and brief target utterances that random overlap does not reproduce.
+Every scene type has target-absent counterparts: the scene is retained but another person is enrolled, sometimes with a similar voice, and the reference is empty.
+Enrollment that repeats the target sentence is excluded.
+Meeting-window labels are checked to remove supposed absent samples in which the target actually speaks.
+
+Target voices come from AISHELL-2, LibriSpeech, KeSpeech, MagicData, and Emilia; conversational sources also include AliMeeting, AISHELL-4, MagicData-RAMC, AMI, and CHiME-6~\cite{panayotov2015librispeech,carletta2005ami,watanabe2020chime6}.
+Noise-only and babble samples have empty reference transcripts.
+Plain and hotword ASR remain in the training mixture to retain those tasks.
+A small amount of non-public domain speech and meeting-room noise is also used.
