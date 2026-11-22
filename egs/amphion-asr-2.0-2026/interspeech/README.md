@@ -37,3 +37,10 @@ The class remains in review mode and displays its original 2026 review label.
   table and the hotword results were removed. Real-conversation CER is
   labelled as clean enrollment, and the contaminated-enrollment comparison
   now uses the same corpora for both sides. The parent report is unchanged.
+- 2026-11-22: added the English counterpart (ts-asr-benchmark-en@v1-20261031,
+  220 subsets, 23,021 samples): benchmark description in Section 2, Table 4
+  and its discussion in Section 4, and updated abstract, introduction,
+  limitations and conclusion. English numbers come from the 064-avg3 record
+  and from both CocktailASR-1 modes rescored with whisper-normalizer 0.1.15
+  (the version of the 064-avg3 record). Added bib entries for VCTK,
+  CS-Dialogue, DiPCo and ICSI.

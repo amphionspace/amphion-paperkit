@@ -53,9 +53,16 @@ Three mismatched AISHELL-4 enrollments were replaced and one unconfirmed window 
 Enrollments containing at least 0.3\,s of another voice in their first 5\,s are evaluated separately.
 AliMeeting also provides paired near-field and far-field conditions to compare synthetic degradation with real microphone mismatch.
 
+\subsection{English counterpart}
+An English counterpart uses the same synthetic recipe and random seed, with speech from VCTK, the English test portion of CS-Dialogue, and LibriSpeech test-clean and test-other~\cite{yamagishi2019cstr,zhou2025csdialogue,panayotov2015librispeech}.
+Its synthetic and diagnostic subsets match Table~\ref{tab:composition} in number and size.
+Its real section has 60 subsets with 661 target-present and 640 target-absent samples, giving 220 subsets and 23{,}021 samples.
+Real windows come from human-annotated test or evaluation sessions of AMI, NOTSOFAR-1, CHiME-6, DiPCo, and ICSI~\cite{carletta2005ami,vinnikov2024notsofar,watanabe2020chime6,vansegbroeck2019dipco,janin2003icsi}; ICSI uses the close-talk headset mix rather than a distant microphone.
+Enrollment again comes from the same person outside the window, and enrollments containing another voice are evaluated separately.
+
 \subsection{Metrics}
-Mandarin text is converted to simplified characters, numbers are normalized, and filler words are removed.
-CER pools character errors and reference characters over target-present samples.
+Mandarin text is converted to simplified characters, numbers are normalized, and filler words are removed; English text uses the Whisper English normalizer~\cite{radford2023robust}.
+CER pools character errors and reference characters over target-present samples; English uses the word error rate (WER) in the same way.
 The empty-output rate (ER) is the fraction of target-present samples with an empty normalized transcript.
 The false-alarm rate (FA) is the fraction of target-absent samples with a nonempty normalized transcript.
 These metrics must be read together: suppressing every output reduces FA but increases ER.

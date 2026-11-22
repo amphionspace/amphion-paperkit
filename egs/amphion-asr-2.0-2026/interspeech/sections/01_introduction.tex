@@ -16,7 +16,7 @@ The remaining evaluation gap is to test both behaviors across conversational tim
 We introduce \model (One For All Target-Speaker ASR), using the same model parameters across noise, reverberation, turn-taking, overlap, short utterances, and target absence.
 It builds on Qwen3-ASR-1.7B~\cite{shi2026qwen3asr}, conditions its audio encoder on enrollment speech, and trains with target-absent counterparts across scene types.
 This extends the speaker-selection capability studied in AmphionASR~1.0~\cite{amphion2026amphionasr}.
-To evaluate this scenario coverage, we introduce \bench, with 24{,}101 Mandarin samples in 248 subsets.
+To evaluate this scenario coverage, we introduce \bench, with 24{,}101 Mandarin samples in 248 subsets, and evaluate the same weights on an English counterpart with 23{,}021 samples in 220 subsets.
 It combines controlled synthetic conditions with real meetings, telephone calls, and web conversations, measuring recognition, complete misses, and false alarms together.
 
 The benchmark changes how systems compare.

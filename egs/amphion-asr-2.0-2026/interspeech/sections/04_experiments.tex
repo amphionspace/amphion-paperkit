@@ -1,13 +1,14 @@
-% Source: sections/06_experiments.tex (structure). Numbers: AmphionEval v12 records
+% Source: sections/06_experiments.tex (structure). Numbers: AmphionEval records
 % (protocol v4) of ts-robust-064-avg3 and of the two CocktailASR-1 modes, pooled over
-% the 248 subsets of Table 1.
+% the 248 subsets of Table 1 (v12) and the 220 English subsets (en-v1). The English
+% CocktailASR-1 predictions were rescored with the same Whisper normalizer version.
 \section{Experiments}
 \label{sec:experiments}
 \subsection{Protocol and baselines}
-We use one set of \model weights across all benchmark subsets, with the first 5\,s of enrollment and the same normalization for all systems.
+We use one set of \model weights across all subsets in both languages, with the first 5\,s of enrollment and the same normalization for all systems.
 \model uses greedy decoding with at most 512 output tokens.
-The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16, greedy decoding and at most 256 output tokens.
-It supports both Mandarin enrollment-conditioned transcription and empty output.
+The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16 and greedy decoding, at most 256 output tokens in Mandarin and 512 in English.
+Its report evaluates enrollment-conditioned transcription and rejection of absent targets in both Chinese and English.
 Baseline scores are measured on the same audio and scoring protocol, not copied from their reports.
 
 CocktailASR's report uses reference crops of 1--4\,s.
@@ -82,10 +83,38 @@ Real near/far-field pairs qualify synthetic robustness conclusions.
 With near-field enrollment, switching the mixture to far field increases our CER from 9.4\% to 18.9\% synthetically, but from 4.6\% to 7.6\% on the paired AliMeeting windows.
 Synthetic subsets identify sensitivity; real windows measure its magnitude under actual recording conditions.
 
+\subsection{English counterpart}
+Table~\ref{tab:english} applies the same protocol to the English counterpart.
+\model has 13.6\% WER against 26.3\% for CocktailASR-1, and an ER of 3.7\% against 5.0\%; the CoT mode has the lowest ER, 0.6\%.
+FA is 6.3\% versus 50.6\%.
+With similar-sounding absent speakers, our FA is 20.2\%, against 13.9\% in Mandarin.
+
+\begin{table}[t]
+\caption{English TS-ASR results (\%, lower is better). Columns and scopes as in Table~\ref{tab:overall}; WER replaces CER.}
+\label{tab:english}
+\centering
+\small
+\begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+\toprule
+Metric / subset & OFA-TS & C & C+CoT \\
+\midrule
+All: WER & \textbf{13.6} & 26.3 & 25.3 \\
+All: ER & 3.7 & 5.0 & \textbf{0.6} \\
+All: FA & \textbf{6.3} & 50.6 & 61.3 \\
+Synthetic: FA & \textbf{5.5} & 47.5 & 58.9 \\
+Real: FA & \textbf{19.5} & 98.0 & 97.5 \\
+Real: WER, clean enrollment & \textbf{15.3} & 35.2 & 31.0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Real English conversations are harder than Mandarin ones: FA is 19.5\%, against 2.4\% in Mandarin.
+With clean enrollments, our FA ranges from 2.4\% on ICSI and 5.2\% on NOTSOFAR-1 to 28.6\% on DiPCo and 69.3\% on CHiME-6, while CocktailASR-1 has 92.7--100\% on every corpus.
+
 \subsection{Limitations}
-\bench covers Mandarin only and is mostly synthetic.
+Both language versions are mostly synthetic, and the English real section has only 1{,}301 samples.
 Real data cover meetings, calls, and web conversations; web references contain pseudo-label errors.
-Training uses the training splits of the real meeting corpora, so the real results measure in-domain behavior.
+Training uses the training splits of the Mandarin real meeting corpora and also includes recordings from all five English real corpora, so the real results measure in-domain behavior.
 The same team designed training scenes and benchmark conditions.
 AISHELL-1 test text overlaps with AISHELL-2 training text, and MagicData-RAMC speaker-ID inconsistencies may allow speaker overlap.
 The benchmark therefore does not establish unseen-domain or fully speaker-disjoint generalization.
