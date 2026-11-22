@@ -2,5 +2,5 @@ Target-speaker ASR must recognize an enrolled speaker across changing acoustic a
 We present OFA-TS, a single model for noisy and far-field speech, multi-speaker interactions, short utterances, and target absence.
 Initialized from Qwen3-ASR-1.7B, it joins enrollment and mixture features inside the audio encoder and trains with target-absent counterparts across scene types.
 We evaluate the same weights on AmphionTS-Bench, with 24,101 Mandarin samples in 248 subsets spanning synthetic conditions and real meetings, calls, and web conversations.
-OFA-TS achieves 13.1\% character error rate with the target present and 3.7\% false-alarm rate with the target absent, versus 33.4\% and 67.8\% for Xiaomi-CocktailASR-1.
+OFA-TS achieves 13.1\% character error rate with the target present and 2.8\% false-alarm rate with the target absent, versus 33.4\% and 67.8\% for Xiaomi-CocktailASR-1.
 Paired diagnostics identify short similar-sounding speech as a remaining weakness.

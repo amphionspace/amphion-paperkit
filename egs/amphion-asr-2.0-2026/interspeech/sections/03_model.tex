@@ -17,7 +17,6 @@ H = [H_e;\,\sepvec;\,H_x].
 The Transformer uses one attention window over the entire sequence, so every mixture frame can attend to the enrollment.
 Projected encoder outputs and a fixed task instruction enter the language model.
 The output language tag carries the presence decision: a present target is followed by its transcript, whereas absence yields no language and an empty transcript.
-Plain and hotword ASR share the same weights but do not insert a separator.
 A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at most 25\,s for the mixture.
 
 \begin{figure}[t]
@@ -30,7 +29,9 @@ A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at
 \subsection{Training with absent counterparts}
 Training has two stages.
 Three rounds of multi-task supervised fine-tuning use plain ASR, hotword ASR, synthetic target-speaker mixtures, and meeting turn-taking data.
-Five subsequent robustness-training segments continue from the preceding weights with adjusted data recipes.
+Subsequent robustness-training segments continue from the preceding weights with adjusted data recipes.
+% TODO: verify the number of robustness segments behind the evaluated checkpoint
+% (ts-robust-064-avg3: 064 <- 062 <- 059 <- 057; the weights 057 started from are not recorded).
 All parameters are updated except the encoder convolutions and text embeddings.
 The objective is cross-entropy over predicted text positions.
 Final weights average the last three checkpoints~\cite{wortsman2022model}.
@@ -44,5 +45,5 @@ Meeting-window labels are checked to remove supposed absent samples in which the
 
 Target voices come from AISHELL-2, LibriSpeech, KeSpeech, MagicData, and Emilia; conversational sources also include AliMeeting, AISHELL-4, MagicData-RAMC, AMI, and CHiME-6~\cite{panayotov2015librispeech,carletta2005ami,watanabe2020chime6}.
 Noise-only and babble samples have empty reference transcripts.
-Plain and hotword ASR remain in the training mixture to retain those tasks.
+Plain and hotword ASR data remain in the training mixture.
 A small amount of non-public domain speech and meeting-room noise is also used.

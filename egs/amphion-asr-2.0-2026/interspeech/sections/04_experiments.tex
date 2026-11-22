@@ -1,10 +1,12 @@
-% Source: sections/06_experiments.tex and tables/asr_general.tex.
+% Source: sections/06_experiments.tex (structure). Numbers: AmphionEval v12 records
+% (protocol v4) of ts-robust-064-avg3 and of the two CocktailASR-1 modes, pooled over
+% the 248 subsets of Table 1.
 \section{Experiments}
 \label{sec:experiments}
 \subsection{Protocol and baselines}
 We use one set of \model weights across all benchmark subsets, with the first 5\,s of enrollment and the same normalization for all systems.
 \model uses greedy decoding with at most 512 output tokens.
-The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16 and greedy decoding.
+The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16, greedy decoding and at most 256 output tokens.
 It supports both Mandarin enrollment-conditioned transcription and empty output.
 Baseline scores are measured on the same audio and scoring protocol, not copied from their reports.
 
@@ -14,12 +16,12 @@ Our main comparison holds enrollment length fixed across systems.
 
 \subsection{One model across scenarios}
 Table~\ref{tab:overall} reports all three metrics.
-\model achieves 13.1\% CER against 33.4\% for CocktailASR-1, while ER remains similar (2.9\% versus 2.7\%).
+\model achieves 13.1\% CER against 33.4\% for CocktailASR-1, with an ER 0.6 points higher (3.3\% versus 2.7\%).
 Thus the lower FA is not explained by a large increase in completely suppressed target utterances.
-Overall FA is 3.7\% versus 67.8\%; CoT reduces the baseline's FA to 61.9\% but increases its CER to 39.6\%.
+Overall FA is 2.8\% versus 67.8\%; CoT reduces the baseline's FA to 61.9\% but increases its CER to 39.6\%.
 
 \begin{table}[t]
-\caption{TS-ASR results (\%, lower is better). C: CocktailASR-1; C+CoT: its CoT mode. CER/ER use present samples; FA uses absent samples.}
+\caption{TS-ASR results (\%, lower is better). C: CocktailASR-1; C+CoT: its CoT mode. CER/ER use present samples; FA uses absent samples. Real: CER excludes enrollments that contain another voice; Real: FA includes them.}
 \label{tab:overall}
 \centering
 \small
@@ -28,26 +30,26 @@ Overall FA is 3.7\% versus 67.8\%; CoT reduces the baseline's FA to 61.9\% but i
 Metric / subset & OFA-TS & C & C+CoT \\
 \midrule
 All: CER & \textbf{13.1} & 33.4 & 39.6 \\
-All: ER & 2.9 & \textbf{2.7} & 3.0 \\
-All: FA & \textbf{3.7} & 67.8 & 61.9 \\
-Synthetic: FA & \textbf{3.8} & 64.5 & 58.8 \\
-Real: FA & \textbf{2.6} & 96.1 & 87.7 \\
-Real: CER & \textbf{9.2} & 30.8 & 27.2 \\
+All: ER & 3.3 & \textbf{2.7} & 3.0 \\
+All: FA & \textbf{2.8} & 67.8 & 61.9 \\
+Synthetic: FA & \textbf{2.8} & 64.4 & 58.8 \\
+Real: FA & \textbf{2.4} & 96.1 & 87.7 \\
+Real: CER, clean enrollment & \textbf{9.2} & 30.8 & 27.2 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-On real conversations, CER is 9.2\% versus 30.8\%.
-For individual real corpora, \model has FA between 1\% and 5\%, compared with 74--100\% for CocktailASR-1.
-For example, AliMeeting far-field CER is 6.8\% versus 38.2\%, and FA is 1.0\% versus 100.0\%.
-Real meeting enrollments containing another voice increase our CER by 6--11 points relative to clean enrollments.
+On real conversations with clean enrollments, CER is 9.2\% versus 30.8\%.
+For individual real corpora with clean enrollments, \model has FA between 1\% and 7\%, compared with 74--100\% for CocktailASR-1.
+For example, AliMeeting far-field CER is 6.3\% versus 38.2\%, and FA is 1.0\% versus 100.0\%.
+When the enrollment contains another voice, our CER rises from 10.4\% to 15.0\% on AliMeeting, AISHELL-4, and web-conversation windows, and from 7.3\% to 18.6\% on the paired AliMeeting windows; with such enrollments, FA is 0.7\%.
 These are whole-system comparisons: the study does not separately establish the contributions of architecture, training data, or parameter count.
 
 \subsection{What restricted evaluations miss}
 Table~\ref{tab:diagnostics} contrasts common evaluation conditions with cases encountered during continuous listening.
 Single-talker real recordings barely distinguish the systems.
 Adding silence-only negatives gives CocktailASR-1 a 10.8\% FA, while negatives containing other speakers reveal much higher FA.
-With two to four interferers and the target present, its CER reaches 65.7\%, versus 18.9\% for \model.
+With two to four interferers and the target present, its CER reaches 65.7\%, versus 18.5\% for \model.
 Both target presence and conversation structure therefore affect the comparison.
 
 \begin{table}[t]
@@ -59,56 +61,28 @@ Both target presence and conversation structure therefore affect the comparison.
 \toprule
 Condition & P/A & OFA-TS & C \\
 \midrule
-Target only, real recordings & P & 7.5 & 7.3 \\
-Target + one interferer & P & 7.3 & 21.3 \\
-Target + 2--4 interferers & P & 18.9 & 65.7 \\
-Nobody speaking & A & 0.1 & 10.8 \\
-Others speaking, synthetic & A & 3.5 & 85.8 \\
-Others speaking, real & A & 2.6 & 96.1 \\
-Similar-sounding speaker & A & 18.0 & 73.9 \\
+Target only, real recordings & P & 7.7 & 7.3 \\
+Target + one interferer & P & 6.8 & 21.3 \\
+Target + 2--4 interferers & P & 18.5 & 65.7 \\
+Nobody speaking & A & 0.8 & 10.8 \\
+Others speaking, synthetic & A & 1.7 & 85.8 \\
+Others speaking, real & A & 2.4 & 96.1 \\
+Similar-sounding speaker & A & 13.9 & 73.9 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 Paired enrollment tests expose a remaining weakness.
-For 6--18\,s absent-target segments, replacing a random enrollment with a similar-sounding person's enrollment raises our FA from 0.0\% to 12.5\%.
-For a single short phrase, it rises from 4.7\% to 22.7\%.
-Only 1\,s of enrollment speech also raises FA to 23.3\%.
+For 6--18\,s absent-target segments, replacing a random enrollment with a similar-sounding person's enrollment raises our FA from 0.0\% to 10.8\%.
+For a single short phrase, it rises from 3.0\% to 16.7\%.
+Only 1\,s of enrollment speech also raises FA to 18.0\%.
 Short, similar voices remain difficult despite the low overall FA.
 
 Real near/far-field pairs qualify synthetic robustness conclusions.
-With near-field enrollment, switching the mixture to far field increases our CER from 8.6\% to 16.9\% synthetically, but from 4.5\% to 6.4\% on the paired AliMeeting windows.
+With near-field enrollment, switching the mixture to far field increases our CER from 9.4\% to 18.9\% synthetically, but from 4.6\% to 7.6\% on the paired AliMeeting windows.
 Synthetic subsets identify sensitivity; real windows measure its magnitude under actual recording conditions.
 
-\subsection{Retained recognition and limitations}
-Table~\ref{tab:retention} checks plain ASR against Qwen3-ASR-1.7B on selected public test splits~\cite{zhang2022wenetspeech,panayotov2015librispeech}.
-Both use the same scoring; Mandarin uses CER and English uses WER after Whisper English normalization~\cite{radford2023robust}.
-The fine-tuned model retains plain recognition but regresses on these splits, particularly WenetSpeech.
-We do not claim a general-ASR improvement.
-
-Hotword conditioning remains available with the same weights.
-When a list contains the correct hotword and ten random distractors, recall is 99.8\% on the AISHELL-1 hotword subset and 98.2\% on the Common Voice English subset~\cite{ardila2020common}, versus 96.0\% and 91.3\% for Qwen3-ASR-1.7B.
-This favorable setting does not establish reliable rejection of plausible distractors.
-On an in-house real Mandarin speech test with retrieved candidates, the hotword false-alarm rate is 21.7\% when the correct word is listed and 39.8\% when it is absent; the baseline rates are 9.6\% and 17.7\%.
-These hotword false alarms concern incorrect candidate insertion, not target-speaker absence.
-
-\begin{table}[t]
-\caption{Plain-ASR retention on selected test splits (\%). Q: Qwen3-ASR-1.7B. Each row compares the same metric and normalization.}
-\label{tab:retention}
-\centering
-\small
-\begin{tabularx}{\columnwidth}{@{}Xlrr@{}}
-\toprule
-Test split & Metric & OFA-TS & Q \\
-\midrule
-WenetSpeech test\_net & CER & 5.49 & 4.49 \\
-WenetSpeech test\_meeting & CER & 5.51 & 4.69 \\
-LibriSpeech test-clean & WER & 1.69 & 1.63 \\
-LibriSpeech test-other & WER & 3.65 & 3.37 \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
+\subsection{Limitations}
 \bench covers Mandarin only and is mostly synthetic.
 Real data cover meetings, calls, and web conversations; web references contain pseudo-label errors.
 Training uses the training splits of the real meeting corpora, so the real results measure in-domain behavior.
