@@ -22,9 +22,55 @@ A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/model.pdf}
-\caption{OFA-TS input construction, shared across scenarios. Encoder and language model are initialized from Qwen3-ASR. Enrollment and mixture share convolution weights but are processed separately. The separator is introduced during fine-tuning.}
+\caption{OFA-TS architecture in TS-ASR mode, shared across scenarios. Enrollment and mixture pass separately through the same frozen convolutional downsampling. A learnable separator, introduced during fine-tuning, joins the two sequences before the AuT Transformer, which attends over the whole sequence. The language model reads the projected audio and a fixed task instruction, and its output language tag carries the presence decision. Encoder and language model are initialized from Qwen3-ASR-1.7B.}
 \label{fig:model}
 \end{figure}
+
+% Full-width result tables of Section 4, defined here so that they float to the top of the
+% page on which Section 4 begins.
+\begin{table*}[t]
+\caption{TS-ASR results on the Mandarin benchmark and its English counterpart (\%, lower is better). The error rate is CER in Mandarin and WER in English. Error rate and ER use target-present samples; FA uses target-absent samples. For real recordings, the error rate excludes enrollments that contain another voice, whereas FA includes them. Bold marks the lowest value in each column.}
+\label{tab:overall}
+\centering
+\small
+\setlength{\tabcolsep}{3.9pt}
+\begin{tabular}{@{}lrrrrrrrrrrrr@{}}
+\toprule
+ & \multicolumn{6}{c}{Mandarin} & \multicolumn{6}{c}{English} \\
+\cmidrule(lr){2-7}\cmidrule(l){8-13}
+ & \multicolumn{3}{c}{All} & Synthetic & \multicolumn{2}{c}{Real} & \multicolumn{3}{c}{All} & Synthetic & \multicolumn{2}{c}{Real} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-5}\cmidrule(lr){6-7}\cmidrule(lr){8-10}\cmidrule(lr){11-11}\cmidrule(l){12-13}
+System & CER & ER & FA & FA & FA & CER & WER & ER & FA & FA & FA & WER \\
+\midrule
+OFA-TS (ours) & \textbf{13.1} & 3.3 & \textbf{2.8} & \textbf{2.8} & \textbf{2.4} & \textbf{9.2} & \textbf{13.6} & 3.7 & \textbf{6.3} & \textbf{5.5} & \textbf{19.5} & \textbf{15.3} \\
+Xiaomi-CocktailASR-1 & 33.4 & 2.7 & 67.8 & 64.4 & 96.1 & 30.8 & 26.3 & 5.0 & 50.6 & 47.5 & 98.0 & 35.2 \\
+Xiaomi-CocktailASR-1, chain-of-thought & 39.6 & 3.0 & 61.9 & 58.8 & 87.7 & 27.2 & 25.3 & \textbf{0.6} & 61.3 & 58.9 & 97.5 & 31.0 \\
+WeSep + Qwen3-ASR-1.7B & 62.0 & \textbf{0.3} & 87.0 & 85.5 & 99.4 & 37.2 & 64.6 & 0.9 & 81.8 & 81.3 & 88.8 & 50.9 \\
+LauraTSE + Qwen3-ASR-1.7B & 80.5 & 12.6 & 64.9 & 64.2 & 70.4 & 81.2 & 74.6 & 17.3 & 58.7 & 58.7 & 58.0 & 79.3 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\caption{Selected Mandarin diagnostic subsets (\%, lower is better). Target-present subsets are scored by CER and target-absent subsets by FA. All rows use 5\,s enrollment. Bold marks the lowest value in each column.}
+\label{tab:diagnostics}
+\centering
+\small
+\newcommand{\hd}[1]{\begin{tabular}[b]{@{}c@{}}#1\end{tabular}}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{Target present: CER} & \multicolumn{4}{c}{Target absent: FA} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-8}
+System & \hd{Target only,\\real\\recordings} & \hd{Target +\\one\\interferer} & \hd{Target +\\2--4\\interferers} & \hd{Nobody\\speaking} & \hd{Others\\speaking,\\synthetic} & \hd{Others\\speaking,\\real} & \hd{Similar-\\sounding\\speaker} \\
+\midrule
+OFA-TS (ours) & 7.7 & \textbf{6.8} & \textbf{18.5} & \textbf{0.8} & \textbf{1.7} & \textbf{2.4} & \textbf{13.9} \\
+Xiaomi-CocktailASR-1 & 7.3 & 21.3 & 65.7 & 10.8 & 85.8 & 96.1 & 73.9 \\
+WeSep + Qwen3-ASR-1.7B & \textbf{5.4} & 69.1 & 215.9 & 7.1 & 97.1 & 99.4 & 99.1 \\
+LauraTSE + Qwen3-ASR-1.7B & 84.3 & 48.0 & 198.7 & 9.0 & 80.8 & 70.4 & 73.7 \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \subsection{Training with absent counterparts}
 Training has two stages.

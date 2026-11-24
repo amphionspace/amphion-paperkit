@@ -53,3 +53,12 @@ The class remains in review mode and displays its original 2026 review label.
   decoder whose outputs matched the official decoder bit for bit on a
   256-sample check. Added bib entries for WeSep and LauraTSE; the GenAI
   disclosure now names the new runs.
+- 2026-11-23: Figure 1 redrawn as an architecture diagram (inputs, frozen
+  convolutions and text embedding, token rows with the learnable separator,
+  AuT Transformer, projection, language model, output language tag, legend
+  and frozen/trainable marks), laid out after Figure 1 of the streaming TSE
+  paper in tse-experiments. Compared systems are now named in full
+  (Xiaomi-CocktailASR-1, WeSep + Qwen3-ASR-1.7B, LauraTSE + Qwen3-ASR-1.7B)
+  in tables and text: the Mandarin and English result tables are merged into
+  one full-width Table 2 with systems as rows, and the diagnostic table
+  (now Table 3) is transposed to full width. Numbers are unchanged.

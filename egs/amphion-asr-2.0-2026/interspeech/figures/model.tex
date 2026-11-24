@@ -1,38 +1,121 @@
-% Condensed from ../sections/03_model.tex; source report Section 3.
-% Reuse the repository palette; labels are 8 pt at the final 80 mm width.
+% Architecture of OFA-TS in TS-ASR mode, drawn bottom-up in the layout of a module diagram
+% (inputs at the bottom, token rows between modules, output tokens on top, legend, frozen /
+% trainable marks on each module). Facts: ../sections/03_model.tex (shared convolution applied
+% to enrollment and mixture separately, learnable separator between them, 24-layer AuT
+% Transformer with one attention window, frozen convolutions and text embeddings, presence
+% decision on the output language tag).
+% Build: cd figures && tectonic -Z search-path=../../../../figures model.tex
+% Labels are 6.5--8 pt at the final 80 mm column width.
 \documentclass[tikz,border=1pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{fontawesome5}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 \input{_palette}
+
+% Waveform pictogram: \wavepic{colour}{envelope}
+\newcommand{\wavepic}[2]{%
+  \begin{tikzpicture}[x=1mm,y=1mm,baseline=-0.6ex]
+    \foreach \h [count=\i] in #2
+      \draw[line width=0.5pt,line cap=round,draw=#1] ({0.75*\i},-\h) -- ({0.75*\i},\h);
+  \end{tikzpicture}}
+\def\envEnr{0.6,1.4,1.0,2.0,1.5,2.4,1.7,1.1,1.8,1.2,0.7}
+\def\envMix{0.5,1.1,1.8,1.3,2.4,1.7,2.6,2.0,1.4,2.2,1.2,1.9,2.5,1.5,2.1,1.1,1.6,0.8,1.3,0.6}
+
 \begin{document}
 \begin{tikzpicture}[x=1mm,y=1mm,
-  every node/.style={font=\fontsize{8}{9}\selectfont,align=center},
-  box/.style={minimum height=6mm,inner sep=2pt},
-  flow/.style={-Stealth,line width=.65pt}]
-\node[audio,box,minimum width=32mm] (e) at (17,0) {Enrollment (5 s)};
-\node[audio,box,minimum width=32mm] (x) at (61,0) {Mixture ($\leq$25 s)};
-\node[encoder,box,minimum width=32mm] (ce) at (17,-10) {Mel + frozen conv.};
-\node[encoder,box,minimum width=32mm] (cx) at (61,-10) {Mel + frozen conv.};
-\draw[flow] (e)--(ce);
-\draw[flow] (x)--(cx);
-\node[boundbox,box,minimum width=76mm] (seq) at (39,-21)
-  {$H_e$ \quad | \quad learnable separator \quad | \quad $H_x$};
-\draw[flow] (ce)--(ce|-seq.north);
-\draw[flow] (cx)--(cx|-seq.north);
-\node[encoder,box,minimum width=76mm] (tf) at (39,-32)
-  {AuT Transformer: global attention (24 layers)};
-\draw[flow] (seq)--(tf);
-\node[adapter,box,minimum width=32mm] (proj) at (17,-43) {Audio projection};
-\node[promptbox,box,minimum width=32mm] (prompt) at (61,-43)
-  {Task instruction\\frozen text embedding};
-\draw[flow] (tf.south-|proj.north)--(proj);
-\node[llmbox,box,minimum width=76mm] (llm) at (39,-55)
-  {Qwen3 language model (1.7 B)};
-\draw[flow] (proj)--(proj|-llm.north);
-\draw[flow] (prompt)--(prompt|-llm.north);
-\node[font=\fontsize{8}{9}\selectfont] (out) at (39,-65)
-  {Target present: transcript \quad / \quad absent: empty};
-\draw[flow] (llm)--(out);
+  every node/.style={font=\fontsize{7}{8}\selectfont,align=center},
+  mod/.style={rounded corners=3pt,line width=0.7pt,minimum height=6.5mm,inner sep=1.5pt},
+  mname/.style={font=\fontsize{8}{9}\selectfont\bfseries},
+  sub/.style={font=\fontsize{6.5}{7.5}\selectfont,text=black!70},
+  cell/.style={draw,line width=0.45pt,rounded corners=0.6pt,minimum size=2.8mm,inner sep=0pt},
+  cEnr/.style={cell,fill=cEnc,draw=cEncB},
+  cMix/.style={cell,fill=cTok!55,draw=cTokB!75},
+  cSep/.style={cell,fill=cBound,draw=cBoundB,line width=0.7pt},
+  cIns/.style={cell,fill=cPrompt,draw=cPromptB},
+  cTag/.style={cell,fill=cAdp,draw=cAdpB},
+  cOut/.style={cell,fill=white,draw=black!50},
+  flow/.style={-Stealth,line width=0.6pt,draw=black!70},
+  lbl/.style={font=\fontsize{6.5}{7.5}\selectfont,text=black!60}]
+
+\def\p{3.4}
+% ---------------- inputs --------------------------------------------------
+\node (we) at (14,1.5) {\wavepic{black!70}{\envEnr}};
+\node[anchor=north] at (we.south) {Enrollment (5\,s)};
+\node (wx) at (40,1.5) {\wavepic{black!70}{\envMix}};
+\node[anchor=north] at (wx.south) {Mixture ($\le$25\,s)};
+\node[promptbox,font=\fontsize{7}{8}\selectfont,minimum width=19mm,minimum height=5mm] (ins)
+  at (67.5,1.5) {Task instruction};
+
+% ---------------- convolutions and text embedding (frozen) ----------------
+\node[encoder,mod,minimum width=17mm] (ce) at (14,11) {\fontsize{6.5}{7.5}\selectfont Mel + conv.\\[-1pt]\fontsize{6.5}{7.5}\selectfont downsampling};
+\node[encoder,mod,minimum width=19mm] (cx) at (40,11) {\fontsize{6.5}{7.5}\selectfont Mel + conv.\\[-1pt]\fontsize{6.5}{7.5}\selectfont downsampling};
+\node[tokenizer,mod,minimum width=19mm] (temb) at (67.5,11) {\fontsize{6.5}{7.5}\selectfont Text\\[-1pt]\fontsize{6.5}{7.5}\selectfont embedding};
+\foreach \n in {ce,cx,temb}
+  \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(\n.north east)+(-1.6,-1.6)$) {\frozenIcon};
+\draw[densely dashed,line width=0.5pt,draw=cEncB,<->,>={Stealth[length=1.3mm]}] (ce.east) -- (cx.west)
+  node[midway,below=0.4mm,lbl,inner sep=0pt] {shared};
+\draw[flow] (we.north) -- (ce.south);
+\draw[flow] (wx.north) -- (cx.south);
+\draw[flow] (ins.north) -- (temb.south);
+
+% ---------------- token rows ----------------------------------------------
+\foreach \k in {1,...,4} \node[cEnr] (e\k) at ({14+(\k-2.5)*\p},20) {};
+\node[cSep] (sep) at (25.5,20) {};
+\node[inner sep=0pt,font=\fontsize{5}{5}\selectfont,anchor=south] at (sep.north) {\fireIcon};
+\foreach \k in {1,...,7} \node[cMix] (m\k) at ({40+(\k-4)*\p},20) {};
+\foreach \k in {1,...,3} \node[cIns] (t\k) at ({67.5+(\k-2)*\p},20) {};
+\draw[flow] (ce.north) -- (ce.north |- e1.south);
+\draw[flow] (cx.north) -- (cx.north |- m1.south);
+\draw[flow] (temb.north) -- (t2.south);
+
+% ---------------- AuT Transformer -----------------------------------------
+\node[encoder,mod,minimum width=46mm,minimum height=9mm] (tf) at (27,31) {};
+\node[mname] at ($(tf.center)+(0,1.6)$) {AuT Transformer, 24 layers};
+\node[sub] at ($(tf.center)+(0,-2.0)$) {one attention window over the whole sequence};
+\node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(tf.north east)+(-1.6,-1.6)$) {\fireIcon};
+\foreach \n in {e3,sep,m3,m6} \draw[flow] (\n.north) -- (\n.north |- tf.south);
+
+\begin{scope}[on background layer]
+  \node[draw=cEncB!70,densely dashed,rounded corners=4pt,line width=0.5pt,fill=cEnc!20,
+        inner xsep=1.2mm,inner ysep=1.2mm,fit=(ce)(cx)(tf)(e1)(m7)] (aut) {};
+\end{scope}
+\node[rotate=90,anchor=south,inner sep=0.8pt,font=\fontsize{6.5}{7.5}\selectfont\bfseries,text=cEncB]
+  at (aut.west) {AuT audio encoder};
+
+% ---------------- projection and language model ---------------------------
+\node[adapter,mod,minimum width=24mm] (proj) at (27,43) {\textbf{Audio projection}};
+\node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(proj.north east)+(-1.6,-1.6)$) {\fireIcon};
+\draw[flow] (tf.north) -- (aut.north -| tf.north) -- (proj.south);
+
+\node[llmbox,mod,minimum width=0pt,minimum height=7.5mm,inner sep=0pt,
+      fit={(aut.west |- 0,53) (temb.east |- 0,53)}] (llm) {};
+\node[font=\fontsize{8.5}{10}\selectfont\bfseries] at (llm.center) {Qwen3 language model (1.7\,B)};
+\node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(llm.north east)+(-1.6,-1.6)$) {\fireIcon};
+\draw[flow] (proj.north) -- (proj.north |- llm.south);
+\draw[flow] (t2.north) -- (t2.north |- llm.south);
+
+% ---------------- output --------------------------------------------------
+\node[cTag] (o0) at (14,62) {};
+\foreach \k in {1,...,5} \node[cOut] (o\k) at ({14+\k*\p},62) {};
+\node[lbl,anchor=east] at ($(o0.west)+(-0.8,0)$) {present};
+\node[cTag] (n0) at (14,67.5) {};
+\node[lbl,anchor=west] at ($(n0.east)+(0.8,0)$) {no language $\rightarrow$ empty};
+\node[lbl,anchor=east] at ($(n0.west)+(-0.8,0)$) {absent};
+\draw[flow] (llm.north -| o3) -- (o3.south);
+
+% ---------------- legend --------------------------------------------------
+\node[anchor=north east,align=left,inner sep=0pt] at (80,72) {%
+  \fontsize{6.5}{7.5}\selectfont
+  \renewcommand{\arraystretch}{1.15}%
+  \begin{tabular}{@{}c@{\hspace{2pt}}l@{\hspace{5pt}}c@{\hspace{2pt}}l@{}}
+    \tikz\node[cEnr,minimum size=2.2mm]{}; & enrollment frame &
+    \tikz\node[cIns,minimum size=2.2mm]{}; & instruction token\\
+    \tikz\node[cMix,minimum size=2.2mm]{}; & mixture frame &
+    \tikz\node[cTag,minimum size=2.2mm]{}; & language tag\\
+    \tikz\node[cSep,minimum size=2.2mm]{}; & separator &
+    \tikz\node[cOut,minimum size=2.2mm]{}; & transcript token\\
+    \frozenIcon & frozen & \fireIcon & trainable\\
+  \end{tabular}};
 \end{tikzpicture}
 \end{document}
