@@ -70,3 +70,5 @@ The class remains in review mode and displays its original 2026 review label.
   token colours made more distinct (deep teal enrollment, light slate mixture,
   dark grey separator, bronze instruction, clay language tag, white
   transcript), all tints of existing palette hues.
+- 2026-11-23: Figure 1: the mixture label no longer shows the 25 s limit
+  (the request limit stays in Section 3.1).
