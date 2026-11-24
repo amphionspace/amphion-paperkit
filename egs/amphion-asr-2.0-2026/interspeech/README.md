@@ -65,3 +65,8 @@ The class remains in review mode and displays its original 2026 review label.
 - 2026-11-23: Figure 1 module names shortened at the user's request: the
   Transformer box is "Audio encoder" (the dashed AuT frame is removed),
   "Projection", and "LLM"; the caption follows these names.
+- 2026-11-23: Figure 1: "Projection" renamed "Projector"; the separator token
+  no longer carries a trainable mark (its trainability is stated in the text);
+  token colours made more distinct (deep teal enrollment, light slate mixture,
+  dark grey separator, bronze instruction, clay language tag, white
+  transcript), all tints of existing palette hues.

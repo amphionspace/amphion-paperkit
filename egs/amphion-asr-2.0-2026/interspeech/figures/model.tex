@@ -1,6 +1,7 @@
 % Architecture of OFA-TS in TS-ASR mode, drawn bottom-up in the layout of a module diagram
 % (inputs at the bottom, token rows between modules, output tokens on top, legend, frozen /
-% trainable marks on each module). Facts: ../sections/03_model.tex (shared convolution applied
+% trainable marks on modules only; token colours are deeper or lighter tints of palette hues).
+% Facts: ../sections/03_model.tex (shared convolution applied
 % to enrollment and mixture separately, learnable separator between them, 24-layer AuT
 % Transformer with one attention window, frozen convolutions and text embeddings, presence
 % decision on the output language tag).
@@ -29,11 +30,11 @@
   mname/.style={font=\fontsize{8}{9}\selectfont\bfseries},
   sub/.style={font=\fontsize{6.5}{7.5}\selectfont,text=black!70},
   cell/.style={draw,line width=0.45pt,rounded corners=0.6pt,minimum size=2.8mm,inner sep=0pt},
-  cEnr/.style={cell,fill=cEnc,draw=cEncB},
-  cMix/.style={cell,fill=cTok!55,draw=cTokB!75},
-  cSep/.style={cell,fill=cBound,draw=cBoundB,line width=0.7pt},
-  cIns/.style={cell,fill=cPrompt,draw=cPromptB},
-  cTag/.style={cell,fill=cAdp,draw=cAdpB},
+  cEnr/.style={cell,fill=cEncB!60,draw=cEncB!85!black},
+  cMix/.style={cell,fill=cTokB!15,draw=cTokB},
+  cSep/.style={cell,fill=black!65,draw=black!85},
+  cIns/.style={cell,fill=cPromptB!35,draw=cPromptB},
+  cTag/.style={cell,fill=cAdpB!80,draw=cAdpB!80!black},
   cOut/.style={cell,fill=white,draw=black!50},
   flow/.style={-Stealth,line width=0.6pt,draw=black!70},
   lbl/.style={font=\fontsize{6.5}{7.5}\selectfont,text=black!60}]
@@ -62,7 +63,6 @@
 % ---------------- token rows ----------------------------------------------
 \foreach \k in {1,...,4} \node[cEnr] (e\k) at ({14+(\k-2.5)*\p},20) {};
 \node[cSep] (sep) at (25.5,20) {};
-\node[inner sep=0pt,font=\fontsize{5}{5}\selectfont,anchor=south] at (sep.north) {\fireIcon};
 \foreach \k in {1,...,7} \node[cMix] (m\k) at ({40+(\k-4)*\p},20) {};
 \foreach \k in {1,...,3} \node[cIns] (t\k) at ({67.5+(\k-2)*\p},20) {};
 \draw[flow] (ce.north) -- (ce.north |- e1.south);
@@ -75,8 +75,8 @@
 \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(tf.north east)+(-1.6,-1.6)$) {\fireIcon};
 \foreach \n in {e3,sep,m3,m6} \draw[flow] (\n.north) -- (\n.north |- tf.south);
 
-% ---------------- projection and LLM --------------------------------------
-\node[adapter,mod,minimum width=24mm] (proj) at (27,41.5) {\textbf{Projection}};
+% ---------------- projector and LLM --------------------------------------
+\node[adapter,mod,minimum width=24mm] (proj) at (27,41.5) {\textbf{Projector}};
 \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(proj.north east)+(-1.6,-1.6)$) {\fireIcon};
 \draw[flow] (tf.north) -- (proj.south);
 
