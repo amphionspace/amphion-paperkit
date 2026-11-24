@@ -77,3 +77,4 @@ The class remains in review mode and displays its original 2026 review label.
   name keep "Xiaomi-"). Tables 2 and 3 gain a Type column (Cascade / E2E);
   rows are ordered cascades, E2E baselines, then OFA-TS last. Numbers are
   unchanged.
+- 2026-11-23: the Type column of Tables 2 and 3 is renamed Category.

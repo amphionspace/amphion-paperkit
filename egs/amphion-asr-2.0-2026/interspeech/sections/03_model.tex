@@ -29,18 +29,18 @@ A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at
 % Full-width result tables of Section 4, defined here so that they float to the top of the
 % page on which Section 4 begins.
 \begin{table*}[t]
-\caption{TS-ASR results on the Mandarin benchmark and its English counterpart (\%, lower is better). The error rate is CER in Mandarin and WER in English. Error rate and ER use target-present samples; FA uses target-absent samples. For real recordings, the error rate excludes enrollments that contain another voice, whereas FA includes them. Type: extract-then-recognize cascade or end-to-end (E2E) model. Bold marks the lowest value in each column.}
+\caption{TS-ASR results on the Mandarin benchmark and its English counterpart (\%, lower is better). The error rate is CER in Mandarin and WER in English. Error rate and ER use target-present samples; FA uses target-absent samples. For real recordings, the error rate excludes enrollments that contain another voice, whereas FA includes them. Category: extract-then-recognize cascade or end-to-end (E2E) model. Bold marks the lowest value in each column.}
 \label{tab:overall}
 \centering
 \small
-\setlength{\tabcolsep}{3.9pt}
+\setlength{\tabcolsep}{3.8pt}
 \begin{tabular}{@{}llrrrrrrrrrrrr@{}}
 \toprule
  & & \multicolumn{6}{c}{Mandarin} & \multicolumn{6}{c}{English} \\
 \cmidrule(lr){3-8}\cmidrule(l){9-14}
  & & \multicolumn{3}{c}{All} & Synthetic & \multicolumn{2}{c}{Real} & \multicolumn{3}{c}{All} & Synthetic & \multicolumn{2}{c}{Real} \\
 \cmidrule(lr){3-5}\cmidrule(lr){6-6}\cmidrule(lr){7-8}\cmidrule(lr){9-11}\cmidrule(lr){12-12}\cmidrule(l){13-14}
-System & Type & CER & ER & FA & FA & FA & CER & WER & ER & FA & FA & FA & WER \\
+System & Category & CER & ER & FA & FA & FA & CER & WER & ER & FA & FA & FA & WER \\
 \midrule
 WeSep + Qwen3-ASR-1.7B & Cascade & 62.0 & \textbf{0.3} & 87.0 & 85.5 & 99.4 & 37.2 & 64.6 & 0.9 & 81.8 & 81.3 & 88.8 & 50.9 \\
 LauraTSE + Qwen3-ASR-1.7B & Cascade & 80.5 & 12.6 & 64.9 & 64.2 & 70.4 & 81.2 & 74.6 & 17.3 & 58.7 & 58.7 & 58.0 & 79.3 \\
@@ -53,7 +53,7 @@ OFA-TS (ours) & E2E & \textbf{13.1} & 3.3 & \textbf{2.8} & \textbf{2.8} & \textb
 \end{table*}
 
 \begin{table*}[t]
-\caption{Selected Mandarin diagnostic subsets (\%, lower is better). Target-present subsets are scored by CER and target-absent subsets by FA. All rows use 5\,s enrollment. Type as in Table~\ref{tab:overall}. Bold marks the lowest value in each column.}
+\caption{Selected Mandarin diagnostic subsets (\%, lower is better). Target-present subsets are scored by CER and target-absent subsets by FA. All rows use 5\,s enrollment. Category as in Table~\ref{tab:overall}. Bold marks the lowest value in each column.}
 \label{tab:diagnostics}
 \centering
 \small
@@ -63,7 +63,7 @@ OFA-TS (ours) & E2E & \textbf{13.1} & 3.3 & \textbf{2.8} & \textbf{2.8} & \textb
 \toprule
  & & \multicolumn{3}{c}{Target present: CER} & \multicolumn{4}{c}{Target absent: FA} \\
 \cmidrule(lr){3-5}\cmidrule(l){6-9}
-System & Type & \hd{Target only,\\real\\recordings} & \hd{Target +\\one\\interferer} & \hd{Target +\\2--4\\interferers} & \hd{Nobody\\speaking} & \hd{Others\\speaking,\\synthetic} & \hd{Others\\speaking,\\real} & \hd{Similar-\\sounding\\speaker} \\
+System & Category & \hd{Target only,\\real\\recordings} & \hd{Target +\\one\\interferer} & \hd{Target +\\2--4\\interferers} & \hd{Nobody\\speaking} & \hd{Others\\speaking,\\synthetic} & \hd{Others\\speaking,\\real} & \hd{Similar-\\sounding\\speaker} \\
 \midrule
 WeSep + Qwen3-ASR-1.7B & Cascade & \textbf{5.4} & 69.1 & 215.9 & 7.1 & 97.1 & 99.4 & 99.1 \\
 LauraTSE + Qwen3-ASR-1.7B & Cascade & 84.3 & 48.0 & 198.7 & 9.0 & 80.8 & 70.4 & 73.7 \\
