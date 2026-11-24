@@ -10,7 +10,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx}
 \usepackage{fontawesome5}
-\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
 \input{_palette}
 
 % Waveform pictogram: \wavepic{colour}{envelope}
@@ -69,28 +69,20 @@
 \draw[flow] (cx.north) -- (cx.north |- m1.south);
 \draw[flow] (temb.north) -- (t2.south);
 
-% ---------------- AuT Transformer -----------------------------------------
-\node[encoder,mod,minimum width=46mm,minimum height=9mm] (tf) at (27,31) {};
-\node[mname] at ($(tf.center)+(0,1.6)$) {AuT Transformer, 24 layers};
-\node[sub] at ($(tf.center)+(0,-2.0)$) {one attention window over the whole sequence};
+% ---------------- audio encoder (AuT Transformer layers) -------------------
+\node[encoder,mod,minimum width=46mm,minimum height=7mm] (tf) at (27,30) {};
+\node[mname] at (tf.center) {Audio encoder};
 \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(tf.north east)+(-1.6,-1.6)$) {\fireIcon};
 \foreach \n in {e3,sep,m3,m6} \draw[flow] (\n.north) -- (\n.north |- tf.south);
 
-\begin{scope}[on background layer]
-  \node[draw=cEncB!70,densely dashed,rounded corners=4pt,line width=0.5pt,fill=cEnc!20,
-        inner xsep=1.2mm,inner ysep=1.2mm,fit=(ce)(cx)(tf)(e1)(m7)] (aut) {};
-\end{scope}
-\node[rotate=90,anchor=south,inner sep=0.8pt,font=\fontsize{6.5}{7.5}\selectfont\bfseries,text=cEncB]
-  at (aut.west) {AuT audio encoder};
-
-% ---------------- projection and language model ---------------------------
-\node[adapter,mod,minimum width=24mm] (proj) at (27,43) {\textbf{Audio projection}};
+% ---------------- projection and LLM --------------------------------------
+\node[adapter,mod,minimum width=24mm] (proj) at (27,41.5) {\textbf{Projection}};
 \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(proj.north east)+(-1.6,-1.6)$) {\fireIcon};
-\draw[flow] (tf.north) -- (aut.north -| tf.north) -- (proj.south);
+\draw[flow] (tf.north) -- (proj.south);
 
 \node[llmbox,mod,minimum width=0pt,minimum height=7.5mm,inner sep=0pt,
-      fit={(aut.west |- 0,53) (temb.east |- 0,53)}] (llm) {};
-\node[font=\fontsize{8.5}{10}\selectfont\bfseries] at (llm.center) {Qwen3 language model (1.7\,B)};
+      fit={(2.6,53) (temb.east |- 0,53)}] (llm) {};
+\node[font=\fontsize{8.5}{10}\selectfont\bfseries] at (llm.center) {LLM};
 \node[inner sep=0pt,font=\fontsize{5.5}{6}\selectfont] at ($(llm.north east)+(-1.6,-1.6)$) {\fireIcon};
 \draw[flow] (proj.north) -- (proj.north |- llm.south);
 \draw[flow] (t2.north) -- (t2.north |- llm.south);

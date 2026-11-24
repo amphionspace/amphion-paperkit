@@ -62,3 +62,6 @@ The class remains in review mode and displays its original 2026 review label.
   in tables and text: the Mandarin and English result tables are merged into
   one full-width Table 2 with systems as rows, and the diagnostic table
   (now Table 3) is transposed to full width. Numbers are unchanged.
+- 2026-11-23: Figure 1 module names shortened at the user's request: the
+  Transformer box is "Audio encoder" (the dashed AuT frame is removed),
+  "Projection", and "LLM"; the caption follows these names.

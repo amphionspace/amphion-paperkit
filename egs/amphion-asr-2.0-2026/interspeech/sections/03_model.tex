@@ -22,7 +22,7 @@ A request contains at most 30\,s of audio; the default 5\,s enrollment leaves at
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/model.pdf}
-\caption{OFA-TS architecture in TS-ASR mode, shared across scenarios. Enrollment and mixture pass separately through the same frozen convolutional downsampling. A learnable separator, introduced during fine-tuning, joins the two sequences before the AuT Transformer, which attends over the whole sequence. The language model reads the projected audio and a fixed task instruction, and its output language tag carries the presence decision. Encoder and language model are initialized from Qwen3-ASR-1.7B.}
+\caption{OFA-TS architecture in TS-ASR mode, shared across scenarios. Enrollment and mixture pass separately through the same frozen convolutional downsampling. A learnable separator, introduced during fine-tuning, joins the two sequences before the Transformer layers of the audio encoder, which attend over the whole sequence. The LLM reads the projected audio and a fixed task instruction, and its output language tag carries the presence decision. Audio encoder and LLM are initialized from Qwen3-ASR-1.7B.}
 \label{fig:model}
 \end{figure}
 
