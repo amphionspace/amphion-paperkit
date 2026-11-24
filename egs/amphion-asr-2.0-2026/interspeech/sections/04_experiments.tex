@@ -2,6 +2,8 @@
 % (protocol v4) of ts-robust-064-avg3 and of the two CocktailASR-1 modes, pooled over
 % the 248 subsets of Table 1 (v12) and the 220 English subsets (en-v1). The English
 % CocktailASR-1 predictions were rescored with the same Whisper normalizer version.
+% Cascades (WeSep or LauraTSE + Qwen3-ASR-1.7B): full AmphionEval external-worker runs on
+% both sets (2026-11-22, same protocol and normalizer), pooled with the same script.
 \section{Experiments}
 \label{sec:experiments}
 \subsection{Protocol and baselines}
@@ -10,6 +12,12 @@ We use one set of \model weights across all subsets in both languages, with the 
 The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16 and greedy decoding, at most 256 output tokens in Mandarin and 512 in English.
 Its report evaluates enrollment-conditioned transcription and rejection of absent targets in both Chinese and English.
 Baseline scores are measured on the same audio and scoring protocol, not copied from their reports.
+
+We also evaluate two extract-then-recognize cascades.
+A target speech extraction (TSE) model receives the same enrollment and the mixture, and Qwen3-ASR-1.7B transcribes its output with greedy decoding.
+WeSep~\cite{wang2024wesep} uses its public English BSRNN model with an ECAPA speaker encoder.
+LauraTSE~\cite{tang2025lauratse}, a generative extractor built on a decoder-only language model, uses offline inference with top-25 sampling and a fixed seed.
+Neither cascade has a separate rejection step: an absent target counts as rejected only when the transcript is empty.
 
 CocktailASR's report uses reference crops of 1--4\,s.
 On an earlier benchmark version, a fixed 3\,s crop and that random-crop protocol produced similar target-absent FA, although group CER differed by up to about seven points.
@@ -20,22 +28,24 @@ Table~\ref{tab:overall} reports all three metrics.
 \model achieves 13.1\% CER against 33.4\% for CocktailASR-1, with an ER 0.6 points higher (3.3\% versus 2.7\%).
 Thus the lower FA is not explained by a large increase in completely suppressed target utterances.
 Overall FA is 2.8\% versus 67.8\%; CoT reduces the baseline's FA to 61.9\% but increases its CER to 39.6\%.
+The cascades rarely return empty transcripts.
+WeSep with Qwen3-ASR has the lowest ER, 0.3\%, but 87.0\% FA and 62.0\% CER; LauraTSE with Qwen3-ASR has 64.9\% FA and 80.5\% CER.
 
 \begin{table}[t]
-\caption{TS-ASR results (\%, lower is better). C: CocktailASR-1; C+CoT: its CoT mode. CER/ER use present samples; FA uses absent samples. Real: CER excludes enrollments that contain another voice; Real: FA includes them.}
+\caption{TS-ASR results (\%, lower is better). C: CocktailASR-1; C+CoT: its CoT mode; W, L: WeSep and LauraTSE cascades with Qwen3-ASR. CER/ER use present samples; FA uses absent samples. Real: CER excludes enrollments that contain another voice; Real: FA includes them.}
 \label{tab:overall}
 \centering
 \small
-\begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+\begin{tabularx}{\columnwidth}{@{}Xrrrrr@{}}
 \toprule
-Metric / subset & OFA-TS & C & C+CoT \\
+Metric / subset & OFA-TS & C & C+CoT & W & L \\
 \midrule
-All: CER & \textbf{13.1} & 33.4 & 39.6 \\
-All: ER & 3.3 & \textbf{2.7} & 3.0 \\
-All: FA & \textbf{2.8} & 67.8 & 61.9 \\
-Synthetic: FA & \textbf{2.8} & 64.4 & 58.8 \\
-Real: FA & \textbf{2.4} & 96.1 & 87.7 \\
-Real: CER, clean enrollment & \textbf{9.2} & 30.8 & 27.2 \\
+All: CER & \textbf{13.1} & 33.4 & 39.6 & 62.0 & 80.5 \\
+All: ER & 3.3 & 2.7 & 3.0 & \textbf{0.3} & 12.6 \\
+All: FA & \textbf{2.8} & 67.8 & 61.9 & 87.0 & 64.9 \\
+Synthetic: FA & \textbf{2.8} & 64.4 & 58.8 & 85.5 & 64.2 \\
+Real: FA & \textbf{2.4} & 96.1 & 87.7 & 99.4 & 70.4 \\
+Real: CER, clean enroll. & \textbf{9.2} & 30.8 & 27.2 & 37.2 & 81.2 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -52,23 +62,25 @@ Single-talker real recordings barely distinguish the systems.
 Adding silence-only negatives gives CocktailASR-1 a 10.8\% FA, while negatives containing other speakers reveal much higher FA.
 With two to four interferers and the target present, its CER reaches 65.7\%, versus 18.5\% for \model.
 Both target presence and conversation structure therefore affect the comparison.
+The cascades follow the same pattern more strongly.
+On single-talker real recordings, the WeSep cascade has the lowest CER, 5.4\%, but with two to four interferers both cascades exceed 190\% CER, and with only others speaking their FA is 70--99\%.
 
 \begin{table}[t]
-\caption{Selected diagnostic subsets (\%). P: present, scored by CER; A: absent, scored by FA. C: CocktailASR-1. All rows use 5\,s enrollment.}
+\caption{Selected diagnostic subsets (\%). P: present, scored by CER; A: absent, scored by FA. C: CocktailASR-1; W, L: cascades as in Table~\ref{tab:overall}. All rows use 5\,s enrollment.}
 \label{tab:diagnostics}
 \centering
 \small
-\begin{tabularx}{\columnwidth}{@{}Xcrr@{}}
+\begin{tabularx}{\columnwidth}{@{}Xcrrrr@{}}
 \toprule
-Condition & P/A & OFA-TS & C \\
+Condition & P/A & OFA-TS & C & W & L \\
 \midrule
-Target only, real recordings & P & 7.7 & 7.3 \\
-Target + one interferer & P & 6.8 & 21.3 \\
-Target + 2--4 interferers & P & 18.5 & 65.7 \\
-Nobody speaking & A & 0.8 & 10.8 \\
-Others speaking, synthetic & A & 1.7 & 85.8 \\
-Others speaking, real & A & 2.4 & 96.1 \\
-Similar-sounding speaker & A & 13.9 & 73.9 \\
+Target only, real recordings & P & 7.7 & 7.3 & 5.4 & 84.3 \\
+Target + one interferer & P & 6.8 & 21.3 & 69.1 & 48.0 \\
+Target + 2--4 interferers & P & 18.5 & 65.7 & 215.9 & 198.7 \\
+Nobody speaking & A & 0.8 & 10.8 & 7.1 & 9.0 \\
+Others speaking, synthetic & A & 1.7 & 85.8 & 97.1 & 80.8 \\
+Others speaking, real & A & 2.4 & 96.1 & 99.4 & 70.4 \\
+Similar-sounding speaker & A & 13.9 & 73.9 & 99.1 & 73.7 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -86,7 +98,7 @@ Synthetic subsets identify sensitivity; real windows measure its magnitude under
 \subsection{English counterpart}
 Table~\ref{tab:english} applies the same protocol to the English counterpart.
 \model has 13.6\% WER against 26.3\% for CocktailASR-1, and an ER of 3.7\% against 5.0\%; the CoT mode has the lowest ER, 0.6\%.
-FA is 6.3\% versus 50.6\%.
+FA is 6.3\% versus 50.6\%, and 81.8\% and 58.7\% for the WeSep and LauraTSE cascades.
 With similar-sounding absent speakers, our FA is 20.2\%, against 13.9\% in Mandarin.
 
 \begin{table}[t]
@@ -94,16 +106,16 @@ With similar-sounding absent speakers, our FA is 20.2\%, against 13.9\% in Manda
 \label{tab:english}
 \centering
 \small
-\begin{tabularx}{\columnwidth}{@{}Xrrr@{}}
+\begin{tabularx}{\columnwidth}{@{}Xrrrrr@{}}
 \toprule
-Metric / subset & OFA-TS & C & C+CoT \\
+Metric / subset & OFA-TS & C & C+CoT & W & L \\
 \midrule
-All: WER & \textbf{13.6} & 26.3 & 25.3 \\
-All: ER & 3.7 & 5.0 & \textbf{0.6} \\
-All: FA & \textbf{6.3} & 50.6 & 61.3 \\
-Synthetic: FA & \textbf{5.5} & 47.5 & 58.9 \\
-Real: FA & \textbf{19.5} & 98.0 & 97.5 \\
-Real: WER, clean enrollment & \textbf{15.3} & 35.2 & 31.0 \\
+All: WER & \textbf{13.6} & 26.3 & 25.3 & 64.6 & 74.6 \\
+All: ER & 3.7 & 5.0 & \textbf{0.6} & 0.9 & 17.3 \\
+All: FA & \textbf{6.3} & 50.6 & 61.3 & 81.8 & 58.7 \\
+Synthetic: FA & \textbf{5.5} & 47.5 & 58.9 & 81.3 & 58.7 \\
+Real: FA & \textbf{19.5} & 98.0 & 97.5 & 88.8 & 58.0 \\
+Real: WER, clean enroll. & \textbf{15.3} & 35.2 & 31.0 & 50.9 & 79.3 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -119,4 +131,5 @@ The same team designed training scenes and benchmark conditions.
 AISHELL-1 test text overlaps with AISHELL-2 training text, and MagicData-RAMC speaker-ID inconsistencies may allow speaker overlap.
 The benchmark therefore does not establish unseen-domain or fully speaker-disjoint generalization.
 There is no controlled architectural ablation or formal significance test.
+The cascades use public extraction checkpoints trained on LibriSpeech-based mixtures (LauraTSE) and VoxCeleb (WeSep)~\cite{tang2025lauratse}, without adaptation to Mandarin or to our training data; they compare available systems, not extraction as an approach.
 An empty transcript is not an identity guarantee, and recordings longer than the request limit require segmentation.

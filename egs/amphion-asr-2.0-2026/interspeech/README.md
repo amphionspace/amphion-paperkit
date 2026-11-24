@@ -44,3 +44,12 @@ The class remains in review mode and displays its original 2026 review label.
   and from both CocktailASR-1 modes rescored with whisper-normalizer 0.1.15
   (the version of the 064-avg3 record). Added bib entries for VCTK,
   CS-Dialogue, DiPCo and ICSI.
+- 2026-11-23: added two extract-then-recognize cascade baselines (WeSep or
+  LauraTSE followed by Qwen3-ASR-1.7B) as columns W and L of Tables 2, 3 and 4,
+  with their setup in Section 4.1, discussion, a limitation and a conclusion
+  clause. Numbers come from full AmphionEval external-worker runs on hpc
+  (2026-11-22, same scoring protocol and normalizer), pooled with the same
+  script that reproduces the 064-avg3 table cells. LauraTSE used a KV-cached
+  decoder whose outputs matched the official decoder bit for bit on a
+  256-sample check. Added bib entries for WeSep and LauraTSE; the GenAI
+  disclosure now names the new runs.

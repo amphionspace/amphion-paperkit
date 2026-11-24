@@ -5,7 +5,7 @@
 #     uv run tools/fetch-refs.py egs/amphion-asr-2.0-2026
 #
 # Schema: tools/schemas/refs-index.schema.json. Every arXiv id below was checked against its arXiv abstract page
-# title on 2026-10-31 (entries added on 2026-11-01 were checked that day; the two ISCA entries against their
+# title on 2026-10-31 (entries added on 2026-11-01 and 2026-11-23 were checked on those days; the two ISCA entries against their
 # ISCA archive pages); sha256 filled by the first fetch.
 groups:
 - id: ts-asr-methods
@@ -169,6 +169,32 @@ papers:
   - tse
   - inactive-speaker
   usage: 说话人提取联合检测目标是否在场；Related work（评测）。
+- file: wang2024-wesep.pdf
+  url: https://arxiv.org/pdf/2409.15799.pdf
+  sha256: 31647828307a22919eeb94cd76eea6310c878df76c74a80207c68b65bec11255
+  arxiv: '2409.15799'
+  title: 'WeSep: A Scalable and Flexible Toolkit Towards Generalizable Target Speaker Extraction'
+  authors: S. Wang, K. Zhang, S. Lin, J. Li, et al.
+  date: 2024-09
+  venue: Interspeech 2024
+  group: ts-asr-methods
+  tags:
+  - tse
+  - baseline
+  usage: 级联基线的提取前端（公开英文 BSRNN + ECAPA 模型）；提取 + 识别级联对比。
+- file: tang2025-lauratse.pdf
+  url: https://arxiv.org/pdf/2504.07402.pdf
+  sha256: 1ae710218e573d827e0c8d276c1fa99107fbb7bb22984948e78e2e804dc64c98
+  arxiv: '2504.07402'
+  title: 'LauraTSE: Target Speaker Extraction using Auto-Regressive Decoder-Only Language Models'
+  authors: B. Tang, B. Zeng, M. Li
+  date: 2025-04
+  venue: ASRU 2025
+  group: ts-asr-methods
+  tags:
+  - tse
+  - baseline
+  usage: 级联基线的生成式提取前端（仅解码器语言模型，离线推理，top-k 采样）；提取 + 识别级联对比。
 - file: delcroix2022-listen-only-to-me.pdf
   url: https://arxiv.org/pdf/2204.04811.pdf
   sha256: d325709b0a769993526ef66f3b8698b847b9d047d41dbabee644a43365633349

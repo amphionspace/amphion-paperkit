@@ -3,9 +3,9 @@
 This is a human-readable view derived from [`INDEX.yaml`](INDEX.yaml).
 `INDEX.yaml` is the single source of truth; PDFs are gitignored and downloaded by `tools/fetch-refs.py`.
 
-Total entries: 28 across 4 groups. arXiv ids checked against the abstract-page titles on 2026-10-31 (ten entries added and checked on 2026-11-01; the two ISCA entries against their ISCA archive pages).
+Total entries: 30 across 4 groups. arXiv ids checked against the abstract-page titles on 2026-10-31 (ten entries added and checked on 2026-11-01, two on 2026-11-23; the two ISCA entries against their ISCA archive pages).
 
-## 1. 目标说话人识别与提取（方法） (11)
+## 1. 目标说话人识别与提取（方法） (13)
 
 TS-ASR / TSE 方法与直接对比系统；Related work 与 baseline。
 
@@ -22,6 +22,8 @@ TS-ASR / TSE 方法与直接对比系统；Related work 与 baseline。
 | [ding2019-personal-vad.pdf](https://arxiv.org/pdf/1908.04284.pdf) | Personal VAD: Speaker-Conditioned Voice Activity Detection | 2019-08 | 以注册说话人为条件的语音活动检测，区分目标与非目标语音；Related work（评测）。 |
 | [borsdorf2021-universal-speaker-extraction.pdf](https://www.isca-archive.org/interspeech_2021/borsdorf21_interspeech.pdf) | Universal Speaker Extraction in the Presence and Absence of Target Speakers for Speech of One and Two Talkers | 2021-08 | 目标在场与缺席两种条件下的说话人提取；Related work（评测）。 |
 | [zhang2023-tse-presence-absence.pdf](https://www.isca-archive.org/interspeech_2023/zhang23k_interspeech.pdf) | Speaker Extraction with Detection of Presence and Absence of Target Speakers | 2023-08 | 说话人提取联合检测目标是否在场；Related work（评测）。 |
+| [wang2024-wesep.pdf](https://arxiv.org/pdf/2409.15799.pdf) | WeSep: A Scalable and Flexible Toolkit Towards Generalizable Target Speaker Extraction | 2024-09 | 级联基线的提取前端（公开英文 BSRNN + ECAPA 模型）；提取 + 识别级联对比。 |
+| [tang2025-lauratse.pdf](https://arxiv.org/pdf/2504.07402.pdf) | LauraTSE: Target Speaker Extraction using Auto-Regressive Decoder-Only Language Models | 2025-04 | 级联基线的生成式提取前端（仅解码器语言模型，离线推理，top-k 采样）；提取 + 识别级联对比。 |
 
 ## 2. TSE / TS-ASR 的常用评测 (10)
 
