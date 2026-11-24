@@ -9,7 +9,7 @@
 \subsection{Protocol and baselines}
 We use one set of \model weights across all subsets in both languages, with the first 5\,s of enrollment and the same normalization for all systems.
 \model uses greedy decoding with at most 512 output tokens.
-The TS-ASR baseline is Xiaomi-CocktailASR-1~\cite{zhang2026xiaomi}, in standard and chain-of-thought (CoT) modes, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16 and greedy decoding, at most 256 output tokens in Mandarin and 512 in English.
+The end-to-end (E2E) TS-ASR baseline is CocktailASR-1~\cite{zhang2026xiaomi} in its standard and chain-of-thought modes, denoted CocktailASR-1 and CocktailASR-1-CoT, using the publicly available \texttt{Ease3/Xiaomi-CocktailASR-1} weights and their accompanying inference code with bf16 and greedy decoding, at most 256 output tokens in Mandarin and 512 in English.
 Its report evaluates enrollment-conditioned transcription and rejection of absent targets in both Chinese and English.
 Baseline scores are measured on the same audio and scoring protocol, not copied from their reports.
 
@@ -20,20 +20,20 @@ LauraTSE~\cite{tang2025lauratse}, a generative extractor built on a decoder-only
 We denote them WeSep + Qwen3-ASR-1.7B and LauraTSE + Qwen3-ASR-1.7B.
 Neither cascade has a separate rejection step: an absent target counts as rejected only when the transcript is empty.
 
-The Xiaomi-CocktailASR-1 report uses reference crops of 1--4\,s.
+The CocktailASR-1 report uses reference crops of 1--4\,s.
 On an earlier benchmark version, a fixed 3\,s crop and that random-crop protocol produced similar target-absent FA, although group CER differed by up to about seven points.
 Our main comparison holds enrollment length fixed across systems.
 
 \subsection{One model across scenarios}
 Table~\ref{tab:overall} reports all three metrics.
-In Mandarin, \model achieves 13.1\% CER against 33.4\% for Xiaomi-CocktailASR-1, with an ER 0.6 points higher (3.3\% versus 2.7\%).
+In Mandarin, \model achieves 13.1\% CER against 33.4\% for CocktailASR-1, with an ER 0.6 points higher (3.3\% versus 2.7\%).
 Thus the lower FA is not explained by a large increase in completely suppressed target utterances.
-Overall FA is 2.8\% versus 67.8\%; CoT reduces the baseline's FA to 61.9\% but increases its CER to 39.6\%.
+Overall FA is 2.8\% versus 67.8\%; CocktailASR-1-CoT reduces FA to 61.9\% but increases CER to 39.6\%.
 The cascades rarely return empty transcripts.
 WeSep + Qwen3-ASR-1.7B has the lowest ER, 0.3\%, but 87.0\% FA and 62.0\% CER; LauraTSE + Qwen3-ASR-1.7B has 64.9\% FA and 80.5\% CER.
 
 On real conversations with clean enrollments, CER is 9.2\% versus 30.8\%.
-For individual real corpora with clean enrollments, \model has FA between 1\% and 7\%, compared with 74--100\% for Xiaomi-CocktailASR-1.
+For individual real corpora with clean enrollments, \model has FA between 1\% and 7\%, compared with 74--100\% for CocktailASR-1.
 For example, AliMeeting far-field CER is 6.3\% versus 38.2\%, and FA is 1.0\% versus 100.0\%.
 When the enrollment contains another voice, our CER rises from 10.4\% to 15.0\% on AliMeeting, AISHELL-4, and web-conversation windows, and from 7.3\% to 18.6\% on the paired AliMeeting windows; with such enrollments, FA is 0.7\%.
 These are whole-system comparisons: the study does not separately establish the contributions of architecture, training data, or parameter count.
@@ -41,7 +41,7 @@ These are whole-system comparisons: the study does not separately establish the 
 \subsection{What restricted evaluations miss}
 Table~\ref{tab:diagnostics} contrasts common evaluation conditions with cases encountered during continuous listening.
 Single-talker real recordings barely distinguish the systems.
-Adding silence-only negatives gives Xiaomi-CocktailASR-1 a 10.8\% FA, while negatives containing other speakers reveal much higher FA.
+Adding silence-only negatives gives CocktailASR-1 a 10.8\% FA, while negatives containing other speakers reveal much higher FA.
 With two to four interferers and the target present, its CER reaches 65.7\%, versus 18.5\% for \model.
 Both target presence and conversation structure therefore affect the comparison.
 The cascades follow the same pattern more strongly.
@@ -59,12 +59,12 @@ Synthetic subsets identify sensitivity; real windows measure its magnitude under
 
 \subsection{English counterpart}
 The English columns of Table~\ref{tab:overall} apply the same protocol to the English counterpart.
-\model has 13.6\% WER against 26.3\% for Xiaomi-CocktailASR-1, and an ER of 3.7\% against 5.0\%; its chain-of-thought mode has the lowest ER, 0.6\%.
+\model has 13.6\% WER against 26.3\% for CocktailASR-1, and an ER of 3.7\% against 5.0\%; CocktailASR-1-CoT has the lowest ER, 0.6\%.
 FA is 6.3\% versus 50.6\%, and 81.8\% and 58.7\% for WeSep + Qwen3-ASR-1.7B and LauraTSE + Qwen3-ASR-1.7B.
 With similar-sounding absent speakers, our FA is 20.2\%, against 13.9\% in Mandarin.
 
 Real English conversations are harder than Mandarin ones: FA is 19.5\%, against 2.4\% in Mandarin.
-With clean enrollments, our FA ranges from 2.4\% on ICSI and 5.2\% on NOTSOFAR-1 to 28.6\% on DiPCo and 69.3\% on CHiME-6, while Xiaomi-CocktailASR-1 has 92.7--100\% on every corpus.
+With clean enrollments, our FA ranges from 2.4\% on ICSI and 5.2\% on NOTSOFAR-1 to 28.6\% on DiPCo and 69.3\% on CHiME-6, while CocktailASR-1 has 92.7--100\% on every corpus.
 
 \subsection{Limitations}
 Both language versions are mostly synthetic, and the English real section has only 1{,}301 samples.

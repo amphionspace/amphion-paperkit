@@ -72,3 +72,8 @@ The class remains in review mode and displays its original 2026 review label.
   transcript), all tints of existing palette hues.
 - 2026-11-23: Figure 1: the mixture label no longer shows the 25 s limit
   (the request limit stays in Section 3.1).
+- 2026-11-23: the baseline is called CocktailASR-1 and its chain-of-thought
+  mode CocktailASR-1-CoT throughout (the bib title and the released weight
+  name keep "Xiaomi-"). Tables 2 and 3 gain a Type column (Cascade / E2E);
+  rows are ordered cascades, E2E baselines, then OFA-TS last. Numbers are
+  unchanged.
